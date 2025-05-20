@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>فايز للآيات القرآنية</title>
+    <style>
+        body { font-family: 'Cairo', Arial, sans-serif; background: #f7f7f7; text-align: center; margin-top: 50px; }
+        input, button { font-size: 1.2em; padding: 10px; margin: 10px; }
+        #result { margin-top: 30px; font-size: 1.3em; color: #222; background: #fff; display: inline-block; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px #ccc; }
+    </style>
+</head>
+<body>
+    <h1>فايز للآيات القرآنية</h1>
+    <input type="text" id="partial" placeholder="اكتب جزء من آية..." size="40">
+    <button onclick="completeAyah()">إكمال</button>
+    <div id="result"></div>
+    <script>
+        // بيانات تجريبية
+        const quran = [
+            { surah: "الفاتحة", ayah: 1, text: "بسم الله الرحمن الرحيم" },
+            { surah: "الفاتحة", ayah: 2, text: "الحمد لله رب العالمين" },
+            { surah: "البقرة", ayah: 255, text: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ..." }
+        ];
+        function completeAyah() {
+            const partial = document.getElementById('partial').value.trim();
+            if (!partial) {
+                document.getElementById('result').innerText = 'يرجى إدخال جزء من آية.';
+                return;
+            }
+            const found = quran.find(ayah => ayah.text.startsWith(partial));
+            if (found) {
+                document.getElementById('result').innerHTML = `<b>${found.text}</b><br>سورة ${found.surah} - آية ${found.ayah}`;
+            } else {
+                document.getElementById('result').innerText = 'لم يتم العثور على آية تبدأ بهذا الجزء.';
+            }
+        }
+    </script>
+</body>
+</html> 
