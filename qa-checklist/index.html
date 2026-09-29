@@ -549,7 +549,7 @@ document.addEventListener('input', e=>{
 document.addEventListener('focusout', e=>{ if(S.view==='dept' && (e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')) setTimeout(()=>{ const ae=document.activeElement; if(!ae||(ae.tagName!=='TEXTAREA'&&ae.tagName!=='INPUT')) updateSheetStats(); },0); });
 
 const sel=$('#month');
-(function fillMonths(){ const opts=[]; for(let k=1;k>=-11;k--){ const dt=new Date(now.getFullYear(),now.getMonth()+k,1); const m=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}`; opts.push(`<option value="${m}" ${m===curMonth?'selected':''}>${esc(monthName(m))}</option>`);} sel.innerHTML=opts.join(''); })();
+(function fillMonths(){ const opts=[]; for(let k=-1;;k++){ const dt=new Date(now.getFullYear(),now.getMonth()+k,1); if(k>0 && (dt.getFullYear()>2027)) break; const m=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}`; opts.push(`<option value="${m}" ${m===curMonth?'selected':''}>${esc(monthName(m))}</option>`);} sel.innerHTML=opts.join(''); })();
 sel.addEventListener('change',()=>{ S.month=sel.value; subscribe(); });
 
 /* ---------- boot ---------- */
