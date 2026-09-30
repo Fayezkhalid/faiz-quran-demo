@@ -7,8 +7,7 @@
 const ADMIN_PIN = 'CHANGE-ME';
 
 const QUESTION_COUNT = {
-  bakery: 18, deli: 23, brickoven: 15, meat: 18, seafood: 20, produce: 17,
-  frozen: 5, dairy: 4, grocery: 4, backstore: 10, mgmt: 15
+  deli: 23, bakery: 18, produce: 17, brickoven: 15, meat: 18, seafood: 20
 };
 const SHEET_NAME = 'Checks';
 const HEADER = ['month', 'dept', 'owner', 'answers', 'notes', 'submitted', 'submittedAt', 'updatedAt', 'answered', 'yes', 'no'];

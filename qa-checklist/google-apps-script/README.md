@@ -25,7 +25,7 @@
 | رئيس قسم المخبوزات | `الرابط?dept=bakery` |
 | باقي الأقسام | تجدها جاهزة مع زر نسخ في أسفل لوحة المدير |
 
-رموز الأقسام: `bakery` `deli` `brickoven` `meat` `seafood` `produce` `frozen` `dairy` `grocery` `backstore` `mgmt`
+رموز الأقسام: `deli` `bakery` `produce` `brickoven` `meat` `seafood`
 
 ## ملاحظات
 
