@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+<title>جاهزية الجودة الشهرية فرع S192</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky store bar, department board of ring cards; each department opens a focused yes/no audit sheet; owner-only admin console. */
+:root{
+  --bg:#eef2f0; --surface:#ffffff; --sunk:#f6f8f7; --ink:#13201c; --muted:#5b6b66; --line:#d9e1dd;
+  --accent:#0d6b58; --accent-ink:#ffffff;
+  --yes:#1d8a4b; --yes-bg:#e3f4ea; --no:#c0440f; --no-bg:#fdebe2; --warn:#a86b00; --warn-bg:#fdf2dc;
+  --shadow:0 1px 2px rgba(19,32,28,.06),0 6px 20px rgba(19,32,28,.06);
+  --f-display:"Alexandria","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1412; --surface:#16201d; --sunk:#111a17; --ink:#e5ece9; --muted:#95a49f; --line:#27342f;
+  --accent:#3cc3a2; --accent-ink:#06231c;
+  --yes:#4bd184; --yes-bg:#12301f; --no:#ff9160; --no-bg:#3a1c10; --warn:#f2bd4b; --warn-bg:#35280c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1412; --surface:#16201d; --sunk:#111a17; --ink:#e5ece9; --muted:#95a49f; --line:#27342f;
+  --accent:#3cc3a2; --accent-ink:#06231c;
+  --yes:#4bd184; --yes-bg:#12301f; --no:#ff9160; --no-bg:#3a1c10; --warn:#f2bd4b; --warn-bg:#35280c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1080px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;gap:10px;align-items:center;min-width:0;flex:1 1 220px}
+.seal{width:40px;height:40px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:13px;letter-spacing:.02em;flex:none}
+.brand h1{font-family:var(--f-display);font-size:18px;margin:0;line-height:1.2;text-wrap:balance}
+.brand small{color:var(--muted);font-size:12.5px}
+.ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:14px}
+.tabs{display:flex;background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:3px}
+.tabs button{border:0;background:none;padding:6px 14px;border-radius:9px;font-weight:600;font-size:14px;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+/* hero strip */
+.intro{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap;margin:28px 0 18px}
+.intro h2{font-family:var(--f-display);font-size:clamp(22px,4vw,30px);margin:0;line-height:1.25;text-wrap:balance}
+.intro p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.mode{font-size:12.5px;color:var(--muted);background:var(--sunk);border:1px solid var(--line);padding:4px 10px;border-radius:99px}
+
+/* department board */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{--c:#888;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;text-align:start;box-shadow:var(--shadow);transition:transform .15s,border-color .15s;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--c) 16%,transparent),transparent 60%);pointer-events:none}
+.card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.ring{grid-row:span 3;width:64px;height:64px;position:relative}
+.ring svg{width:64px;height:64px;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:14px;font-weight:700}
+.card h3{font-family:var(--f-display);font-size:17px;margin:0;line-height:1.3;position:relative}
+.card .en{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;position:relative}
+.card .meta{font-size:12.5px;color:var(--muted);position:relative;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-none{background:var(--sunk);color:var(--muted)}
+.st-prog{background:var(--warn-bg);color:var(--warn)}
+.st-ready{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.st-done{background:var(--yes-bg);color:var(--yes)}
+
+/* department sheet */
+.sheet-head{--c:#888;margin:22px 0 16px;border-radius:22px;padding:22px;background:var(--c);color:#fff;display:grid;gap:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.sheet-head::after{content:"";position:absolute;inset:auto -60px -90px auto;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.1)}
+.sheet-top{display:flex;gap:10px;justify-content:space-between;align-items:start;flex-wrap:wrap;position:relative;z-index:1}
+.back{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);color:#fff;border-radius:10px;padding:6px 12px;font-size:14px;font-weight:600}
+.sheet-head h2{font-family:var(--f-display);font-size:clamp(24px,5vw,34px);margin:0;line-height:1.2}
+.sheet-head .sub{opacity:.88;font-size:14px}
+.bar-track{height:10px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;position:relative;z-index:1}
+.bar-fill{height:100%;background:#fff;border-radius:99px;transition:width .3s}
+.stats{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;position:relative;z-index:1}
+.stats b{font-size:18px;display:block;font-family:var(--f-display)}
+.who{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.who label{font-weight:600;font-size:14px}
+.who input{flex:1 1 220px;min-width:0;background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;color:var(--ink)}
+.who .saved{font-size:12.5px;color:var(--muted)}
+.qlist{display:grid;gap:10px}
+.q{--c:#888;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;align-items:start}
+.q.is-yes{border-color:color-mix(in srgb,var(--yes) 45%,var(--line))}
+.q.is-no{border-color:color-mix(in srgb,var(--no) 55%,var(--line));background:color-mix(in srgb,var(--no-bg) 45%,var(--surface))}
+.qn{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:13px;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c)}
+:root[data-theme="dark"] .qn{color:color-mix(in srgb,var(--c) 55%,#fff)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .qn{color:color-mix(in srgb,var(--c) 55%,#fff)}}
+.qt{min-width:0}
+.qt p{margin:0;font-weight:500}
+.qtags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pts{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:1px 8px;border-radius:99px}
+.prev{font-size:12px;color:var(--warn);background:var(--warn-bg);padding:2px 9px;border-radius:8px}
+.yn{display:flex;gap:6px}
+.yn button{min-width:62px;border:1.5px solid var(--line);background:var(--sunk);border-radius:11px;padding:7px 10px;font-weight:700;font-size:14px}
+.yn .y[aria-pressed="true"]{background:var(--yes);border-color:var(--yes);color:#fff}
+.yn .n[aria-pressed="true"]{background:var(--no);border-color:var(--no);color:#fff}
+.note{grid-column:2/-1}
+.note textarea{width:100%;min-height:62px;resize:vertical;background:var(--surface);border:1px solid color-mix(in srgb,var(--no) 45%,var(--line));border-radius:10px;padding:8px 10px;font:inherit;font-size:14px;color:var(--ink)}
+.note label{font-size:12.5px;font-weight:600;color:var(--no);display:block;margin-bottom:4px}
+.submit-row{margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.btn{border:0;border-radius:12px;padding:10px 18px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:var(--sunk);color:var(--ink);border:1px solid var(--line)}
+.hint{font-size:13px;color:var(--muted)}
+.locked{background:var(--yes-bg);color:var(--yes);border-radius:14px;padding:12px 16px;font-weight:600;margin-bottom:14px}
+[dir="ltr"] .note{text-align:left}
+
+/* admin */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.kpi span{font-size:13px;color:var(--muted)}
+.kpi b{display:block;font-family:var(--f-display);font-size:28px;line-height:1.2;margin-top:2px}
+.kpi small{font-size:12.5px;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:18px}
+.panel h3{font-family:var(--f-display);font-size:17px;margin:0 0 12px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
+th{font-size:12.5px;color:var(--muted);font-weight:600;text-align:start;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-inline-end:8px;vertical-align:middle}
+.mini{height:6px;border-radius:99px;background:var(--sunk);overflow:hidden;width:90px;display:inline-block;vertical-align:middle;margin-inline-end:8px}
+.mini i{display:block;height:100%;background:var(--c)}
+.linkbtn{border:0;background:none;color:var(--accent);font-weight:600;padding:2px 4px;font-size:13px}
+.issues{display:grid;gap:8px}
+.issue{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:4px;background:var(--sunk)}
+.issue .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.issue p{margin:0;font-size:14px}
+.issue .fix{font-size:13.5px;color:var(--no)}
+.share{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.share div{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--sunk);font-size:13.5px}
+.share code{direction:ltr;font-size:13px;color:var(--accent)}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+.toast{position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom,0px));margin:auto;width:max-content;max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:20}
+@media (max-width:560px){
+  .q{grid-template-columns:auto 1fr}
+  .yn{grid-column:2}
+  .note{grid-column:1/-1}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">
+      <div class="seal">QA</div>
+      <div><h1>جاهزية الجودة الشهرية · فرع S192</h1><small>تجهيز الأقسام قبل زيارة فريق الجودة · QA Checklist Rev 6</small></div>
+    </div>
+    <div class="ctrls">
+      <select id="month" aria-label="الشهر"></select>
+      <div class="tabs" id="tabs" hidden>
+        <button id="tab-home" aria-pressed="true">الأقسام</button>
+        <button id="tab-admin" aria-pressed="false">لوحة المدير</button>
+      </div>
+    </div>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+/* ---------- checklist data (QA Checklist Rev 6) ---------- */
+const EQP = 'المعدات تحتاج تنظيف وتعقيم بشكل صحيح بعد الاستخدام';
+const A = {
+  hyg:'متطلبات النظافة الشخصية مطبقة ومستمرة (الزي، غطاء الرأس، الأظافر، غسل اليدين).',
+  fc:'الأسطح الملامسة للغذاء نظيفة ومعقمة.',
+  nfc:'الأسطح غير الملامسة للغذاء نظيفة.',
+  pk:'مواد التغليف مخزنة بطريقة نظيفة وصحية.',
+  tis:'استخدام المناديل ذات الاستخدام الواحد فقط في التنظيف، ويُمنع استخدام الأقمشة القابلة لإعادة الاستخدام.',
+  sink:'مغسلة الأيدي متاحة وسهل الوصول إليها ولا تُستخدم لأي غرض آخر.',
+  exparea:'المنتجات المنتهية أو التالفة محفوظة في مكان مخصص وعليها ملصق، مع تطبيق سياسة المنتجات التالفة (Distress).',
+  color:'الالتزام بنظام الترميز اللوني المعتمد (السكاكين، ألواح التقطيع... إلخ).',
+  temp:'سجلات درجات حرارة غرف التبريد وثلاجات العرض معبأة بشكل صحيح.',
+  clean:'قوائم التنظيف (Cleaning Checklists) مكتملة ومعبأة بشكل صحيح.',
+  prod:'سجل الإنتاج (Production Record) مكتمل ومعبأ بشكل صحيح.',
+  proddef:'سجل الإنتاج مكتمل ومعبأ بشكل صحيح، وإجراء فك التجميد (Defrosting SOP) مطبق وسجلاته معبأة بشكل صحيح.',
+  chem:'استخدام المواد الكيميائية المعتمدة فقط وبالتركيز الصحيح، وتخزينها بعيداً عن الأغذية.',
+  bins:'حاويات النفايات مبطّنة بأكياس، نظيفة وتُفتح بالقدم، ومغلقة عند عدم الاستخدام وغير ممتلئة زيادة.',
+  exp:'تم فحص تواريخ الصلاحية لجميع المنتجات المعروضة والمخزنة، بما فيها المكونات الغذائية.',
+  cross:'لا يوجد تلوث خلطي أثناء التحضير والتخزين.',
+  fruit:'غسل وتعقيم الفواكه والخضار قبل استخدامها في التحضير، والسجلات متوفرة ومعبأة بشكل صحيح.',
+  expsep:'المنتجات المنتهية / التالفة / المرتجعة مخزنة في أماكن منفصلة وعليها ملصقات.'
+};
+const DEPTS = [
+ {id:'deli',name:'الديلي',en:'Deli',c:'#cf3f35',q:[
+  [A.hyg,4],[A.fc,4,EQP],[A.nfc,4,'ثلاجة العرض تحتاج تنظيف'],[A.pk,2],
+  ['جميع المنتجات في العرض والتخزين عليها ملصقات، وتطبيق مبدأ FIFO.',4,'بعض البهارات بدون تاريخ صلاحية أصلي، ويجب وضع الملصق على المنتج مباشرة وليس على التغليف'],
+  ['إجراء الجودة في الديلي مطبق، وجميع المنتجات مخزنة على الحرارة المطلوبة ويتم فحص جودتها وطزاجتها.',4],
+  [A.fruit,2],
+  ['درجة حرارة الحفظ الساخن للدجاج المشوي صحيحة (أعلى من 65°م) والسجلات معبأة بشكل صحيح.',4,'سجلات الطبخ لم تكن متوفرة'],
+  ['درجة حرارة الطبخ صحيحة (أعلى من 75°م) والسجلات معبأة بشكل صحيح.',4],
+  ['ميزان الحرارة (Probe Thermometer) متوفر ونظيف ويعمل بشكل سليم.',2],
+  ['المنتجات في العرض والتخزين مطابقة لمتطلبات الجودة ولمدة الصلاحية حسب تعليمات المصنع.',2],
+  [A.temp,2],[A.tis,2],[A.color,2],[A.sink,2],[A.exp,5],
+  ['الزيتون والأجبان واللحوم المُخرجة من العلب مفتوحة بطريقة صحيحة، ولا توجد علامات صدأ على العلب.',2],
+  [A.cross,2],[A.clean,2],[A.exparea,2],[A.proddef,4],[A.chem,2],[A.bins,2]]},
+ {id:'bakery',name:'المخبوزات',en:'Bakery',c:'#c27212',q:[
+  [A.hyg,4],[A.fc,4,EQP],[A.nfc,4],[A.pk,2],[A.exp,5],
+  ['جميع المنتجات المعروضة والمخزنة عليها ملصقات، والمعلبات بعد فتحها توضع في حاويات بلاستيكية أو ستانلس ستيل، وتطبيق مبدأ الوارد أولاً يصرف أولاً (FIFO).',4,'بعض المكونات بدون تاريخ الصلاحية الأصلي'],
+  ['غسل وتعقيم الفواكه قبل استخدامها في التحضير، والسجلات متوفرة ومعبأة بشكل صحيح.',2],
+  ['المنتجات المعروضة مطابقة لمتطلبات الجودة والطزاجة، وجميعها معروضة على درجات الحرارة المطلوبة.',4],
+  [A.exparea,2],[A.temp,2],[A.sink,2],[A.color,2],[A.tis,2],[A.clean,2],
+  [A.proddef,4,'لم يتم اتباع إجراء فك التجميد، وقائمة الإنتاج تحتاج تحديث'],
+  ['سجل فحص الاستلام (Receiving Inspection Record) معبأ ومكتمل بشكل صحيح.',2],
+  [A.chem,2],[A.bins,2]]},
+ {id:'produce',name:'Fresh Produce',en:'الخضار والفواكه',c:'#3b8f2f',lang:'en',q:[
+  ['Personal Hygiene requirements are applied and maintained.',4],
+  ['Food Contact surfaces are clean and sanitary.',4,'Equipment needs to be cleaned and sanitized after usage'],
+  ['Non-Food Contact surfaces are clean.',4],
+  ['Packaging materials are stored in a clean and hygienic way.',2],
+  ['All chilled products on display or in storage are correctly labeled (individual labels) & within use-by-dates; all stocks inside chiller have receiving date codes; FIFO is applied.',4],
+  ['Fresh fruits and vegetables are cleaned and sanitized before using for preparation and records are available and correctly filled.',2],
+  ['The products on display and storage have been checked for their expiry dates.',5],
+  ['Fresh produce on display or storage meet the quality and freshness requirements and displayed at the required temperatures.',4,'Poor quality items shall be removed from display chiller'],
+  ['Only disposable tissues are used for cleaning, re-usable cloths are not allowed to be used.',2],
+  ['Cold rooms and display temperature records are filled correctly.',2],
+  ['Hand wash sink is accessible and not used for other purpose.',2],
+  ['Expired / Damaged items kept in designated area and labeled; Distress policy is followed.',2],
+  ['Approved color-coding is followed (knives, cutting boards, etc.).',2],
+  ['Cleaning checklists are completed and correctly filled.',2],
+  ['Production Record was completed and correctly filled.',2],
+  ['Only approved chemicals are being used in proper concentration and are stored away from foods.',2,'Unapproved chemicals shall not be used'],
+  ['Waste bins are lined with plastic bags, clean and foot-operated; bins are kept closed when not in use and are not overfilled.',2]]},
+ {id:'brickoven',name:'الفرن الحجري',en:'Brick Oven',c:'#9a4a22',q:[
+  [A.hyg,4],[A.fc,4],[A.nfc,4],
+  ['مواد التغليف مخزنة بطريقة نظيفة وصحية (داخل القسم وفي المستودع الخلفي).',2],
+  ['إجراء فك التجميد (Defrosting SOP) مطبق وسجلاته معبأة بشكل صحيح.',4],
+  ['جميع الأصناف المحضرة مغطاة وعليها ملصقات، وجميع المكونات عليها ملصقات صحيحة وأكواد PLU صحيحة.',2],
+  ['درجة حرارة الحفظ الساخن لأصناف البرنامج الساخن صحيحة (أعلى من 65°م)، ويتم قياس الحرارة وتسجيلها بشكل صحيح.',4],
+  ['جميع الأصناف المخزنة مفصولة (نيء، محضّر، جاهز للأكل RTE) في أماكن مخصصة.',2],
+  ['جميع المكونات الغذائية ضمن تاريخ الصلاحية.',5],
+  [A.tis,2],[A.color,2],
+  ['المكونات الغذائية محفوظة على درجات الحرارة المطلوبة (البيض، عبوات الكاتشب وصلصة الطماطم المفتوحة...).',2],
+  [A.clean,2],[A.chem,2],[A.bins,2]]},
+ {id:'meat',name:'اللحوم',en:'Meat',c:'#a31f3c',q:[
+  [A.hyg,4],[A.fc,4,'منشار العظم يحتاج تنظيف وتعقيم بعد الاستخدام'],[A.nfc,4],[A.pk,2],
+  ['المنتجات المعروضة مطابقة لمتطلبات الجودة والطزاجة: لا تغيّر في اللون ولا إضافة ملونات.',2],
+  [A.exp,5],
+  ['سياسة الذبائح (Meat Carcass Policy) مطبقة.',4],
+  ['المنتجات المحضرة فردياً عليها ملصقات صحيحة، وتطبيق مبدأ FIFO.',4],
+  [A.tis,2],[A.sink,2],[A.exparea,2],[A.color,2],[A.temp,2],[A.cross,2],[A.clean,2],[A.proddef,4],[A.chem,2],[A.bins,2]]},
+ {id:'seafood',name:'الأسماك',en:'Seafood',c:'#1b6fa8',q:[
+  [A.hyg,4],[A.fc,4,EQP],[A.nfc,4],[A.pk,2,'مواد التغليف يجب أن تكون مغطاة ومحمية بطريقة صحية'],
+  ['المنتجات في العرض والثلاجة مغطاة بالثلج المجروش وليس مكعبات الثلج.',2],
+  ['إجراء فحص طزاجة وجودة الأسماك اليومي مطبق، وجميع المنتجات في العرض والثلاجة يتم فحص جودتها وطزاجتها.',4,'سجل الطزاجة اليومي يحتاج تحديث'],
+  ['تم فحص تواريخ الصلاحية للمنتجات في العرض والثلاجة.',5],
+  [A.exparea,2],
+  ['جميع المنتجات في العرض والمخزون داخل الثلاجات عليها ملصقات صحيحة، والمنتجات المبردة الواردة بعبوات المصنع محتفظة بملصقات الصلاحية الأصلية.',2],
+  ['مدة عرض المنتجات (ذات تاريخ الصلاحية من المورد مثل الدنيس والسلمون) حسب معايير الشركة: 3 أيام للصغير، 5 أيام للمتوسط والكبير، 3 أيام للفيليه.',2],
+  ['الموظفون يستخدمون قفازات السلامة والأحذية المطاطية أثناء العمل.',2],
+  [A.tis,2],[A.sink,2],[A.color,2],[A.temp,2],[A.clean,2],
+  [A.prod,2,'قائمة الإنتاج تحتاج تحديث'],[A.chem,2],
+  ['ماكينات الثلج نظيفة، ومغرفة الثلج متوفرة ومحفوظة بطريقة صحيحة.',2],
+  [A.bins,2]]}
+];
+DEPTS.forEach(d => { d.total = d.q.reduce((s,q)=>s+q[1],0); });
+const BY = Object.fromEntries(DEPTS.map(d=>[d.id,d]));
+
+const T = {
+  ar:{yes:'نعم',no:'لا',pts:'نقطة',prev:'ملاحظة الزيارة السابقة: ',fix:'الإجراء التصحيحي المطلوب',fixPh:'اكتب ما سيتم عمله ومتى...',who:'اسم المسؤول عن القسم',whoPh:'اكتب اسمك',back:'→ كل الأقسام',answered:'تمت الإجابة',ready:'نسبة الجاهزية',risk:'نقاط معرضة للخصم',submit:'اعتماد القسم',submitted:'تم اعتماد القسم',needAll:'أجب على كل الأسئلة واكتب الإجراء التصحيحي لكل "لا" واسم المسؤول ثم اعتمد.',okAll:'كل شيء جاهز. الاعتماد يفتح واتساب لإرسال التقرير للمدير.',wa:'إرسال التقرير واتساب',savedAt:'آخر حفظ',lockedMsg:'تم اعتماد هذا القسم لهذا الشهر على هذا الجهاز. تقدر تعيد إرسال التقرير من الزر بالأسفل.',nameFirst:'اكتب اسمك أولاً',dir:'rtl'},
+  en:{yes:'Yes',no:'No',pts:'pts',prev:'Last QA visit: ',fix:'Corrective action',fixPh:'What will be done and by when...',who:'Department head name',whoPh:'Your name',back:'← All departments',answered:'Answered',ready:'Readiness',risk:'Points at risk',submit:'Submit department',submitted:'Department submitted',needAll:'Answer every question, add a corrective action for each "No", enter your name, then submit.',okAll:'All set. Submitting opens WhatsApp to send the report to the store manager.',wa:'Send report via WhatsApp',savedAt:'Last saved',lockedMsg:'This department is submitted for this month on this device. You can resend the report with the button below.',nameFirst:'Enter your name first',dir:'ltr'}
+};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtN = n => new Intl.NumberFormat('en-US').format(n);
+const pad = n => String(n).padStart(2,'0');
+const now = new Date();
+const curMonth = `${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+const monthName = m => { const [y,mo]=m.split('-').map(Number); try{return new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{month:'long',year:'numeric'}).format(new Date(y,mo-1,1));}catch(e){return m;} };
+const fmtTime = t => { if(!t) return '—'; try{return new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}).format(new Date(t));}catch(e){return new Date(t).toLocaleString();} };
+let toastTimer; function toast(msg){ const el=$('#toast'); el.textContent=msg; el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.hidden=true,2200); }
+
+function calc(d, doc){
+  const a = doc?.answers || {}, n = doc?.notes || {};
+  let answered=0, yes=0, no=0, yesPts=0, noPts=0, missingNotes=0;
+  d.q.forEach((q,i)=>{ const v=a[i]; if(v==='y'){answered++;yes++;yesPts+=q[1];} else if(v==='n'){answered++;no++;noPts+=q[1]; if(!String(n[i]||'').trim()) missingNotes++;} });
+  const total=d.q.length;
+  const pct = Math.round(answered/total*100);
+  const ready = Math.round(yesPts/d.total*100);
+  let status='none';
+  if(doc?.submitted) status='done'; else if(answered===total) status='ready'; else if(answered>0) status='prog';
+  return {answered,total,yes,no,yesPts,noPts,riskPts:d.total-yesPts,pct,ready,status,missingNotes};
+}
+const ST = {none:['لم يبدأ','st-none'],prog:['قيد التنفيذ','st-prog'],ready:['بانتظار الاعتماد','st-ready'],done:['معتمد','st-done']};
+const ST_EN = {none:'Not started',prog:'In progress',ready:'Awaiting submit',done:'Submitted'};
+const chip = (s,lang) => `<span class="chip ${ST[s][1]}">${lang==='en'?ST_EN[s]:ST[s][0]}</span>`;
+function ring(pct,c){ const r=26, C=2*Math.PI*r; return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="32" cy="32" r="${r}" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct/100)}"/></svg>`; }
+
+/* ---------- storage: this device only; reports go to the manager by WhatsApp ---------- */
+const S = { month:curMonth, docs:{}, view:'home', dept:null, isAdmin:false, pending:{}, timers:{} };
+const LKEY = 'qa-s192-v1';
+const local = {
+  all(){ try{return JSON.parse(localStorage.getItem(LKEY)||'{}');}catch(e){return {};} },
+  put(id,data){ try{const a=this.all(); a[id]=data; localStorage.setItem(LKEY,JSON.stringify(a));}catch(e){} }
+};
+const docId = (m,dep) => `${m}_${dep}`;
+function subscribe(){
+  S.docs={};
+  Object.values(local.all()).forEach(v=>{ if(v && v.month===S.month && BY[v.dept]) S.docs[v.dept]=v; });
+  render();
+}
+function scheduleSave(dep){ clearTimeout(S.timers[dep]); S.timers[dep]=setTimeout(()=>flush(dep),300); }
+function flush(dep){
+  const doc=S.docs[dep]; if(!doc) return;
+  doc.updatedAt=Date.now(); local.put(docId(S.month,dep),doc);
+  const el=document.getElementById('saved'); if(el) el.textContent=(BY[dep].lang==='en'?T.en:T.ar).savedAt+': '+fmtTime(doc.updatedAt);
+}
+function docFor(dep){
+  if(!S.docs[dep]) S.docs[dep]={dept:dep,month:S.month,answers:{},notes:{},owner:'',submitted:false};
+  return S.docs[dep];
+}
+function reportText(dep){
+  const d=BY[dep], doc=docFor(dep), r=calc(d,doc), en=d.lang==='en';
+  const L=[];
+  L.push(en?'*Monthly QA Readiness · Branch S192*':'*جاهزية الجودة الشهرية · فرع S192*');
+  L.push((en?'Department: ':'القسم: ')+d.name);
+  L.push((en?'Month: ':'الشهر: ')+(en?new Date(S.month+'-15').toLocaleDateString('en-US',{month:'long',year:'numeric'}):monthName(S.month)));
+  L.push((en?'Department head: ':'المسؤول: ')+(doc.owner||'—'));
+  L.push((en?'Answered: ':'الإنجاز: ')+r.answered+'/'+r.total+(en?' | Readiness: ':' | الجاهزية: ')+r.ready+'%');
+  const no=d.q.map((q,i)=>[q,i]).filter(([q,i])=>doc.answers[i]==='n');
+  if(no.length){
+    L.push('');
+    L.push((en?'❌ Not ready (':'❌ بنود غير جاهزة (')+no.length+'):');
+    no.forEach(([q,i])=>{ L.push(`${i+1}) ${q[0]}`); L.push((en?'   Action: ':'   الإجراء: ')+(doc.notes[i]||'—')); });
+  } else if(r.answered===r.total){ L.push(''); L.push(en?'✅ All items ready':'✅ جميع البنود جاهزة'); }
+  const left=r.total-r.answered;
+  if(left){ L.push(''); L.push((en?'⏳ Not answered yet: ':'⏳ بنود لم تتم الإجابة عليها: ')+left); }
+  return L.join('\n');
+}
+function sendWhatsApp(dep){
+  const a=document.createElement('a');
+  a.href='https://wa.me/?text='+encodeURIComponent(reportText(dep));
+  a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- views ---------- */
+function onData(){
+  if(S.view==='dept'){
+    const ae=document.activeElement;
+    if(ae && (ae.tagName==='TEXTAREA'||ae.tagName==='INPUT')) { updateSheetStats(); return; }
+  }
+  render();
+}
+function render(){
+  $('#tab-home').setAttribute('aria-pressed', S.view!=='admin');
+  $('#tab-admin').setAttribute('aria-pressed', S.view==='admin');
+  if(S.view==='dept' && S.dept) return renderDept();
+  if(S.view==='admin') return renderAdmin();
+  renderHome();
+}
+
+function renderHome(){
+  const done = DEPTS.filter(d=>calc(d,S.docs[d.id]).status==='done').length;
+  $('#app').innerHTML = `
+  <section class="intro">
+    <div><h2>أقسام فرع S192 · ${esc(monthName(S.month))}</h2>
+    <p>اختر قسمك وأجب بـ "نعم" أو "لا" على كل بند، ثم اعتمد القسم ليُرسل التقرير لمدير السوق عبر واتساب. البنود المعلّمة بملاحظة هي ما رصده فريق الجودة في الزيارة السابقة.</p></div>
+    <span class="mode num">${done} / ${DEPTS.length} أقسام معتمدة</span>
+  </section>
+  <div class="grid">${DEPTS.map(d=>{
+    const r=calc(d,S.docs[d.id]); const doc=S.docs[d.id];
+    return `<button class="card" style="--c:${d.c}" data-open="${d.id}">
+      <div class="ring">${ring(r.pct,d.c)}<b class="num">${r.pct}%</b></div>
+      <h3 ${d.lang==='en'?'dir="ltr" style="text-align:right"':''}>${esc(d.name)}</h3>
+      <div class="en">${esc(d.en)} · <span class="num">${d.q.length}</span> ${d.lang==='en'?'items':'بند'}</div>
+      <div class="meta">${chip(r.status)}${doc?.owner?`<span>${esc(doc.owner)}</span>`:''}</div>
+    </button>`;}).join('')}</div>`;
+}
+
+function renderDept(){
+  const d=BY[S.dept], t=d.lang==='en'?T.en:T.ar, doc=docFor(d.id), r=calc(d,doc), locked=!!doc.submitted;
+  $('#app').innerHTML = `
+  <div dir="${t.dir}">
+  <section class="sheet-head" style="--c:${d.c}">
+    <div class="sheet-top">
+      <div><h2>${esc(d.name)}</h2><div class="sub">S192 · ${esc(d.en)} · ${esc(monthName(S.month))} · <span class="num">${d.total}</span> ${t.pts}</div></div>
+      <button class="back" id="back">${t.back}</button>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="fill" style="width:${r.pct}%"></div></div>
+    <div class="stats" id="stats"></div>
+  </section>
+  ${locked?`<div class="locked">${t.lockedMsg}</div>`:''}
+  <div class="who">
+    <label for="owner">${t.who}</label>
+    <input id="owner" value="${esc(doc.owner)}" placeholder="${t.whoPh}" ${locked?'disabled':''} autocomplete="name">
+    <span class="saved num" id="saved">${doc.updatedAt?t.savedAt+': '+fmtTime(doc.updatedAt):''}</span>
+  </div>
+  <div class="qlist">${d.q.map((q,i)=>{
+    const v=doc.answers[i];
+    return `<div class="q ${v==='y'?'is-yes':v==='n'?'is-no':''}" style="--c:${d.c}" id="q${i}">
+      <span class="qn num">${i+1}</span>
+      <div class="qt"><p>${esc(q[0])}</p><div class="qtags"><span class="pts num">${q[1]} ${t.pts}</span>${q[2]?`<span class="prev">${t.prev}${esc(q[2])}</span>`:''}</div></div>
+      <div class="yn" role="group" aria-label="${i+1}">
+        <button class="y" data-a="y" data-i="${i}" aria-pressed="${v==='y'}" ${locked?'disabled':''}>${t.yes}</button>
+        <button class="n" data-a="n" data-i="${i}" aria-pressed="${v==='n'}" ${locked?'disabled':''}>${t.no}</button>
+      </div>
+      <div class="note" ${v==='n'?'':'hidden'}><label for="note${i}">${t.fix}</label>
+        <textarea id="note${i}" data-note="${i}" placeholder="${t.fixPh}" ${locked?'disabled':''}>${esc(doc.notes[i]||'')}</textarea></div>
+    </div>`;}).join('')}</div>
+  <div class="submit-row">
+    ${locked?`<span class="chip st-done">${t.submitted} · ${fmtTime(doc.submittedAt)}</span>`
+      :`<button class="btn" id="submit">${t.submit}</button><span class="hint" id="subhint"></span>`}
+    <button class="btn ghost" id="wa">${t.wa}</button>
+  </div></div>`;
+  updateSheetStats();
+}
+function updateSheetStats(){
+  const d=BY[S.dept]; if(!d) return; const t=d.lang==='en'?T.en:T.ar, doc=docFor(d.id), r=calc(d,doc);
+  const st=$('#stats'); if(!st) return;
+  $('#fill').style.width=r.pct+'%';
+  st.innerHTML=`<div><b class="num">${r.answered}/${r.total}</b>${t.answered}</div><div><b class="num">${r.ready}%</b>${t.ready}</div><div><b class="num">${r.noPts}</b>${t.risk}</div><div>${chip(r.status,d.lang)}</div>`;
+  const sb=$('#submit'), h=$('#subhint');
+  if(sb){ const ok=r.answered===r.total && !r.missingNotes && String(doc.owner||'').trim(); sb.disabled=!ok; h.textContent=ok?t.okAll:t.needAll; }
+}
+
+function renderAdmin(){
+  if(!S.isAdmin){ S.view='home'; return render(); }
+  const rows=DEPTS.map(d=>({d,doc:S.docs[d.id],r:calc(d,S.docs[d.id])}));
+  const tot=rows.reduce((a,x)=>{a.pts+=x.d.total;a.yes+=x.r.yesPts;a.no+=x.r.noPts;a.ans+=x.r.answered;a.q+=x.r.total;return a;},{pts:0,yes:0,no:0,ans:0,q:0});
+  const cnt=s=>rows.filter(x=>x.r.status===s).length;
+  const idle=rows.filter(x=>x.r.status==='none');
+  const issues=[]; rows.forEach(x=>x.d.q.forEach((q,i)=>{ if(x.doc?.answers?.[i]==='n') issues.push({d:x.d,i,q,note:x.doc.notes?.[i]||'',owner:x.doc.owner}); }));
+  issues.sort((a,b)=>b.q[1]-a.q[1]);
+  $('#app').innerHTML=`
+  <section class="intro"><div><h2>لوحة المدير · فرع S192 · ${esc(monthName(S.month))}</h2>
+    <p>متابعة جاهزية كل الأقسام قبل زيارة فريق الجودة: من نفّذ، ومن لم يبدأ، وما البنود المفتوحة.</p></div>
+    <span class="mode">${S.db?'بيانات مشتركة مباشرة':'وضع محلي على هذا الجهاز'}</span></section>
+  <div class="kpis">
+    <div class="kpi"><span>الجاهزية المتوقعة</span><b class="num">${Math.round(tot.yes/tot.pts*100)}%</b><small class="num">${tot.yes} من ${tot.pts} نقطة</small></div>
+    <div class="kpi"><span>الإنجاز</span><b class="num">${Math.round(tot.ans/tot.q*100)}%</b><small class="num">${tot.ans} من ${tot.q} بند تمت الإجابة عليه</small></div>
+    <div class="kpi"><span>أقسام معتمدة</span><b class="num">${cnt('done')} / ${DEPTS.length}</b><small class="num">${cnt('prog')+cnt('ready')} قيد التنفيذ · ${cnt('none')} لم يبدأ</small></div>
+    <div class="kpi"><span>بنود "لا" مفتوحة</span><b class="num" style="color:var(--no)">${issues.length}</b><small class="num">${tot.no} نقطة معرضة للخصم</small></div>
+  </div>
+  <div class="panel"><h3>حالة الأقسام</h3><div class="tbl-wrap"><table>
+    <thead><tr><th>القسم</th><th>الحالة</th><th>المسؤول</th><th>الإنجاز</th><th>الجاهزية</th><th>بنود "لا"</th><th>آخر تحديث</th><th></th></tr></thead>
+    <tbody>${rows.map(x=>`<tr style="--c:${x.d.c}">
+      <td><span class="dot"></span><b>${esc(x.d.name)}</b></td>
+      <td>${chip(x.r.status)}</td>
+      <td>${x.doc?.owner?esc(x.doc.owner):'<span class="hint">—</span>'}</td>
+      <td class="num"><span class="mini"><i style="width:${x.r.pct}%"></i></span>${x.r.answered}/${x.r.total}</td>
+      <td class="num"><b>${x.r.ready}%</b></td>
+      <td class="num" style="color:${x.r.no?'var(--no)':'inherit'}">${x.r.no}</td>
+      <td class="num hint">${fmtTime(x.doc?.updatedAt)}</td>
+      <td><button class="linkbtn" data-open="${x.d.id}">عرض</button>${x.doc?.submitted?`<button class="linkbtn" data-reopen="${x.d.id}">إعادة فتح</button>`:''}</td>
+    </tr>`).join('')}</tbody></table></div></div>
+  <div class="panel"><h3>لم يبدأ بعد (${idle.length})</h3>${idle.length?`<div class="qtags">${idle.map(x=>`<span class="chip st-none" style="color:${x.d.c}">${esc(x.d.name)}</span>`).join('')}</div>`:'<div class="empty">كل الأقسام بدأت العمل.</div>'}</div>
+  <div class="panel"><h3>البنود المفتوحة والإجراءات التصحيحية</h3>
+    ${issues.length?`<div class="issues">${issues.map(x=>`<div class="issue" style="--c:${x.d.c}" ${x.d.lang==='en'?'dir="ltr"':''}>
+      <div class="h"><span class="dot"></span><b>${esc(x.d.name)}</b><span class="num">#${x.i+1}</span><span class="pts num">${x.q[1]} نقطة</span>${x.owner?`<span>${esc(x.owner)}</span>`:''}</div>
+      <p>${esc(x.q[0])}</p>
+      <div class="fix">${x.note?esc(x.note):'<i>لم يُكتب إجراء تصحيحي بعد</i>'}</div></div>`).join('')}</div>`
+    :'<div class="empty">لا توجد بنود مفتوحة لهذا الشهر.</div>'}</div>
+  <div class="panel"><h3>روابط الأقسام للمشاركة</h3>
+    <p class="hint" style="margin-top:0">شارك رابط هذا التطبيق مع رئيس القسم وأضف في نهايته الرمز التالي ليفتح على قسمه مباشرة. امنح رؤساء الأقسام صلاحية المساهمة (Contributor) حتى يقدروا يحفظون إجاباتهم.</p>
+    <div class="share">${DEPTS.map(d=>`<div><span><span class="dot" style="--c:${d.c}"></span>${esc(d.name)}</span><code>#${d.id}</code></div>`).join('')}</div></div>`;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e=>{
+  const open=e.target.closest('[data-open]');
+  if(open){ S.view='dept'; S.dept=open.dataset.open; try{history.replaceState(null,'','#'+S.dept);}catch(_){} render(); window.scrollTo(0,0); return; }
+  if(e.target.closest('#back')){ S.view='home'; S.dept=null; try{history.replaceState(null,'',location.pathname+location.search);}catch(_){} render(); window.scrollTo(0,0); return; }
+  const ans=e.target.closest('[data-a]');
+  if(ans && S.dept){
+    const d=BY[S.dept], doc=docFor(d.id), t=d.lang==='en'?T.en:T.ar;
+    if(doc.submitted) return;
+    const ownerEl=$('#owner'); if(ownerEl && !ownerEl.value.trim()){ toast(t.nameFirst); ownerEl.focus(); return; }
+    const i=+ans.dataset.i, v=ans.dataset.a;
+    doc.answers={...doc.answers}; doc.answers[i] = doc.answers[i]===v ? undefined : v;
+    if(doc.answers[i]===undefined) delete doc.answers[i];
+    const row=$('#q'+i), cur=doc.answers[i];
+    row.classList.toggle('is-yes',cur==='y'); row.classList.toggle('is-no',cur==='n');
+    row.querySelector('.y').setAttribute('aria-pressed',cur==='y'); row.querySelector('.n').setAttribute('aria-pressed',cur==='n');
+    const nt=row.querySelector('.note'); nt.hidden = cur!=='n'; if(cur==='n') nt.querySelector('textarea').focus();
+    updateSheetStats(); scheduleSave(d.id); return;
+  }
+  if(e.target.closest('#submit')){
+    const d=BY[S.dept], doc=docFor(d.id); doc.submitted=true; doc.submittedAt=Date.now();
+    clearTimeout(S.timers[d.id]); flush(d.id); sendWhatsApp(d.id); render(); return;
+  }
+  if(e.target.closest('#wa') && S.dept){ flush(S.dept); sendWhatsApp(S.dept); return; }
+  const re=e.target.closest('[data-reopen]');
+  if(re && S.isAdmin){ const id=re.dataset.reopen, doc=docFor(id); doc.submitted=false; doc.submittedAt=null; S.pending[id]=true; await flush(id); render(); toast('تم إعادة فتح القسم'); return; }
+  if(e.target.closest('#tab-home')){ S.view='home'; S.dept=null; render(); }
+  if(e.target.closest('#tab-admin') && S.isAdmin){ S.view='admin'; S.dept=null; render(); }
+});
+document.addEventListener('input', e=>{
+  if(!S.dept) return; const doc=docFor(S.dept);
+  if(e.target.id==='owner'){ doc.owner=e.target.value; updateSheetStats(); scheduleSave(S.dept); }
+  else if(e.target.dataset.note!==undefined){ doc.notes={...doc.notes,[e.target.dataset.note]:e.target.value}; updateSheetStats(); scheduleSave(S.dept); }
+});
+document.addEventListener('focusout', e=>{ if(S.view==='dept' && (e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')) setTimeout(()=>{ const ae=document.activeElement; if(!ae||(ae.tagName!=='TEXTAREA'&&ae.tagName!=='INPUT')) updateSheetStats(); },0); });
+
+const sel=$('#month');
+(function fillMonths(){ const opts=[]; for(let k=-1;;k++){ const dt=new Date(now.getFullYear(),now.getMonth()+k,1); if(k>0 && (dt.getFullYear()>2027)) break; const m=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}`; opts.push(`<option value="${m}" ${m===curMonth?'selected':''}>${esc(monthName(m))}</option>`);} sel.innerHTML=opts.join(''); })();
+sel.addEventListener('change',()=>{ S.month=sel.value; subscribe(); });
+
+/* ---------- boot ---------- */
+const h=(location.hash||'').slice(1);
+if(BY[h]){ S.view='dept'; S.dept=h; }
+subscribe();
+})();
+</script>
+
+</body>
+</html>
