@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>[hidden]{display:none!important}</style>
-<title>جاهزية الجودة الشهرية فرع S192</title>
+<title>لوحة المدير · جاهزية الجودة S192</title>
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
@@ -305,7 +306,7 @@ const chip = (s,lang) => `<span class="chip ${ST[s][1]}">${lang==='en'?ST_EN[s]:
 function ring(pct,c){ const r=26, C=2*Math.PI*r; return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="32" cy="32" r="${r}" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct/100)}"/></svg>`; }
 
 /* ---------- storage: this device only; reports go to the manager by WhatsApp ---------- */
-const ADMIN_MODE = false;
+const ADMIN_MODE = true;
 const PUBLIC_URL = 'https://fayezkhalid.github.io/faiz-quran-demo/qa-checklist/s192.html';
 const S = { month:curMonth, docs:{}, view:ADMIN_MODE?'admin':'home', dept:null, isAdmin:ADMIN_MODE, readonly:ADMIN_MODE, pending:{}, timers:{} };
 const LKEY = ADMIN_MODE ? 'qa-s192-admin-v1' : 'qa-s192-v1';
