@@ -1,0 +1,347 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>خريطة اللسان</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700&family=Lalezar&display=swap">
+<style>
+/* Layout: one stage card (animated tongue map) over a caption card, scene controls underneath. */
+:root {
+  --bg: #dff2ff;
+  --card: #ffffff;
+  --fg: #16263f;
+  --muted: #53647f;
+  --line: #bcd9ee;
+  --tongue: #f4879b;
+  --tongue-deep: #d9566f;
+  --mouth: #7a1f3a;
+  --sweet: #ff6aa9;
+  --salt: #3aa0ff;
+  --sour: #ffd23f;
+  --bitter: #44c27f;
+  --hot: #ff4a2e;
+  --on-chip: #14213a;
+  --c: #ff6aa9;
+  --font-display: "Lalezar", "Cairo", system-ui, sans-serif;
+  --font-body: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1c33; --card: #1a2b49; --fg: #eef5ff; --muted: #a9bad4; --line: #2f4670;
+    --tongue: #f0758c; --tongue-deep: #c94762; --mouth: #4a1226;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1c33; --card: #1a2b49; --fg: #eef5ff; --muted: #a9bad4; --line: #2f4670;
+  --tongue: #f0758c; --tongue-deep: #c94762; --mouth: #4a1226;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-inline: 16px; padding-block: 20px 28px;
+  direction: rtl;
+}
+.wrap { max-width: 460px; margin-inline: auto; display: flex; flex-direction: column; gap: 14px; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; margin: 0; text-align: center; letter-spacing: .01em; }
+
+.progress { display: flex; gap: 6px; }
+.progress button {
+  flex: 1; height: 10px; border: 0; padding: 0; border-radius: 99px; cursor: pointer;
+  background: var(--line); position: relative; overflow: hidden;
+}
+.progress button::after {
+  content: ""; position: absolute; inset: 0; background: var(--c); border-radius: inherit;
+  transform: scaleX(0); transform-origin: right;
+}
+.progress button.done::after { transform: scaleX(1); }
+.progress button.now::after { animation: fill var(--dur, 5200ms) linear forwards; }
+.paused .progress button.now::after { animation-play-state: paused; }
+@keyframes fill { to { transform: scaleX(1); } }
+button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+
+.stage {
+  direction: ltr; position: relative; background: var(--card); border: 2px solid var(--line);
+  border-radius: 28px; overflow: hidden; aspect-ratio: 1 / 1.08; width: 100%;
+  display: grid; place-items: center;
+}
+.stage::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--c) 28%, transparent), transparent 62%);
+  transition: background .5s;
+}
+.mouth { position: relative; height: 94%; aspect-ratio: 3 / 4; }
+.mouth svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.tongue-wrap.shake { animation: shake .6s .55s ease-in-out; transform-origin: 50% 90%; }
+@keyframes shake { 0%,100% { transform: rotate(0) } 20% { transform: rotate(-3deg) } 40% { transform: rotate(3deg) } 60% { transform: rotate(-2deg) } 80% { transform: rotate(2deg) } }
+.zone { opacity: 0; transition: opacity .45s; }
+.zone.on { opacity: .95; }
+.zone.on.pulse { animation: pulse 1.1s ease-in-out infinite; }
+.paused .zone.on.pulse { animation-play-state: paused; }
+@keyframes pulse { 50% { opacity: .62; } }
+.heat { opacity: 0; transition: opacity .4s; }
+.heat.on { opacity: .8; animation: pulse .5s ease-in-out infinite; }
+
+.food {
+  position: absolute; font-size: clamp(2.8rem, 15vw, 4.2rem); line-height: 1; transform: translate(-50%, -50%);
+  opacity: 0; filter: drop-shadow(0 6px 4px rgba(0,0,0,.18)); pointer-events: none;
+}
+.food.go { animation: drop 1.3s cubic-bezier(.3,1.4,.5,1) forwards; }
+.paused .food.go { animation-play-state: paused; }
+@keyframes drop {
+  0% { opacity: 0; transform: translate(-50%, -190%) scale(1.5) rotate(-18deg); }
+  35% { opacity: 1; }
+  70% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(.9) rotate(0); }
+}
+.bubble {
+  position: absolute; top: 14px; inset-inline-end: 14px; direction: rtl;
+  background: var(--c); color: var(--on-chip); font-family: var(--font-display); font-size: 1.5rem;
+  padding: 4px 18px 6px; border-radius: 22px 22px 22px 6px; opacity: 0; transform: scale(.4);
+}
+.bubble.go { animation: pop .5s .7s cubic-bezier(.3,1.7,.5,1) forwards; }
+.paused .bubble.go { animation-play-state: paused; }
+@keyframes pop { to { opacity: 1; transform: scale(1) rotate(-4deg); } }
+
+.caption {
+  background: var(--card); border: 2px solid var(--line); border-radius: 22px; padding: 16px 18px 18px;
+  display: flex; flex-direction: column; gap: 8px; min-height: 9.5rem;
+}
+.chip {
+  align-self: flex-start; background: var(--c); color: var(--on-chip); font-weight: 700; font-size: .85rem;
+  padding: 2px 14px; border-radius: 99px; transition: background .4s;
+}
+.caption h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.75rem; line-height: 1.25; margin: 0; text-wrap: balance; }
+.caption p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+.caption .fact { color: var(--fg); }
+.caption.swap > * { animation: rise .45s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+.credit {
+  display: none; flex-direction: column; align-items: center; text-align: center; gap: 2px;
+  background: var(--card); border: 2px dashed var(--c); border-radius: 22px; padding: 12px 16px;
+}
+.credit.on { display: flex; }
+.credit small { color: var(--muted); font-weight: 700; font-size: .9rem; }
+.credit strong { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; line-height: 1.3; }
+.credit span { font-weight: 700; font-size: 1.05rem; }
+
+.legend { display: none; flex-wrap: wrap; gap: 8px; }
+.legend.on { display: flex; }
+.legend button {
+  font-family: var(--font-body); font-weight: 700; font-size: .95rem; cursor: pointer;
+  background: var(--k); color: var(--on-chip); border: 0; border-radius: 99px; padding: 4px 14px;
+}
+
+.controls { display: flex; gap: 10px; justify-content: center; }
+.controls button {
+  font-family: var(--font-body); font-weight: 700; font-size: 1rem; cursor: pointer;
+  background: var(--card); color: var(--fg); border: 2px solid var(--line); border-radius: 99px; padding: 6px 20px;
+}
+.controls button.main { background: var(--c); color: var(--on-chip); border-color: transparent; min-width: 8.5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zone.on.pulse, .heat.on, .tongue-wrap.shake { animation: none; }
+  .food.go { animation: none; opacity: 1; transform: translate(-50%, -50%); }
+  .bubble.go { animation: none; opacity: 1; transform: none; }
+  .caption.swap > * { animation: none; }
+}
+</style>
+
+<main class="wrap" id="app">
+  <h1>خريطة اللسان</h1>
+
+  <div class="progress" id="progress" aria-label="مشاهد المقطع"></div>
+
+  <div class="stage" id="stage">
+    <div class="mouth" id="mouth">
+      <svg viewBox="0 0 300 400" role="img" aria-label="لسان مقسّم إلى مناطق ملوّنة حسب نوع الطعم">
+        <defs>
+          <clipPath id="tongueClip">
+            <path id="tonguePath" d="M150 20 C82 20 54 88 60 168 C65 258 68 328 98 368 C120 394 180 394 202 368 C232 328 235 258 240 168 C246 88 218 20 150 20 Z"/>
+          </clipPath>
+        </defs>
+        <g class="tongue-wrap" id="tongueWrap">
+          <path d="M150 20 C82 20 54 88 60 168 C65 258 68 328 98 368 C120 394 180 394 202 368 C232 328 235 258 240 168 C246 88 218 20 150 20 Z" fill="var(--tongue)" stroke="var(--tongue-deep)" stroke-width="5"/>
+          <g clip-path="url(#tongueClip)">
+            <ellipse class="zone" data-z="sweet"  cx="150" cy="52"  rx="82" ry="62" fill="var(--sweet)"/>
+            <ellipse class="zone" data-z="salt"   cx="58"  cy="150" rx="50" ry="58" fill="var(--salt)"/>
+            <ellipse class="zone" data-z="salt"   cx="242" cy="150" rx="50" ry="58" fill="var(--salt)"/>
+            <ellipse class="zone" data-z="sour"   cx="62"  cy="250" rx="46" ry="58" fill="var(--sour)"/>
+            <ellipse class="zone" data-z="sour"   cx="238" cy="250" rx="46" ry="58" fill="var(--sour)"/>
+            <ellipse class="zone" data-z="bitter" cx="150" cy="352" rx="82" ry="54" fill="var(--bitter)"/>
+            <rect class="heat" x="0" y="0" width="300" height="400" fill="var(--hot)"/>
+            <path d="M150 70 L150 330" stroke="var(--tongue-deep)" stroke-width="4" stroke-linecap="round" opacity=".45" fill="none"/>
+            <g fill="#ffffff" opacity=".55" id="buds"></g>
+          </g>
+          <path d="M150 20 C82 20 54 88 60 168 C65 258 68 328 98 368 C120 394 180 394 202 368 C232 328 235 258 240 168 C246 88 218 20 150 20 Z" fill="none" stroke="var(--tongue-deep)" stroke-width="5"/>
+        </g>
+      </svg>
+      <div class="food" id="food"></div>
+    </div>
+    <div class="bubble" id="bubble"></div>
+  </div>
+
+  <section class="caption" id="caption" aria-live="polite">
+    <span class="chip" id="chip"></span>
+    <h2 id="title"></h2>
+    <p id="text"></p>
+  </section>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="credit" id="credit">
+    <small>عمل الطالب</small>
+    <strong>خالد فايز الكريديس</strong>
+    <span>مدارس الرواد</span>
+  </div>
+
+  <div class="controls">
+    <button type="button" id="prev">السابق</button>
+    <button type="button" id="play" class="main">إيقاف</button>
+    <button type="button" id="next">التالي</button>
+  </div>
+</main>
+
+<script>
+(function () {
+  var DUR = 5200;
+  var SCENES = [
+    { id: 'intro', c: 'var(--sweet)', chip: 'البداية', title: 'لسانك ساحر!',
+      text: 'على لسانك آلاف البراعم الصغيرة اللي تحس بالطعم. يلا نشوف كل منطقة وش تحس!', zones: [] },
+    { id: 'sweet', c: 'var(--sweet)', chip: 'الطرف', title: 'طرف اللسان: الحلو',
+      text: 'آيسكريم؟ شوكولاتة؟ طرف لسانك أول واحد يقول: ممم لذيذ!',
+      zones: ['sweet'], food: '🍦', fx: 50, fy: 15, say: 'ممم! حلو!' },
+    { id: 'salt', c: 'var(--salt)', chip: 'الجوانب من قدام', title: 'جوانب اللسان الأمامية: المالح',
+      text: 'البطاطس المقرمشة فيها ملح. جوانب لسانك من قدام تحسّه بسرعة!',
+      zones: ['salt'], food: '🍟', fx: 20, fy: 38, say: 'مالح!' },
+    { id: 'sour', c: 'var(--sour)', chip: 'الجوانب من ورا', title: 'جوانب اللسان الخلفية: الحامض',
+      text: 'عضّيت ليمونة؟ وجهك يتغيّر! الحامض تحسّه الجوانب الخلفية.',
+      zones: ['sour'], food: '🍋', fx: 20, fy: 62, say: 'يييي! حامض!' },
+    { id: 'bitter', c: 'var(--bitter)', chip: 'آخر اللسان', title: 'عمق اللسان: المُرّ',
+      text: 'قهوة سادة أو جرجير؟ آخر اللسان ينتبه فورًا للطعم المُرّ.',
+      zones: ['bitter'], food: '☕', fx: 50, fy: 87, say: 'يععع! مُرّ!' },
+    { id: 'hot', c: 'var(--hot)', chip: 'كل اللسان', title: 'الحار (السبايسي) 🌶️',
+      text: 'الحار مو طعم! هو إحساس سخونة يحسّه كل اللسان مرة وحدة.',
+      zones: [], hot: true, food: '🌶️', fx: 50, fy: 40, say: 'آآخ! حار!' },
+    { id: 'end', c: 'var(--sweet)', chip: 'الخريطة كاملة', title: 'شفت الخريطة؟',
+      text: 'معلومة للأذكياء: كل أجزاء اللسان تحس بكل الطعوم، بس بعض المناطق أحسّ شوي بطعم معيّن. جرّب بنفسك!',
+      zones: ['sweet', 'salt', 'sour', 'bitter'], all: true }
+  ];
+
+  var el = function (id) { return document.getElementById(id); };
+  var app = el('app'), stage = el('stage');
+  var cur = -1, playing = true, remaining = DUR, startedAt = 0, timer = null;
+
+  // taste buds: small dots placed on a fixed grid (no randomness so the picture is stable)
+  var buds = el('buds'), ns = 'http://www.w3.org/2000/svg';
+  for (var y = 46; y < 380; y += 17) {
+    for (var x = 78; x < 230; x += 17) {
+      var off = (Math.round((y - 46) / 17) % 2) * 8;
+      var d = document.createElementNS(ns, 'circle');
+      d.setAttribute('cx', x + off); d.setAttribute('cy', y); d.setAttribute('r', 2.4);
+      buds.appendChild(d);
+    }
+  }
+
+  // progress bar buttons
+  var prog = el('progress');
+  SCENES.forEach(function (s, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('aria-label', 'المشهد ' + (i + 1) + ': ' + s.title);
+    b.addEventListener('click', function () { go(i); });
+    prog.appendChild(b);
+  });
+
+  // legend (end scene)
+  var LEG = [['حلو', 'var(--sweet)', 1], ['مالح', 'var(--salt)', 2], ['حامض', 'var(--sour)', 3], ['مُرّ', 'var(--bitter)', 4], ['حار', 'var(--hot)', 5]];
+  var legend = el('legend');
+  LEG.forEach(function (l) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = l[0]; b.style.setProperty('--k', l[1]);
+    b.addEventListener('click', function () { go(l[2]); });
+    legend.appendChild(b);
+  });
+
+  function restart(node, cls) { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
+
+  function render(i) {
+    var s = SCENES[i];
+    app.style.setProperty('--c', s.c);
+    stage.style.setProperty('--c', s.c);
+    document.querySelectorAll('.zone').forEach(function (z) {
+      var on = s.zones.indexOf(z.getAttribute('data-z')) > -1;
+      z.classList.toggle('on', on);
+      z.classList.toggle('pulse', on && !s.all);
+    });
+    el('mouth').querySelector('.heat').classList.toggle('on', !!s.hot);
+
+    var food = el('food'), bubble = el('bubble'), wrap = el('tongueWrap');
+    food.classList.remove('go'); bubble.classList.remove('go'); wrap.classList.remove('shake');
+    if (s.food) {
+      food.textContent = s.food;
+      food.style.left = s.fx + '%'; food.style.top = s.fy + '%';
+      bubble.textContent = s.say;
+      restart(food, 'go'); restart(bubble, 'go'); restart(wrap, 'shake');
+    }
+
+    el('chip').textContent = s.chip;
+    el('title').textContent = s.title;
+    el('text').textContent = s.text;
+    el('text').className = s.all ? 'fact' : '';
+    legend.classList.toggle('on', !!s.all);
+    el('credit').classList.toggle('on', !!s.all);
+    restart(el('caption'), 'swap');
+
+    var bs = prog.children;
+    for (var k = 0; k < bs.length; k++) {
+      bs[k].classList.toggle('done', k < i);
+      bs[k].classList.remove('now');
+    }
+    void prog.offsetWidth;
+    bs[i].classList.add('now');
+    prog.style.setProperty('--dur', DUR + 'ms');
+  }
+
+  function schedule() {
+    clearTimeout(timer);
+    if (!playing) return;
+    startedAt = Date.now();
+    timer = setTimeout(function () {
+      if (cur < SCENES.length - 1) { go(cur + 1); } else { playing = false; syncPlay(); }
+    }, remaining);
+  }
+
+  function go(i) {
+    cur = Math.max(0, Math.min(SCENES.length - 1, i));
+    remaining = DUR;
+    render(cur);
+    if (cur === SCENES.length - 1) {
+      // last scene: hold, no auto-advance
+      clearTimeout(timer); playing = false; syncPlay();
+      prog.children[cur].classList.remove('now'); prog.children[cur].classList.add('done');
+      return;
+    }
+    schedule();
+  }
+
+  function syncPlay() {
+    app.classList.toggle('paused', !playing);
+    var atEnd = cur === SCENES.length - 1;
+    el('play').textContent = atEnd ? 'إعادة من البداية' : (playing ? 'إيقاف' : 'تشغيل');
+  }
+
+  el('play').addEventListener('click', function () {
+    if (cur === SCENES.length - 1) { playing = true; go(0); syncPlay(); return; }
+    if (playing) { remaining = Math.max(300, remaining - (Date.now() - startedAt)); playing = false; clearTimeout(timer); }
+    else { playing = true; schedule(); }
+    syncPlay();
+  });
+  el('next').addEventListener('click', function () { var was = playing; go(cur + 1); if (cur < SCENES.length - 1) { playing = was; syncPlay(); schedule(); } });
+  el('prev').addEventListener('click', function () { var was = playing || cur === SCENES.length - 1; go(cur - 1); playing = was; syncPlay(); schedule(); });
+
+  go(0); syncPlay();
+})();
+</script>
+
+</body></html>

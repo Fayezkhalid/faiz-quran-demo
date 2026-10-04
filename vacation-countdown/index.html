@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>العد التنازلي للإجازة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#080B12;
+    --bg-1:#0F131C;
+    --panel:#151A24;
+    --panel-2:#1B2130;
+    --gold:#D9A441;
+    --gold-dim:#8A6A2A;
+    --sand:#E8DEC8;
+    --ink:#EFECE3;
+    --ink-dim:#9AA2B2;
+    --line:#262C3A;
+    --ok:#3FA37A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1100px 500px at 85% -10%, rgba(217,164,65,0.10), transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, rgba(63,163,122,0.06), transparent 60%),
+      var(--bg-0);
+    color:var(--ink);
+    font-family:'Tajawal', sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px 60px;
+    position:relative;
+    overflow-x:hidden;
+  }
+  /* faint stars */
+  .stars{position:fixed; inset:0; pointer-events:none; z-index:0;}
+  .stars span{
+    position:absolute; width:2px; height:2px; background:var(--sand);
+    border-radius:50%; opacity:.35; animation:twinkle 4s ease-in-out infinite;
+  }
+  @keyframes twinkle{0%,100%{opacity:.15;}50%{opacity:.7;}}
+
+  .wrap{position:relative; z-index:1; width:100%; max-width:640px;}
+
+  .eyebrow{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; letter-spacing:.12em; color:var(--gold);
+    text-transform:uppercase; margin-bottom:10px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--ok); box-shadow:0 0 8px var(--ok);}
+
+  h1{
+    text-align:center; font-size:26px; font-weight:900; margin:0 0 4px;
+    color:var(--ink);
+  }
+  .sub{
+    text-align:center; color:var(--ink-dim); font-size:14px; margin-bottom:28px;
+  }
+
+  /* Departure board */
+  .board{
+    background:linear-gradient(180deg, var(--panel), var(--bg-1));
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:26px 18px 22px;
+    box-shadow:0 30px 60px -25px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.03);
+    position:relative;
+  }
+  .board::before{
+    content:"المغادرة الى الإجازة السنوية";
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--ink-dim);
+    text-align:center;
+    margin-bottom:18px;
+  }
+
+  .flaps{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+  }
+  .flap-unit{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .flap{
+    width:100%;
+    aspect-ratio:1/1.05;
+    background:linear-gradient(180deg,#20273A,#12151D);
+    border:1px solid #2C3348;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05), inset 0 -8px 14px rgba(0,0,0,.35);
+    overflow:hidden;
+  }
+  .flap::after{
+    content:"";
+    position:absolute; left:0; right:0; top:50%;
+    height:1px; background:rgba(0,0,0,.55);
+  }
+  .flap-num{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:800;
+    font-size:clamp(28px, 8vw, 44px);
+    color:var(--gold);
+    text-shadow:0 0 18px rgba(217,164,65,.35);
+    letter-spacing:0;
+  }
+  .flap-label{
+    font-size:12px; color:var(--ink-dim); letter-spacing:.04em;
+  }
+
+  .flip{ animation:flipDown .5s ease; }
+  @keyframes flipDown{
+    0%{ transform:rotateX(0deg); filter:brightness(1); }
+    45%{ transform:rotateX(85deg); filter:brightness(1.3); }
+    55%{ transform:rotateX(85deg); }
+    100%{ transform:rotateX(0deg); filter:brightness(1); }
+  }
+
+  .route{
+    margin-top:22px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+  }
+  .route .city{color:var(--ink); font-weight:700; font-size:14px;}
+  .route .date{color:var(--ink-dim); margin-top:2px;}
+  .route .mid{flex:1; display:flex; align-items:center; justify-content:center; color:var(--gold-dim); gap:6px;}
+  .route .mid .line{width:40px; height:1px; background:var(--line);}
+  .route .mid svg{width:16px; height:16px; fill:var(--gold);}
+
+  .status-row{
+    margin-top:16px; display:flex; align-items:center; justify-content:center; gap:8px;
+    font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim);
+  }
+  .status-row b{color:var(--gold); font-weight:700;}
+
+  .card{
+    margin-top:22px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px 18px;
+  }
+  .card h2{
+    margin:0 0 4px; font-size:15px; font-weight:700; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .card p{margin:4px 0 14px; font-size:13px; color:var(--ink-dim); line-height:1.7;}
+
+  .btn{
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:linear-gradient(180deg, var(--gold), #B9863A);
+    color:#191204;
+    font-family:'Tajawal', sans-serif;
+    font-weight:700; font-size:14px;
+    border:none; border-radius:10px;
+    padding:13px 16px;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    box-shadow:0 10px 20px -8px rgba(217,164,65,.4);
+  }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 14px 24px -8px rgba(217,164,65,.5); }
+  .btn:active{ transform:translateY(0); }
+  .btn.secondary{
+    background:transparent; color:var(--ink); border:1px solid var(--line);
+    box-shadow:none;
+  }
+  .btn:disabled{opacity:.5; cursor:default; transform:none; box-shadow:none;}
+
+  .note{
+    display:flex; gap:8px; align-items:flex-start;
+    background:rgba(217,164,65,.06);
+    border:1px solid rgba(217,164,65,.2);
+    border-radius:10px;
+    padding:10px 12px; margin-top:12px;
+    font-size:12px; color:var(--ink-dim); line-height:1.7;
+  }
+  .note svg{flex-shrink:0; width:16px; height:16px; fill:var(--gold); margin-top:2px;}
+
+  .footer{
+    margin-top:26px; text-align:center; font-size:11px; color:#5A6070;
+    font-family:'JetBrains Mono', monospace; letter-spacing:.04em;
+  }
+
+  .done{
+    text-align:center; padding:30px 10px;
+  }
+  .done .big{font-size:44px; margin-bottom:6px;}
+  .done h3{margin:0 0 6px; font-size:20px; color:var(--gold);}
+  .done p{color:var(--ink-dim); font-size:13px;}
+
+  @media (max-width:420px){
+    .flaps{gap:7px;}
+    .flap-label{font-size:10.5px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="wrap">
+  <div class="eyebrow"><span class="dot"></span> STATUS: SCHEDULED</div>
+  <h1>إجازتي السنوية على الأبواب</h1>
+  <div class="sub">من بريدة، القصيم — إلى وقتك الخاص تمامًا</div>
+
+  <div class="board" id="boardArea">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="route">
+    <div>
+      <div class="city">بريدة</div>
+      <div class="date">اليوم</div>
+    </div>
+    <div class="mid">
+      <div class="line"></div>
+      <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2.5 1.8V22l3.5-1 3.5 1v-1.2L12 19v-5.5l9 2.5z"/></svg>
+      <div class="line"></div>
+    </div>
+    <div style="text-align:left">
+      <div class="city">إجازة</div>
+      <div class="date">28 أكتوبر 2026</div>
+    </div>
+  </div>
+
+  <div class="status-row" id="statusRow"></div>
+
+  <div class="card">
+    <h2>🔔 تنبيه يومي بالعد التنازلي</h2>
+    <p>فعّل الإشعارات وعند فتح هذه الصفحة كل يوم، ستصلك رسالة تخبرك كم تبقّى بالضبط على بداية إجازتك.</p>
+    <button class="btn" id="notifyBtn">تفعيل التنبيه اليومي</button>
+    <div class="note">
+      <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+      <span>ملاحظة مهمة: هذا التنبيه يعمل عند فتح الصفحة (يشبه تطبيق ويب وليس تطبيقًا مثبتًا)، فهو لا يستطيع إرسال إشعار من تلقاء نفسه والهاتف مقفل أو الصفحة مغلقة تمامًا. لضمان تذكير يومي فعلي حتى لو لم تفتح الصفحة، أنصحك بإضافة حدث تقويم يتكرر يوميًا حتى 28 أكتوبر — أقدر أجهزه لك مباشرة إذا حبيت.</span>
+    </div>
+  </div>
+
+  <div class="footer">S192 · BURAIDAH AL QASSIM · ANNUAL LEAVE 28/10/2026 → 01/12/2026</div>
+</div>
+
+<script>
+  // ---- Config ----
+  const TARGET = new Date("2026-10-28T00:00:00+03:00").getTime();
+  const RETURN = new Date("2026-12-02T00:00:00+03:00").getTime();
+
+  // ---- Starfield ----
+  const starsEl = document.getElementById('stars');
+  for(let i=0;i<50;i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100+'%';
+    s.style.top = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*4)+'s';
+    starsEl.appendChild(s);
+  }
+
+  // ---- Board render ----
+  const boardArea = document.getElementById('boardArea');
+  const statusRow = document.getElementById('statusRow');
+  let prevVals = {d:null,h:null,m:null,s:null};
+
+  function buildBoard(){
+    boardArea.innerHTML = `
+      <div class="flaps">
+        <div class="flap-unit"><div class="flap"><span class="flap-num" id="d">--</span></div><div class="flap-label">يوم</div></div>
+        <div class="flap-unit"><div class="flap"><span class="flap-num" id="h">--</span></div><div class="flap-label">ساعة</div></div>
+        <div class="flap-unit"><div class="flap"><span class="flap-num" id="m">--</span></div><div class="flap-label">دقيقة</div></div>
+        <div class="flap-unit"><div class="flap"><span class="flap-num" id="s">--</span></div><div class="flap-label">ثانية</div></div>
+      </div>`;
+  }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function tick(){
+    const now = Date.now();
+    let diff = TARGET - now;
+
+    if(diff <= 0){
+      if(now < RETURN){
+        boardArea.innerHTML = `
+          <div class="done">
+            <div class="big">🏖️</div>
+            <h3>إجازتك بدأت الآن — استمتع!</h3>
+            <p>موعد العودة المخطط: 2 ديسمبر 2026</p>
+          </div>`;
+        statusRow.innerHTML = '<b>STATUS:</b> ON LEAVE';
+      } else {
+        boardArea.innerHTML = `
+          <div class="done">
+            <div class="big">✅</div>
+            <h3>انتهت فترة الإجازة</h3>
+            <p>نتمنى أنها كانت راحة حقيقية</p>
+          </div>`;
+        statusRow.innerHTML = '<b>STATUS:</b> COMPLETED';
+      }
+      return;
+    }
+
+    const d = Math.floor(diff/(1000*60*60*24));
+    const h = Math.floor((diff/(1000*60*60))%24);
+    const m = Math.floor((diff/(1000*60))%60);
+    const s = Math.floor((diff/1000)%60);
+
+    setFlap('d', pad(d));
+    setFlap('h', pad(h));
+    setFlap('m', pad(m));
+    setFlap('s', pad(s));
+
+    statusRow.innerHTML = `<b>${d}</b> يوم متبقي على الإجازة`;
+  }
+
+  function setFlap(id, val){
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(prevVals[id] !== val){
+      el.textContent = val;
+      el.classList.remove('flip');
+      void el.offsetWidth;
+      el.classList.add('flip');
+      prevVals[id] = val;
+    }
+  }
+
+  buildBoard();
+  tick();
+  setInterval(tick, 1000);
+
+  // ---- Daily notification ----
+  const notifyBtn = document.getElementById('notifyBtn');
+
+  function daysLeft(){
+    return Math.max(0, Math.ceil((TARGET - Date.now())/(1000*60*60*24)));
+  }
+
+  function maybeNotifyToday(){
+    if(Notification.permission !== 'granted') return;
+    const todayKey = new Date().toISOString().slice(0,10);
+    let last = null;
+    try{ last = localStorage.getItem('vacation_last_notified'); }catch(e){ last = null; }
+
+    if(last !== todayKey){
+      const dleft = daysLeft();
+      const body = dleft > 0
+        ? `تبقّى ${dleft} يوم على بداية إجازتك (28 أكتوبر 2026)`
+        : 'إجازتك بدأت اليوم — استمتع!';
+      try{
+        new Notification('عداد الإجازة', { body, icon: '' });
+      }catch(e){}
+      try{ localStorage.setItem('vacation_last_notified', todayKey); }catch(e){}
+    }
+  }
+
+  function refreshButtonState(){
+    if(!('Notification' in window)){
+      notifyBtn.textContent = 'الإشعارات غير مدعومة على هذا المتصفح';
+      notifyBtn.disabled = true;
+      return;
+    }
+    if(Notification.permission === 'granted'){
+      notifyBtn.textContent = '✓ التنبيه اليومي مفعّل';
+      notifyBtn.disabled = true;
+      maybeNotifyToday();
+    } else if(Notification.permission === 'denied'){
+      notifyBtn.textContent = 'الإشعارات محظورة من إعدادات المتصفح';
+      notifyBtn.disabled = true;
+    }
+  }
+
+  notifyBtn.addEventListener('click', async () => {
+    if(!('Notification' in window)) return;
+    const perm = await Notification.requestPermission();
+    if(perm === 'granted'){
+      new Notification('تم التفعيل ✅', { body: `سيصلك تنبيه يومي بعدد الأيام المتبقية. متبقي حاليًا ${daysLeft()} يوم.` });
+      try{ localStorage.setItem('vacation_last_notified', new Date().toISOString().slice(0,10)); }catch(e){}
+    }
+    refreshButtonState();
+  });
+
+  refreshButtonState();
+</script>
+
+</body>
+</html>
