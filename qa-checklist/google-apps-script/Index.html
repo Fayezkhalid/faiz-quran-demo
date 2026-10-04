@@ -146,6 +146,9 @@ tr:last-child td{border-bottom:0}
 .login label{font-weight:600}
 .login input{flex:1 1 160px;min-width:0;background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;color:var(--ink);letter-spacing:.2em}
 @media (max-width:560px){.links div{grid-template-columns:1fr auto}.links div>span{grid-column:1/-1}}
+.rep{font-size:12px;color:#fff;background:var(--no);padding:2px 9px;border-radius:8px;font-weight:700}
+.lv{font-size:12px;color:var(--muted)}
+.sheet-head .alert{background:rgba(0,0,0,.18);border-radius:10px;padding:6px 10px;font-weight:600;opacity:1}
 .empty{color:var(--muted);font-size:14px;padding:6px 0}
 .toast{position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom,0px));margin:auto;width:max-content;max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:20}
 @media (max-width:560px){
@@ -203,74 +206,121 @@ const A = {
   expsep:'المنتجات المنتهية / التالفة / المرتجعة مخزنة في أماكن منفصلة وعليها ملصقات.'
 };
 const DEPTS = [
- {id:'deli',name:'الديلي',en:'Deli',c:'#cf3f35',q:[
-  [A.hyg,4],[A.fc,4,EQP],[A.nfc,4,'ثلاجة العرض تحتاج تنظيف'],[A.pk,2],
-  ['جميع المنتجات في العرض والتخزين عليها ملصقات، وتطبيق مبدأ FIFO.',4,'بعض البهارات بدون تاريخ صلاحية أصلي، ويجب وضع الملصق على المنتج مباشرة وليس على التغليف'],
+ {id:'deli',name:'الديلي',en:'Deli',c:'#cf3f35',last:[61, 65, 55],q:[
+  [A.hyg,4],
+  [A.fc,4,"مشبك الأسعار (Price clip) صدئ ويحتاج تغيير",1],
+  [A.nfc,4],
+  [A.pk,2],
+  ['جميع المنتجات في العرض والتخزين عليها ملصقات، وتطبيق مبدأ FIFO.',4,"بعض الأصناف بدون تاريخ الصلاحية الأصلي",1],
   ['إجراء الجودة في الديلي مطبق، وجميع المنتجات مخزنة على الحرارة المطلوبة ويتم فحص جودتها وطزاجتها.',4],
   [A.fruit,2],
-  ['درجة حرارة الحفظ الساخن للدجاج المشوي صحيحة (أعلى من 65°م) والسجلات معبأة بشكل صحيح.',4,'سجلات الطبخ لم تكن متوفرة'],
+  ['درجة حرارة الحفظ الساخن للدجاج المشوي صحيحة (أعلى من 65°م) والسجلات معبأة بشكل صحيح.',4],
   ['درجة حرارة الطبخ صحيحة (أعلى من 75°م) والسجلات معبأة بشكل صحيح.',4],
   ['ميزان الحرارة (Probe Thermometer) متوفر ونظيف ويعمل بشكل سليم.',2],
   ['المنتجات في العرض والتخزين مطابقة لمتطلبات الجودة ولمدة الصلاحية حسب تعليمات المصنع.',2],
-  [A.temp,2],[A.tis,2],[A.color,2],[A.sink,2],[A.exp,5],
+  [A.temp,2],
+  [A.tis,2],
+  [A.color,2],
+  [A.sink,2],
+  [A.exp,5],
   ['الزيتون والأجبان واللحوم المُخرجة من العلب مفتوحة بطريقة صحيحة، ولا توجد علامات صدأ على العلب.',2],
-  [A.cross,2],[A.clean,2],[A.exparea,2],[A.proddef,4],[A.chem,2],[A.bins,2]]},
- {id:'bakery',name:'المخبوزات',en:'Bakery',c:'#c27212',q:[
-  [A.hyg,4],[A.fc,4,EQP],[A.nfc,4],[A.pk,2],[A.exp,5],
-  ['جميع المنتجات المعروضة والمخزنة عليها ملصقات، والمعلبات بعد فتحها توضع في حاويات بلاستيكية أو ستانلس ستيل، وتطبيق مبدأ الوارد أولاً يصرف أولاً (FIFO).',4,'بعض المكونات بدون تاريخ الصلاحية الأصلي'],
+  [A.cross,2],
+  [A.clean,2],
+  [A.exparea,2],
+  [A.proddef,4],
+  [A.chem,2],
+  [A.bins,2]]},
+ {id:'bakery',name:'المخبوزات',en:'Bakery',c:'#c27212',last:[46, 51, 43],q:[
+  [A.hyg,4],
+  [A.fc,4,"المعدات تحتاج تنظيف وتعقيم بعد الاستخدام",1],
+  [A.nfc,4],
+  [A.pk,2],
+  [A.exp,5],
+  ['جميع المنتجات المعروضة والمخزنة عليها ملصقات، والمعلبات بعد فتحها توضع في حاويات بلاستيكية أو ستانلس ستيل، وتطبيق مبدأ الوارد أولاً يصرف أولاً (FIFO).',4,"الملصق يجب أن يكون على المنتج مباشرة وليس على التغليف لتجنب التلاعب",1],
   ['غسل وتعقيم الفواكه قبل استخدامها في التحضير، والسجلات متوفرة ومعبأة بشكل صحيح.',2],
   ['المنتجات المعروضة مطابقة لمتطلبات الجودة والطزاجة، وجميعها معروضة على درجات الحرارة المطلوبة.',4],
-  [A.exparea,2],[A.temp,2],[A.sink,2],[A.color,2],[A.tis,2],[A.clean,2],
-  [A.proddef,4,'لم يتم اتباع إجراء فك التجميد، وقائمة الإنتاج تحتاج تحديث'],
-  ['سجل فحص الاستلام (Receiving Inspection Record) معبأ ومكتمل بشكل صحيح.',2],
-  [A.chem,2],[A.bins,2]]},
- {id:'produce',name:'Fresh Produce',en:'الخضار والفواكه',c:'#3b8f2f',lang:'en',q:[
+  [A.exparea,2],
+  [A.temp,2],
+  [A.sink,2],
+  [A.color,2],
+  [A.tis,2],
+  [A.clean,2],
+  [A.proddef,4],
+  ['سجل فحص الاستلام (Receiving Inspection Record) معبأ ومكتمل بشكل صحيح.',2,"فاتورة استلام C.B لم تكن متوفرة في القسم"],
+  [A.chem,2],
+  [A.bins,2]]},
+ {id:'produce',name:'Fresh Produce',en:'الخضار والفواكه',c:'#3b8f2f',lang:'en',last:[38, 47, 42],q:[
   ['Personal Hygiene requirements are applied and maintained.',4],
-  ['Food Contact surfaces are clean and sanitary.',4,'Equipment needs to be cleaned and sanitized after usage'],
+  ['Food Contact surfaces are clean and sanitary.',4,"Some equipment needs to be sanitized after cleaning",1],
   ['Non-Food Contact surfaces are clean.',4],
   ['Packaging materials are stored in a clean and hygienic way.',2],
-  ['All chilled products on display or in storage are correctly labeled (individual labels) & within use-by-dates; all stocks inside chiller have receiving date codes; FIFO is applied.',4],
+  ['All chilled products on display or in storage are correctly labeled (individual labels) & within use-by-dates; all stocks inside chiller have receiving date codes; FIFO is applied.',4,"Some stock shall be code dated"],
   ['Fresh fruits and vegetables are cleaned and sanitized before using for preparation and records are available and correctly filled.',2],
-  ['The products on display and storage have been checked for their expiry dates.',5],
-  ['Fresh produce on display or storage meet the quality and freshness requirements and displayed at the required temperatures.',4,'Poor quality items shall be removed from display chiller'],
+  ['The products on display and storage have been checked for their expiry dates.',5,"One expired item shall be removed from display chiller"],
+  ['Fresh produce on display or storage meet the quality and freshness requirements and displayed at the required temperatures.',4,"Damaged items shall be removed",1],
   ['Only disposable tissues are used for cleaning, re-usable cloths are not allowed to be used.',2],
   ['Cold rooms and display temperature records are filled correctly.',2],
   ['Hand wash sink is accessible and not used for other purpose.',2],
   ['Expired / Damaged items kept in designated area and labeled; Distress policy is followed.',2],
   ['Approved color-coding is followed (knives, cutting boards, etc.).',2],
   ['Cleaning checklists are completed and correctly filled.',2],
-  ['Production Record was completed and correctly filled.',2],
-  ['Only approved chemicals are being used in proper concentration and are stored away from foods.',2,'Unapproved chemicals shall not be used'],
+  ['Production Record was completed and correctly filled.',2,"Production list wasn't filled correctly"],
+  ['Only approved chemicals are being used in proper concentration and are stored away from foods.',2],
   ['Waste bins are lined with plastic bags, clean and foot-operated; bins are kept closed when not in use and are not overfilled.',2]]},
- {id:'brickoven',name:'الفرن الحجري',en:'Brick Oven',c:'#9a4a22',q:[
-  [A.hyg,4],[A.fc,4],[A.nfc,4],
+ {id:'brickoven',name:'الفرن الحجري',en:'Brick Oven',c:'#9a4a22',last:[42, 43, 43],q:[
+  [A.hyg,4],
+  [A.fc,4],
+  [A.nfc,4],
   ['مواد التغليف مخزنة بطريقة نظيفة وصحية (داخل القسم وفي المستودع الخلفي).',2],
   ['إجراء فك التجميد (Defrosting SOP) مطبق وسجلاته معبأة بشكل صحيح.',4],
-  ['جميع الأصناف المحضرة مغطاة وعليها ملصقات، وجميع المكونات عليها ملصقات صحيحة وأكواد PLU صحيحة.',2],
+  ['جميع الأصناف المحضرة مغطاة وعليها ملصقات، وجميع المكونات عليها ملصقات صحيحة وأكواد PLU صحيحة.',2,"بعض المكونات بدون تاريخ الصلاحية الأصلي"],
   ['درجة حرارة الحفظ الساخن لأصناف البرنامج الساخن صحيحة (أعلى من 65°م)، ويتم قياس الحرارة وتسجيلها بشكل صحيح.',4],
   ['جميع الأصناف المخزنة مفصولة (نيء، محضّر، جاهز للأكل RTE) في أماكن مخصصة.',2],
   ['جميع المكونات الغذائية ضمن تاريخ الصلاحية.',5],
-  [A.tis,2],[A.color,2],
+  [A.tis,2],
+  [A.color,2],
   ['المكونات الغذائية محفوظة على درجات الحرارة المطلوبة (البيض، عبوات الكاتشب وصلصة الطماطم المفتوحة...).',2],
-  [A.clean,2],[A.chem,2],[A.bins,2]]},
- {id:'meat',name:'اللحوم',en:'Meat',c:'#a31f3c',q:[
-  [A.hyg,4],[A.fc,4,'منشار العظم يحتاج تنظيف وتعقيم بعد الاستخدام'],[A.nfc,4],[A.pk,2],
+  [A.clean,2],
+  [A.chem,2],
+  [A.bins,2]]},
+ {id:'meat',name:'اللحوم',en:'Meat',c:'#a31f3c',last:[42, 51, 49],alert:"ملاحظة فريق الإدارة في زيارة سبتمبر: رُصد نشاط ذباب في قسم اللحوم.",q:[
+  [A.hyg,4],
+  [A.fc,4],
+  [A.nfc,4],
+  [A.pk,2],
   ['المنتجات المعروضة مطابقة لمتطلبات الجودة والطزاجة: لا تغيّر في اللون ولا إضافة ملونات.',2],
-  [A.exp,5],
-  ['سياسة الذبائح (Meat Carcass Policy) مطبقة.',4],
-  ['المنتجات المحضرة فردياً عليها ملصقات صحيحة، وتطبيق مبدأ FIFO.',4],
-  [A.tis,2],[A.sink,2],[A.exparea,2],[A.color,2],[A.temp,2],[A.cross,2],[A.clean,2],[A.proddef,4],[A.chem,2],[A.bins,2]]},
- {id:'seafood',name:'الأسماك',en:'Seafood',c:'#1b6fa8',q:[
-  [A.hyg,4],[A.fc,4,EQP],[A.nfc,4],[A.pk,2,'مواد التغليف يجب أن تكون مغطاة ومحمية بطريقة صحية'],
+  [A.exp,5,"وُجدت منتجات منتهية في ثلاجة العرض ويجب سحبها (0 من 5 نقاط)"],
+  ['سياسة الذبائح (Meat Carcass Policy) مطبقة.',4,"سياسة الذبائح لم تُطبق، ويجب إرسال نسخة منها مع مستند التحويل SMST للفرع الآخر"],
+  ['المنتجات المحضرة فردياً عليها ملصقات صحيحة، وتطبيق مبدأ FIFO.',4,"وُجدت منتجات منتهية عليها تاريخ انتهاء جديد"],
+  [A.tis,2],
+  [A.sink,2],
+  [A.exparea,2],
+  [A.color,2],
+  [A.temp,2],
+  [A.cross,2],
+  [A.clean,2],
+  [A.proddef,4],
+  [A.chem,2],
+  [A.bins,2]]},
+ {id:'seafood',name:'الأسماك',en:'Seafood',c:'#1b6fa8',last:[45, 49, 44],q:[
+  [A.hyg,4],
+  [A.fc,4,"المعدات تحتاج تنظيف وتعقيم بعد الاستخدام",1],
+  [A.nfc,4,"ماكينة التغليف تحتاج تنظيف"],
+  [A.pk,2],
   ['المنتجات في العرض والثلاجة مغطاة بالثلج المجروش وليس مكعبات الثلج.',2],
-  ['إجراء فحص طزاجة وجودة الأسماك اليومي مطبق، وجميع المنتجات في العرض والثلاجة يتم فحص جودتها وطزاجتها.',4,'سجل الطزاجة اليومي يحتاج تحديث'],
+  ['إجراء فحص طزاجة وجودة الأسماك اليومي مطبق، وجميع المنتجات في العرض والثلاجة يتم فحص جودتها وطزاجتها.',4],
   ['تم فحص تواريخ الصلاحية للمنتجات في العرض والثلاجة.',5],
   [A.exparea,2],
   ['جميع المنتجات في العرض والمخزون داخل الثلاجات عليها ملصقات صحيحة، والمنتجات المبردة الواردة بعبوات المصنع محتفظة بملصقات الصلاحية الأصلية.',2],
   ['مدة عرض المنتجات (ذات تاريخ الصلاحية من المورد مثل الدنيس والسلمون) حسب معايير الشركة: 3 أيام للصغير، 5 أيام للمتوسط والكبير، 3 أيام للفيليه.',2],
   ['الموظفون يستخدمون قفازات السلامة والأحذية المطاطية أثناء العمل.',2],
-  [A.tis,2],[A.sink,2],[A.color,2],[A.temp,2],[A.clean,2],
-  [A.prod,2,'قائمة الإنتاج تحتاج تحديث'],[A.chem,2],
+  [A.tis,2],
+  [A.sink,2],
+  [A.color,2],
+  [A.temp,2],
+  [A.clean,2],
+  [A.prod,2],
+  [A.chem,2],
   ['ماكينات الثلج نظيفة، ومغرفة الثلج متوفرة ومحفوظة بطريقة صحيحة.',2],
   [A.bins,2]]}
 ];
@@ -278,8 +328,8 @@ DEPTS.forEach(d => { d.total = d.q.reduce((s,q)=>s+q[1],0); });
 const BY = Object.fromEntries(DEPTS.map(d=>[d.id,d]));
 
 const T = {
-  ar:{yes:'نعم',no:'لا',pts:'نقطة',prev:'ملاحظة الزيارة السابقة: ',fix:'الإجراء التصحيحي المطلوب',fixPh:'اكتب ما سيتم عمله ومتى...',who:'اسم المسؤول عن القسم',whoPh:'اكتب اسمك',back:'→ كل الأقسام',answered:'تمت الإجابة',ready:'نسبة الجاهزية',risk:'نقاط معرضة للخصم',submit:'اعتماد القسم',submitted:'تم اعتماد القسم',needAll:'أجب على كل الأسئلة واكتب الإجراء التصحيحي لكل "لا" واسم المسؤول ثم اعتمد.',okAll:'كل شيء جاهز للاعتماد.',savedAt:'آخر حفظ',lockedMsg:'تم اعتماد هذا القسم لهذا الشهر. للتعديل اطلب من المدير إعادة فتحه.',nameFirst:'اكتب اسمك أولاً',dir:'rtl'},
-  en:{yes:'Yes',no:'No',pts:'pts',prev:'Last QA visit: ',fix:'Corrective action',fixPh:'What will be done and by when...',who:'Department head name',whoPh:'Your name',back:'← All departments',answered:'Answered',ready:'Readiness',risk:'Points at risk',submit:'Submit department',submitted:'Department submitted',needAll:'Answer every question, add a corrective action for each "No", enter your name, then submit.',okAll:'Everything is ready to submit.',savedAt:'Last saved',lockedMsg:'This department is submitted for this month. Ask the store manager to reopen it for changes.',nameFirst:'Enter your name first',dir:'ltr'}
+  ar:{yes:'نعم',no:'لا',pts:'نقطة',prev:'ملاحظة زيارة سبتمبر: ',rep:'متكرر من أغسطس',lastV:'نتيجة زيارة الجودة 28 سبتمبر',aug:'أغسطس',fix:'الإجراء التصحيحي المطلوب',fixPh:'اكتب ما سيتم عمله ومتى...',who:'اسم المسؤول عن القسم',whoPh:'اكتب اسمك',back:'→ كل الأقسام',answered:'تمت الإجابة',ready:'نسبة الجاهزية',risk:'نقاط معرضة للخصم',submit:'اعتماد القسم',submitted:'تم اعتماد القسم',needAll:'أجب على كل الأسئلة واكتب الإجراء التصحيحي لكل "لا" واسم المسؤول ثم اعتمد.',okAll:'كل شيء جاهز للاعتماد.',savedAt:'آخر حفظ',lockedMsg:'تم اعتماد هذا القسم لهذا الشهر. للتعديل اطلب من المدير إعادة فتحه.',nameFirst:'اكتب اسمك أولاً',dir:'rtl'},
+  en:{yes:'Yes',no:'No',pts:'pts',prev:'September QA finding: ',rep:'Repeated from August',lastV:'QA visit result, 28 September',aug:'August',fix:'Corrective action',fixPh:'What will be done and by when...',who:'Department head name',whoPh:'Your name',back:'← All departments',answered:'Answered',ready:'Readiness',risk:'Points at risk',submit:'Submit department',submitted:'Department submitted',needAll:'Answer every question, add a corrective action for each "No", enter your name, then submit.',okAll:'Everything is ready to submit.',savedAt:'Last saved',lockedMsg:'This department is submitted for this month. Ask the store manager to reopen it for changes.',nameFirst:'Enter your name first',dir:'ltr'}
 };
 
 /* ---------- helpers ---------- */
@@ -384,7 +434,7 @@ function renderHome(){
   $('#app').innerHTML = `
   <section class="intro">
     <div><h2>أقسام فرع S192 · ${esc(monthName(S.month))}</h2>
-    <p>اختر قسمك وأجب بـ "نعم" أو "لا" على كل بند قبل زيارة فريق الجودة. البنود المعلّمة بملاحظة هي ما رصده الفريق في الزيارة السابقة.</p></div>
+    <p>اختر قسمك وأجب بـ "نعم" أو "لا" على كل بند قبل زيارة فريق الجودة. البنود المعلّمة بملاحظة برتقالية هي ما رصده فريق الجودة في زيارة 28 سبتمبر (نتيجة الفرع 88.94%)، والمعلّمة بالأحمر "متكرر" تكررت من زيارة أغسطس، فابدأ فيها أول.</p></div>
     <span class="mode num">${done} / ${DEPTS.length} أقسام معتمدة</span>
   </section>
   <div class="grid">${DEPTS.map(d=>{
@@ -393,7 +443,7 @@ function renderHome(){
       <div class="ring">${ring(r.pct,d.c)}<b class="num">${r.pct}%</b></div>
       <h3 ${d.lang==='en'?'dir="ltr" style="text-align:right"':''}>${esc(d.name)}</h3>
       <div class="en">${esc(d.en)} · <span class="num">${d.q.length}</span> ${d.lang==='en'?'items':'بند'}</div>
-      <div class="meta">${chip(r.status)}${doc?.owner?`<span>${esc(doc.owner)}</span>`:''}</div>
+      <div class="meta">${chip(r.status)}<span class="lv num">سبتمبر ${Math.round(d.last[0]/d.last[1]*100)}% ${d.last[0]>d.last[2]?'▲':d.last[0]<d.last[2]?'▼':''}</span>${doc?.owner?`<span>${esc(doc.owner)}</span>`:''}</div>
     </button>`;}).join('')}</div>`;
 }
 
@@ -404,7 +454,7 @@ function renderDept(){
   <div dir="${t.dir}">
   <section class="sheet-head" style="--c:${d.c}">
     <div class="sheet-top">
-      <div><h2>${esc(d.name)}</h2><div class="sub">S192 · ${esc(d.en)} · ${esc(monthName(S.month))} · <span class="num">${d.total}</span> ${t.pts}</div></div>
+      <div><h2>${esc(d.name)}</h2><div class="sub">S192 · ${esc(d.en)} · ${esc(monthName(S.month))} · <span class="num">${d.total}</span> ${t.pts}</div><div class="sub">${t.lastV}: <b class="num">${d.last[0]}/${d.last[1]} (${Math.round(d.last[0]/d.last[1]*100)}%)</b> · ${t.aug} <span class="num">${Math.round(d.last[2]/d.last[1]*100)}%</span> ${d.last[0]>d.last[2]?'▲':d.last[0]<d.last[2]?'▼':'='}</div>${d.alert?`<div class="sub alert">${esc(d.alert)}</div>`:''}</div>
       <button class="back" id="back">${t.back}</button>
     </div>
     <div class="bar-track"><div class="bar-fill" id="fill" style="width:${r.pct}%"></div></div>
@@ -420,7 +470,7 @@ function renderDept(){
     const v=doc.answers[i];
     return `<div class="q ${v==='y'?'is-yes':v==='n'?'is-no':''}" style="--c:${d.c}" id="q${i}">
       <span class="qn num">${i+1}</span>
-      <div class="qt"><p>${esc(q[0])}</p><div class="qtags"><span class="pts num">${q[1]} ${t.pts}</span>${q[2]?`<span class="prev">${t.prev}${esc(q[2])}</span>`:''}</div></div>
+      <div class="qt"><p>${esc(q[0])}</p><div class="qtags"><span class="pts num">${q[1]} ${t.pts}</span>${q[2]?`<span class="prev">${t.prev}${esc(q[2])}</span>`:''}${q[3]?`<span class="rep">${t.rep}</span>`:''}</div></div>
       <div class="yn" role="group" aria-label="${i+1}">
         <button class="y" data-a="y" data-i="${i}" aria-pressed="${v==='y'}" ${locked?'disabled':''}>${t.yes}</button>
         <button class="n" data-a="n" data-i="${i}" aria-pressed="${v==='n'}" ${locked?'disabled':''}>${t.no}</button>
