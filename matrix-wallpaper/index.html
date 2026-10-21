@@ -475,6 +475,23 @@
     }
   };
 
+  /* ───────────── Wallpaper Engine hooks ───────────── */
+  window.wallpaperPropertyListener = {
+    applyUserProperties(p) {
+      if (p.schemecolor) {
+        const c = p.schemecolor.value.split(" ").map(v => Math.round(parseFloat(v) * 255));
+        setColor("#" + c.map(v => v.toString(16).padStart(2, "0")).join(""));
+      }
+      if (p.speed) cfg.speed = +p.speed.value;
+      if (p.hold) cfg.hold = +p.hold.value;
+      if (p.hijri) { cfg.hijri = !!p.hijri.value; lastSec = -1; }
+      let rebuild = false;
+      if (p.nameen) { cfg.nameEn = p.nameen.value; rebuild = true; }
+      if (p.namear) { cfg.nameAr = p.namear.value; rebuild = true; }
+      if (rebuild) { nameIdx = 0; resize(); }
+    }
+  };
+
   resize();
   requestAnimationFrame(frame);
 })();

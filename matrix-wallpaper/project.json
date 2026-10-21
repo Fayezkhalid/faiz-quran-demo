@@ -1,0 +1,20 @@
+{
+  "contentrating": "Everyone",
+  "description": "Matrix rain wallpaper with an interactive pixel name, 12-hour clock and Gregorian/Hijri date.",
+  "file": "index.html",
+  "general": {
+    "properties": {
+      "schemecolor": { "order": 0, "text": "Color", "type": "color", "value": "0 1 0.4" },
+      "speed": { "order": 1, "text": "Rain speed", "type": "slider", "min": 0.3, "max": 3, "step": 0.1, "value": 1 },
+      "hold": { "order": 2, "text": "Seconds before the name changes", "type": "slider", "min": 3, "max": 30, "step": 1, "value": 9 },
+      "nameen": { "order": 3, "text": "English name", "type": "textinput", "value": "FAYEZ" },
+      "namear": { "order": 4, "text": "Arabic name", "type": "textinput", "value": "فايز" },
+      "hijri": { "order": 5, "text": "Hijri date", "type": "bool", "value": true }
+    }
+  },
+  "preview": "thumb.png",
+  "tags": ["Abstract"],
+  "title": "Faiz Matrix Clock",
+  "type": "web",
+  "version": 1
+}
