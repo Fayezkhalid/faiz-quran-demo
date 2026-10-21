@@ -1,0 +1,8 @@
+{
+  "nameEn":  { "type": "textbox",  "text": "English name (empty = hide)", "value": "FAYEZ" },
+  "nameAr":  { "type": "textbox",  "text": "الاسم بالعربي (فاضي = إخفاء)", "value": "فايز" },
+  "color":   { "type": "color",    "text": "Color / اللون", "value": "#00ff66" },
+  "speed":   { "type": "slider",   "text": "Rain speed / سرعة المطر", "value": 1, "min": 0.3, "max": 3, "step": 0.1 },
+  "hold":    { "type": "slider",   "text": "Seconds before name changes / مدة بقاء الاسم", "value": 9, "min": 3, "max": 30, "step": 1 },
+  "hijri":   { "type": "checkbox", "text": "Hijri date / التاريخ الهجري", "value": true }
+}

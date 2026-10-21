@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<title>Faiz Matrix Wallpaper</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --cr: 0,255,102; --g: 0; --rx: 0deg; --ry: 0deg; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden; background: #000;
+    font-family: "Segoe UI", "Segoe UI Variable", Tahoma, Arial, sans-serif;
+    user-select: none; -webkit-user-select: none;
+  }
+  /* pixel grid under everything - aligned with HEAT cell size (22px) */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(var(--cr), .05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(var(--cr), .05) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  /* vignette so the clock stays readable on top of the rain */
+  #shade {
+    position: fixed; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 34% 22% at 50% 68%, rgba(0,0,0,.78), rgba(0,0,0,0) 100%),
+      radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.65) 100%);
+  }
+
+  #clock {
+    position: fixed; left: 50%; top: 68%;
+    transform: translate(-50%, -50%) perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+    text-align: center; color: #eafff3; pointer-events: none; will-change: transform;
+    --a: calc(.55 + var(--g) * .45);
+  }
+  #timeRow { display: flex; align-items: flex-start; justify-content: center; gap: .18em; }
+  #time {
+    font-family: "Segoe UI Light", "Segoe UI", "Consolas", monospace;
+    font-weight: 200; font-size: min(10.5vw, 21vh); line-height: .95; letter-spacing: .01em;
+    font-variant-numeric: tabular-nums;
+    text-shadow:
+      0 0 10px rgba(var(--cr), var(--a)),
+      0 0 36px rgba(var(--cr), calc(var(--a) * .6)),
+      0 0 90px rgba(var(--cr), calc(var(--a) * .35));
+  }
+  #time .colon { animation: blink 1s steps(1) infinite; display: inline-block; transform: translateY(-.04em); }
+  @keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: .15 } }
+  #side {
+    display: flex; flex-direction: column; align-items: flex-start; gap: .1em;
+    font-size: min(2.6vw, 5vh); padding-top: .55em; font-family: "Consolas", "Segoe UI", monospace;
+    color: rgb(var(--cr)); text-shadow: 0 0 12px rgba(var(--cr), .8);
+  }
+  #ampm { font-weight: 700; letter-spacing: .08em; }
+  #ampmAr { font-size: .62em; opacity: .75; direction: rtl; }
+  #sec { opacity: .75; font-variant-numeric: tabular-nums; }
+
+  #bar { display: flex; justify-content: center; gap: 4px; margin: min(1.4vh, 12px) auto min(2vh, 18px); }
+  #bar i { width: min(.55vw, 9px); height: min(.55vw, 9px); background: rgba(var(--cr), .14); display: block; }
+  #bar i.on { background: rgba(var(--cr), .75); box-shadow: 0 0 6px rgba(var(--cr), .6); }
+  #bar i.now { background: #fff; box-shadow: 0 0 10px #fff, 0 0 18px rgb(var(--cr)); }
+
+  #dateAr {
+    direction: rtl; font-size: min(2.7vw, 5.2vh); font-weight: 600;
+    text-shadow: 0 0 14px rgba(var(--cr), .7);
+  }
+  #dateSub {
+    margin-top: .5em; font-size: min(1.5vw, 3vh); letter-spacing: .16em; white-space: nowrap; text-transform: uppercase;
+    color: rgba(var(--cr), 1); opacity: .85; text-shadow: 0 0 10px rgba(var(--cr), .6);
+  }
+  #dateSub b { font-weight: 400; opacity: .6; padding: 0 .6em; }
+  #hijri { direction: rtl; letter-spacing: .04em; text-transform: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="shade"></div>
+
+<div id="clock">
+  <div id="timeRow">
+    <div id="time"><span id="hh">12</span><span class="colon">:</span><span id="mm">00</span></div>
+    <div id="side">
+      <span id="ampm">AM</span>
+      <span id="ampmAr">صباحاً</span>
+      <span id="sec">00</span>
+    </div>
+  </div>
+  <div id="bar"></div>
+  <div id="dateAr"></div>
+  <div id="dateSub"><span id="dateEn"></span><b>•</b><span id="hijri"></span></div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ───────────── Settings (URL params or Lively properties) ───────────── */
+  const Q = new URLSearchParams(location.search);
+  const cfg = {
+    nameEn: Q.has("en") ? Q.get("en") : "FAYEZ",
+    nameAr: Q.has("ar") ? Q.get("ar") : "فايز",
+    color:  Q.get("color") || "#00ff66",
+    speed:  parseFloat(Q.get("speed")) || 1,
+    hold:   parseFloat(Q.get("hold")) || 9,     // seconds the name stays solid
+    hijri:  Q.get("hijri") !== "0",
+  };
+
+  const GLYPHS = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789:.=*+-<>|ابتثجحخدذرزسشصضطظعغفقكلمنهوي";
+  const FONT_GLYPH = '"MS Gothic","Yu Gothic","Segoe UI",monospace';
+
+  /* ───────────── Canvas ───────────── */
+  const cv = document.getElementById("c");
+  const ctx = cv.getContext("2d");
+  let W = 0, H = 0, DPR = 1, S = 1;      // S = screen scale relative to 1080p
+
+  /* colour ramp: dim → base → white */
+  let RGB = [0, 255, 102];
+  const LEVELS = [];
+  function hexToRgb(h) {
+    h = String(h).replace("#", "");
+    if (h.length === 3) h = h.split("").map(c => c + c).join("");
+    const n = parseInt(h, 16);
+    return isNaN(n) ? RGB : [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function buildLevels() {
+    LEVELS.length = 0;
+    for (let i = 0; i < 16; i++) {
+      const t = i / 15; let c;
+      if (t < 0.6) { const m = 0.5 + 0.5 * (t / 0.6); c = RGB.map(v => v * m); }
+      else { const w = (t - 0.6) / 0.4 * 0.92; c = RGB.map(v => v + (255 - v) * w); }
+      LEVELS.push(`rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`);
+    }
+  }
+  function setColor(hex) {
+    RGB = hexToRgb(hex);
+    document.documentElement.style.setProperty("--cr", RGB.join(","));
+    buildLevels();
+  }
+  setColor(cfg.color);
+
+  /* ───────────── Pointer (real mouse, or a "ghost" when idle) ───────────── */
+  const ptr = { x: -9999, y: -9999 };
+  const mouse = { x: -9999, y: -9999, last: -1e9 };
+  addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.last = performance.now(); });
+  addEventListener("mousedown", e => ripple(e.clientX, e.clientY));
+  addEventListener("touchstart", e => { const t = e.touches[0]; mouse.x = t.clientX; mouse.y = t.clientY; mouse.last = performance.now(); ripple(t.clientX, t.clientY); }, { passive: true });
+  addEventListener("touchmove", e => { const t = e.touches[0]; mouse.x = t.clientX; mouse.y = t.clientY; mouse.last = performance.now(); }, { passive: true });
+
+  /* ───────────── Rain ───────────── */
+  let fs = 18, cols = 0, drops = [];
+  function initRain() {
+    fs = Math.max(15, Math.round(Math.min(W, H) / 52));
+    cols = Math.ceil(W / fs);
+    drops = [];
+    const rows = Math.ceil(H / fs);
+    for (let i = 0; i < cols; i++) {
+      drops.push({ row: Math.random() * rows * 1.6 - rows * 0.4, v: 5 + Math.random() * 13, len: 9 + (Math.random() * 20 | 0), seed: (Math.random() * 1e4) | 0 });
+    }
+  }
+  const GL = GLYPHS.length;
+  function drawRain(dt, T) {
+    const rows = Math.ceil(H / fs);
+    const R = 170 * S, R2 = R * R;
+    ctx.font = `${fs}px ${FONT_GLYPH}`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const tick = (T * 7) | 0;
+    for (let i = 0; i < cols; i++) {
+      const d = drops[i];
+      const cx0 = i * fs + fs / 2;
+      // columns near the pointer fall faster
+      const ddx = cx0 - ptr.x;
+      const near = Math.abs(ddx) < R ? 1 + 2.2 * (1 - Math.abs(ddx) / R) : 1;
+      d.row += d.v * dt * cfg.speed * near;
+      if (d.row - d.len > rows) { d.row = -Math.random() * 25; d.v = 5 + Math.random() * 13; d.len = 9 + (Math.random() * 20 | 0); d.seed = (Math.random() * 1e4) | 0; }
+      const head = Math.floor(d.row);
+      for (let k = 0; k < d.len; k++) {
+        const r = head - k;
+        if (r < 0 || r > rows) continue;
+        const cy = r * fs + fs / 2;
+        let off = 0, hot = 0;
+        const dx = cx0 - ptr.x, dy = cy - ptr.y, d2 = dx * dx + dy * dy;
+        if (d2 < R2) { const dd = Math.sqrt(d2) || 1, f = 1 - dd / R; off = (dx >= 0 ? 1 : -1) * f * f * fs * 2.6; hot = f; }
+        let a = Math.pow(1 - k / d.len, 1.7);
+        let style;
+        if (k === 0) { style = LEVELS[15]; a = 0.95; }
+        else if (hot > 0.25) { style = LEVELS[13]; a = Math.min(1, a + hot * 0.6); }
+        else if (k === 1) { style = LEVELS[10]; }
+        else style = LEVELS[6];
+        ctx.globalAlpha = a * 0.8;
+        ctx.fillStyle = style;
+        // glyph mutates slowly, head mutates fast
+        const ch = GLYPHS[(d.seed + r * 17 + i * 131 + (k < 2 ? ((T * 18) | 0) : (tick >> 1) * (r & 1))) % GL];
+        ctx.fillText(ch, cx0 + off, cy);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ───────────── Heat grid (pixels that react to the pointer) ───────────── */
+  const HC = 22;
+  let hw = 0, hh = 0, heat = new Float32Array(0);
+  const ripples = [];
+  function initHeat() { hw = Math.ceil(W / HC); hh = Math.ceil(H / HC); heat = new Float32Array(hw * hh); }
+  function ripple(x, y) {
+    ripples.push({ x, y, t: 0 });
+    // shove the name pixels outward
+    const R = 420 * S;
+    for (const c of cells) {
+      const dx = c.hx + ns / 2 + c.ox - x, dy = c.hy + ns / 2 + c.oy - y, d = Math.hypot(dx, dy);
+      if (d < R) { const f = (1 - d / R); const p = 1100 * f; c.vx += dx / (d || 1) * p; c.vy += dy / (d || 1) * p; }
+    }
+  }
+  function updateHeat(dt) {
+    const decay = Math.exp(-dt * 1.7);
+    for (let i = 0; i < heat.length; i++) heat[i] *= decay;
+    // pointer glow
+    const R = 150 * S, gx0 = Math.max(0, ((ptr.x - R) / HC) | 0), gx1 = Math.min(hw - 1, ((ptr.x + R) / HC) | 0);
+    const gy0 = Math.max(0, ((ptr.y - R) / HC) | 0), gy1 = Math.min(hh - 1, ((ptr.y + R) / HC) | 0);
+    for (let y = gy0; y <= gy1; y++) for (let x = gx0; x <= gx1; x++) {
+      const d = Math.hypot(x * HC + HC / 2 - ptr.x, y * HC + HC / 2 - ptr.y);
+      if (d < R) { const v = Math.pow(1 - d / R, 1.4); const i = y * hw + x; if (v > heat[i]) heat[i] = v; }
+    }
+    // ambient sparkles so the background is alive even without mouse
+    const n = Math.max(1, (dt * 60 * (hw * hh / 5000)) | 0);
+    for (let k = 0; k < n; k++) heat[(Math.random() * heat.length) | 0] = 0.35 + Math.random() * 0.4;
+    // click ripples
+    for (let r = ripples.length - 1; r >= 0; r--) {
+      const rp = ripples[r]; rp.t += dt;
+      const rad = rp.t * 760 * S;
+      if (rad > Math.hypot(W, H)) { ripples.splice(r, 1); continue; }
+      for (let y = 0; y < hh; y++) for (let x = 0; x < hw; x++) {
+        const d = Math.hypot(x * HC + HC / 2 - rp.x, y * HC + HC / 2 - rp.y);
+        if (Math.abs(d - rad) < HC * 1.3) { const i = y * hw + x; const v = 1 - rp.t * 0.5; if (v > heat[i]) heat[i] = Math.max(.3, v); }
+      }
+    }
+  }
+  function drawHeat() {
+    const s = HC - 3;
+    for (let y = 0; y < hh; y++) for (let x = 0; x < hw; x++) {
+      const h = heat[y * hw + x];
+      if (h < 0.04) continue;
+      ctx.globalAlpha = Math.min(1, h * 0.7);
+      ctx.fillStyle = LEVELS[Math.min(15, (h * 15) | 0)];
+      ctx.fillRect(x * HC + 1.5, y * HC + 1.5, s, s);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ───────────── The name, as pixels, decoding in Matrix style ───────────── */
+  const off = document.createElement("canvas");
+  let ns = 12, cells = [], gw = 0, gh = 0;
+  let phase = "form", pT = 0, nameIdx = 0, scanX = -99, nextScan = 3.5;
+  const isArabic = s => /[؀-ۿ]/.test(s);
+
+  function names() { const a = [cfg.nameEn, cfg.nameAr].map(s => (s || "").trim()).filter(Boolean); return a.length ? a : ["FAYEZ"]; }
+
+  function buildCells(text) {
+    ns = Math.max(7, Math.round(W / 140));
+    gw = Math.ceil(W / ns); gh = Math.ceil(H / ns);
+    off.width = gw; off.height = gh;
+    const o = off.getContext("2d", { willReadFrequently: true });
+    o.clearRect(0, 0, gw, gh);
+    const ar = isArabic(text);
+    const fam = ar ? '"Segoe UI","Tahoma","Arial"' : '"Arial Black","Impact","Segoe UI",sans-serif';
+    let size = 100;
+    o.font = `900 ${size}px ${fam}`;
+    try { o.letterSpacing = ar ? "0px" : "4px"; } catch (e) {}
+    const m = o.measureText(text).width || 1;
+    size = Math.min(size * gw * 0.6 / m, gh * (ar ? 0.27 : 0.30));
+    o.font = `900 ${size}px ${fam}`;
+    o.textAlign = "center"; o.textBaseline = "middle"; o.fillStyle = "#fff";
+    o.fillText(text, gw / 2, gh * (ar ? 0.31 : 0.34));
+    const data = o.getImageData(0, 0, gw, gh).data;
+    cells = [];
+    for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+      if (data[(y * gw + x) * 4 + 3] > 110) {
+        cells.push({ gx: x, gy: y, hx: x * ns, hy: y * ns, ox: 0, oy: 0, vx: 0, vy: 0, ph: Math.random() * 6.28, sc: 0,
+          lockAt: (x / gw) * 1.15 + Math.random() * 0.6, dAt: Math.random() * 0.9 + (1 - x / gw) * 0.25, fall: -1 });
+      }
+    }
+    X = new Float32Array(cells.length); Y = new Float32Array(cells.length);
+    L = new Uint8Array(cells.length); A = new Float32Array(cells.length); K = new Uint8Array(cells.length);
+  }
+  let X, Y, L, A, K;
+
+  function startPhase(p, T) { phase = p; pT = T; }
+
+  function updateName(dt, T) {
+    const age = T - pT;
+    if (phase === "form" && age > 2.4) startPhase("hold", T);
+    else if (phase === "hold" && age > cfg.hold) startPhase("dissolve", T);
+    else if (phase === "dissolve" && age > 2.0) {
+      const list = names(); nameIdx = (nameIdx + 1) % list.length;
+      buildCells(list[nameIdx]); startPhase("form", T);
+      return;
+    }
+    // scan-line sweep + random re-scrambles while the name is solid
+    if (phase === "hold") {
+      if (T > nextScan && scanX < -50) { scanX = -4; }
+      if (scanX > -50) { scanX += dt * gw * 0.9; if (scanX > gw + 6) { scanX = -99; nextScan = T + 3 + Math.random() * 3; } }
+      for (let k = 0; k < 4; k++) { const c = cells[(Math.random() * cells.length) | 0]; if (c) c.sc = T + 0.12 + Math.random() * 0.4; }
+    }
+    const R = 135 * S, R2 = R * R, half = ns / 2;
+    const K_SPRING = 38, C_DAMP = 6.2;
+    const t14 = (T * 14) | 0;
+    for (let i = 0; i < cells.length; i++) {
+      const c = cells[i];
+      let a = 1, kind = 0, lv;
+
+      if (phase === "dissolve" && age > c.dAt) {
+        if (c.fall < 0) { c.fall = T; c.vy = 0; }
+        const fa = T - c.fall;
+        c.vy += 700 * dt; c.oy += c.vy * dt; c.ox += c.vx * dt;
+        a = Math.max(0, 1 - fa / 0.85); kind = 1; lv = 9;
+        if (a <= 0) { A[i] = 0; continue; }
+      } else {
+        // pointer repulsion + spring back
+        const px = c.hx + half + c.ox, py = c.hy + half + c.oy;
+        const dx = px - ptr.x, dy = py - ptr.y, d2 = dx * dx + dy * dy;
+        let near = 0;
+        if (d2 < R2) { const d = Math.sqrt(d2) || 1; near = 1 - d / R; const p = near * near * 4600 * dt; c.vx += dx / d * p; c.vy += dy / d * p; }
+        c.vx += (-K_SPRING * c.ox - C_DAMP * c.vx) * dt; c.vy += (-K_SPRING * c.oy - C_DAMP * c.vy) * dt;
+        c.ox += c.vx * dt; c.oy += c.vy * dt;
+        const disp = Math.min(1, Math.hypot(c.ox, c.oy) / (22 * S));
+        let b = 0.42 + 0.14 * Math.sin(T * 1.7 + c.ph) + near * 0.55 + disp * 0.35;
+
+        if (phase === "form") {
+          if (age < c.lockAt) { kind = 1; lv = 7; a = Math.min(1, age * 5); }
+          else { const f = Math.max(0, 1 - (age - c.lockAt) / 0.4); b += f * 0.9; }
+        } else if (phase === "hold") {
+          if (c.sc > T) { kind = 1; lv = 12; }
+          else if (Math.abs(c.gx - scanX) < 2.2) { kind = 1; lv = 15; }
+          else if (Math.abs(c.gx - scanX) < 5) b += 0.3;
+        }
+        if (kind === 0) lv = Math.max(0, Math.min(15, (b * 15) | 0));
+      }
+      X[i] = c.hx + c.ox; Y[i] = c.hy + c.oy; L[i] = lv; A[i] = a; K[i] = kind;
+    }
+  }
+
+  function drawName(T) {
+    const n = cells.length;
+    // soft glow pass
+    ctx.globalCompositeOperation = "lighter";
+    ctx.fillStyle = `rgb(${RGB[0]},${RGB[1]},${RGB[2]})`;
+    ctx.globalAlpha = 0.07;
+    const g = ns * 2.3, go = (g - ns) / 2;
+    for (let i = 0; i < n; i++) if (K[i] === 0 && A[i] > 0) ctx.fillRect(X[i] - go, Y[i] - go, g, g);
+    ctx.globalCompositeOperation = "source-over";
+    // solid pixels
+    const s = ns - 1.4;
+    for (let i = 0; i < n; i++) {
+      if (K[i] !== 0 || A[i] <= 0) continue;
+      ctx.globalAlpha = A[i]; ctx.fillStyle = LEVELS[L[i]];
+      ctx.fillRect(X[i] + 0.7, Y[i] + 0.7, s, s);
+    }
+    // decoding glyph pixels
+    ctx.font = `${(ns * 1.2).toFixed(1)}px ${FONT_GLYPH}`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const t14 = (T * 14) | 0;
+    for (let i = 0; i < n; i++) {
+      if (K[i] !== 1 || A[i] <= 0) continue;
+      const c = cells[i];
+      ctx.globalAlpha = A[i]; ctx.fillStyle = LEVELS[L[i]];
+      ctx.fillText(GLYPHS[(t14 + c.gx * 7 + c.gy * 13 + i) % GL], X[i] + ns / 2, Y[i] + ns / 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ───────────── Clock ───────────── */
+  const el = id => document.getElementById(id);
+  const hhEl = el("hh"), mmEl = el("mm"), secEl = el("sec"), ampmEl = el("ampm"), ampmArEl = el("ampmAr");
+  const dateArEl = el("dateAr"), dateEnEl = el("dateEn"), hijriEl = el("hijri"), clockEl = el("clock"), barEl = el("bar");
+  for (let i = 0; i < 60; i++) barEl.appendChild(document.createElement("i"));
+  const barCells = barEl.children;
+  const fAr = new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const fHj = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura-nu-latn", { day: "numeric", month: "long", year: "numeric" });
+  const fEn = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const pad = n => String(n).padStart(2, "0");
+
+  function scramble(node, finalText, ms) {
+    clearInterval(node._t);
+    const t0 = performance.now();
+    node._t = setInterval(() => {
+      const p = (performance.now() - t0) / ms;
+      if (p >= 1) { node.textContent = finalText; clearInterval(node._t); return; }
+      node.textContent = finalText.replace(/\d/g, () => (Math.random() * 10) | 0);
+    }, 45);
+  }
+  function setNum(node, text) { if (node.dataset.v !== text) { node.dataset.v = text; scramble(node, text, 420); } }
+
+  let lastSec = -1;
+  function updateClock(now) {
+    const d = new Date(now);
+    const s = d.getSeconds();
+    if (s !== lastSec) {
+      lastSec = s;
+      const h24 = d.getHours(), h = h24 % 12 || 12;
+      setNum(hhEl, String(h)); setNum(mmEl, pad(d.getMinutes()));
+      secEl.textContent = pad(s);
+      ampmEl.textContent = h24 < 12 ? "AM" : "PM";
+      ampmArEl.textContent = h24 < 12 ? "صباحاً" : "مساءً";
+      for (let i = 0; i < 60; i++) barCells[i].className = i < s ? "on" : (i === s ? "now" : "");
+      const ds = d.toDateString();
+      if (clockEl.dataset.d !== ds) {
+        clockEl.dataset.d = ds;
+        dateArEl.textContent = fAr.format(d);
+        dateEnEl.textContent = fEn.format(d);
+      }
+      if (cfg.hijri) {
+        const o = {}; fHj.formatToParts(d).forEach(p => { o[p.type] = p.value; });
+        hijriEl.textContent = "\u2067" + o.day + " " + o.month + " " + o.year + " هـ\u2069";
+      } else hijriEl.textContent = "";
+      hijriEl.previousElementSibling.style.display = cfg.hijri ? "" : "none";
+    }
+  }
+
+  /* ───────────── Main loop ───────────── */
+  let T = 0, last = performance.now(), ghostNextClick = 6;
+  let rx = 0, ry = 0, gl = 0;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = innerWidth; H = innerHeight; S = Math.max(0.6, Math.min(2, H / 1080));
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    initRain(); initHeat();
+    const list = names(); buildCells(list[nameIdx % list.length]);
+    startPhase("form", T);
+  }
+  addEventListener("resize", () => { clearTimeout(resize._t); resize._t = setTimeout(resize, 150); });
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (now - last < 15) return;               // cap ≈ 60 fps (kind to the GPU/battery)
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; T += dt;
+
+    // pointer: real mouse if recently moved, otherwise a wandering ghost
+    if (now - mouse.last < 5000) { ptr.x = mouse.x; ptr.y = mouse.y; }
+    else {
+      const gx = W / 2 + Math.sin(T * 0.37) * W * 0.38 + Math.sin(T * 0.91) * W * 0.06;
+      const gy = H * 0.46 + Math.sin(T * 0.53 + 1) * H * 0.3;
+      if (ptr.x < -1000) { ptr.x = gx; ptr.y = gy; }
+      ptr.x += (gx - ptr.x) * Math.min(1, dt * 3); ptr.y += (gy - ptr.y) * Math.min(1, dt * 3);
+      if (T > ghostNextClick) { ripple(ptr.x, ptr.y); ghostNextClick = T + 7 + Math.random() * 6; }
+    }
+
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    drawRain(dt, T);
+    updateHeat(dt); drawHeat();
+    updateName(dt, T); drawName(T);
+
+    // clock: tilt toward the pointer + glow when it gets close
+    const tx = ((ptr.y / H) - 0.5) * -7, ty = ((ptr.x / W) - 0.5) * 10;
+    rx += (tx - rx) * Math.min(1, dt * 4); ry += (ty - ry) * Math.min(1, dt * 4);
+    const cr = clockEl.getBoundingClientRect();
+    const dist = Math.hypot(ptr.x - (cr.left + cr.width / 2), ptr.y - (cr.top + cr.height / 2));
+    gl += (Math.max(0, 1 - dist / (420 * S)) - gl) * Math.min(1, dt * 5);
+    clockEl.style.setProperty("--rx", rx.toFixed(2) + "deg");
+    clockEl.style.setProperty("--ry", ry.toFixed(2) + "deg");
+    clockEl.style.setProperty("--g", gl.toFixed(3));
+    updateClock(Date.now());
+  }
+
+  /* ───────────── Lively Wallpaper hooks ───────────── */
+  window.livelyPropertyListener = function (name, val) {
+    switch (name) {
+      case "nameEn": cfg.nameEn = val; nameIdx = 0; resize(); break;
+      case "nameAr": cfg.nameAr = val; nameIdx = 0; resize(); break;
+      case "color": cfg.color = val; setColor(val); break;
+      case "speed": cfg.speed = +val; break;
+      case "hold": cfg.hold = +val; break;
+      case "hijri": cfg.hijri = !!val; lastSec = -1; break;
+    }
+  };
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

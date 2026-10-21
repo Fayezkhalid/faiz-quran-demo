@@ -1,0 +1,11 @@
+{
+  "AppVersion": "2.0.0.0",
+  "Title": "Faiz Matrix Clock",
+  "Thumbnail": "thumb.png",
+  "Preview": "thumb.png",
+  "Desc": "Matrix rain wallpaper with an interactive pixel name, 12-hour clock and date.",
+  "Author": "Fayez",
+  "License": "",
+  "Type": 1,
+  "FileName": "index.html"
+}
