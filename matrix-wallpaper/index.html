@@ -256,7 +256,7 @@
   function names() { const a = [cfg.nameEn, cfg.nameAr].map(s => (s || "").trim()).filter(Boolean); return a.length ? a : ["FAYEZ"]; }
 
   function buildCells(text) {
-    ns = Math.max(7, Math.round(W / 140));
+    ns = Math.max(7, Math.round(Math.min(W, H * 1.78) / 140));   // ultrawide-safe
     gw = Math.ceil(W / ns); gh = Math.ceil(H / ns);
     off.width = gw; off.height = gh;
     const o = off.getContext("2d", { willReadFrequently: true });
@@ -267,7 +267,7 @@
     o.font = `900 ${size}px ${fam}`;
     try { o.letterSpacing = ar ? "0px" : "4px"; } catch (e) {}
     const m = o.measureText(text).width || 1;
-    size = Math.min(size * gw * 0.6 / m, gh * (ar ? 0.27 : 0.30));
+    size = Math.min(size * Math.min(gw, gh * 1.78) * 0.6 / m, gh * (ar ? 0.27 : 0.30));
     o.font = `900 ${size}px ${fam}`;
     o.textAlign = "center"; o.textBaseline = "middle"; o.fillStyle = "#fff";
     o.fillText(text, gw / 2, gh * (ar ? 0.31 : 0.34));
