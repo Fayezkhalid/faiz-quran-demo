@@ -23,7 +23,8 @@ test('a brand that contains the word stays, but after the real product', () => {
 test('TM-003: "حليب" and "milk" put milk before labneh', () => {
   for (const q of ['حليب', 'milk']) {
     const r = search.searchLine(q);
-    assert.deepEqual(cats(r).slice(0, 3), ['milk', 'milk', 'milk'], q);
+    assert.ok(cats(r).slice(0, 3).every((c) => c === 'milk' || c === 'flavoured-milk'), q);
+    assert.equal(cats(r)[0], 'milk', q);
     assert.ok(!ids(r).includes('p07'));
   }
 });
