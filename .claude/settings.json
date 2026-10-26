@@ -1,0 +1,10 @@
+{
+  "extraKnownMarketplaces": {
+    "replica-skill": {
+      "source": { "source": "github", "repo": "Jakeschincariol/replica-skill" }
+    }
+  },
+  "enabledPlugins": {
+    "replica-skill@replica-skill": true
+  }
+}
