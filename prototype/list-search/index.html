@@ -1,0 +1,248 @@
+<title>قائمة المقاضي</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap">
+<style>
+/* Layout: one narrow column, list editor on top, per-item product rows below. Utility tool, own palette (ink green + saffron). */
+:root{
+  --bg:#f5f6f2; --surface:#ffffff; --fg:#1b2a24; --muted:#66756e; --line:#dde2dc;
+  --accent:#1f6b52; --accent-fg:#ffffff; --saffron:#d98e04; --sale:#b3361b; --chip:#e9eee8;
+  --font:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121a16; --surface:#1b2621; --fg:#e8efe9; --muted:#97a69d; --line:#2d3b34;
+  --accent:#4fc79d; --accent-fg:#0b1a13; --saffron:#f0b43a; --sale:#ff8a6b; --chip:#25332c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121a16; --surface:#1b2621; --fg:#e8efe9; --muted:#97a69d; --line:#2d3b34;
+  --accent:#4fc79d; --accent-fg:#0b1a13; --saffron:#f0b43a; --sale:#ff8a6b; --chip:#25332c; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;direction:rtl;
+  padding-block:20px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:640px;margin-inline:auto;display:flex;flex-direction:column;gap:18px}
+h1{font-size:24px;line-height:1.25;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+label.t{font-weight:600}
+textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:150px;resize:vertical;width:100%;box-sizing:border-box;line-height:1.9}
+textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--chip);color:var(--fg);padding:8px 12px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700;padding:11px 18px;flex:1}
+button.primary:disabled{opacity:.45;cursor:not-allowed}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{font-size:13px;padding:5px 10px;border-radius:99px}
+h2{font-size:15px;margin:0;color:var(--muted);font-weight:600}
+.item{display:flex;flex-direction:column;gap:8px;min-width:0}
+.item header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.item h3{margin:0;font-size:18px}
+.item h3 small{color:var(--muted);font-weight:400;font-size:13px;margin-inline-start:6px}
+.link{background:none;border:0;color:var(--accent);padding:2px 0;font-weight:600}
+.rail{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
+.rail.all{flex-wrap:wrap;overflow:visible}
+.card{flex:0 0 132px;scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;position:relative;min-width:0}
+.rail.all .card{flex:1 1 132px;max-width:calc(50% - 5px)}
+.thumb{height:72px;border-radius:8px;display:grid;place-items:center;font-size:26px;font-weight:700;color:var(--fg)}
+.name{font-size:13px;line-height:1.4;min-height:2.8em;overflow-wrap:anywhere}
+.price{display:flex;gap:6px;align-items:baseline;font-weight:700;font-variant-numeric:tabular-nums}
+.price s{color:var(--muted);font-weight:400;font-size:12px}
+.price .now.sale{color:var(--sale)}
+.add{position:absolute;inset-inline-start:6px;top:54px;width:32px;height:32px;padding:0;border-radius:50%;background:var(--surface);font-size:20px;line-height:1;display:grid;place-items:center}
+.out{opacity:.55}
+.out .add{display:none}
+.tag{font-size:11px;color:var(--muted)}
+.miss{border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--muted)}
+.bar{position:fixed;inset-inline:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
+  padding:10px max(16px,env(safe-area-inset-left,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;font-weight:600;font-variant-numeric:tabular-nums}
+.note{font-size:12px;color:var(--muted)}
+</style>
+<main>
+  <header>
+    <h1>قائمة المقاضي</h1>
+    <p class="sub">اكتب كل غرض في سطر، ويطلع لك صف منتجات لكل غرض. تجربة أولية ببيانات عيّنة من عندنا.</p>
+  </header>
+
+  <section class="panel" id="inputPanel">
+    <label class="t" for="list">قائمتك</label>
+    <textarea id="list" placeholder="بطاطس&#10;كتشب&#10;لبن&#10;سكر&#10;ماء" aria-describedby="h"></textarea>
+    <p class="hint" id="h">اضغط Enter لسطر جديد. تقدر تكتب الكمية: «٢ حليب» أو «3 بيض». الأخطاء الإملائية البسيطة مقبولة.</p>
+    <div class="row">
+      <button class="primary" id="go" disabled>عرض النتائج</button>
+      <button id="demo" type="button">جرّب قائمة جاهزة</button>
+    </div>
+    <div id="recentWrap" hidden>
+      <div class="row" style="justify-content:space-between"><h2>عمليات البحث الأخيرة</h2><button class="link" id="clearRecent" type="button">حذف الكل</button></div>
+      <div class="chips" id="recent"></div>
+    </div>
+  </section>
+
+  <section id="results" aria-live="polite"></section>
+  <p class="note">البيانات والأسعار والصور هنا عيّنة وهمية لتجربة البحث فقط.</p>
+</main>
+<div class="bar" id="bar" hidden><span id="cnt"></span><span id="tot"></span></div>
+
+<script id="core">
+/* ---- search core: pure functions, no DOM ---- */
+(function(root){
+  const AR_DIG="٠١٢٣٤٥٦٧٨٩";
+  function norm(s){
+    return String(s||"").toLowerCase()
+      .replace(/[٠-٩]/g,d=>AR_DIG.indexOf(d))
+      .replace(/[ً-ٰٟـ]/g,"")
+      .replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/ؤ/g,"و").replace(/ئ/g,"ي")
+      .replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim();
+  }
+  function stem(w){
+    if(w.length>4&&w.startsWith("ال"))w=w.slice(2);
+    if(w.length>4&&/(ات|ون|ين)$/.test(w))w=w.slice(0,-2);
+    if(w.length>3&&w.endsWith("ه"))w=w.slice(0,-1);
+    return w;
+  }
+  const GROUPS=[
+    "بطاطس بطاطا بطاطه potato potatoes","طماطم بندوره tomato tomatoes","رز ارز rice","سكر sugar","ماء مياه موية water",
+    "خبز عيش bread","دجاج فروج chicken","بيض بيضه eggs egg","زبادي روب yogurt yoghurt","شاي tea","قهوه coffee",
+    "كتشب كاتشب ketchup","حليب milk","جبن جبنه cheese","زيت oil","معكرونه مكرونه pasta","موز banana","تفاح apple",
+    "خيار cucumber","بصل onion","صابون soap","شامبو shampoo","معجون toothpaste","حفاظات بامبرز diapers","مناديل tissues","عصير juice","بسكويت biscuit biscuits","شيبس رقائق chips"
+  ];
+  const SYN=new Map();
+  GROUPS.forEach(g=>{const ws=g.split(" ").map(w=>stem(norm(w)));ws.forEach(w=>{const a=SYN.get(w)||new Set();ws.forEach(x=>a.add(x));SYN.set(w,a)})});
+  function lev(a,b,max){
+    if(Math.abs(a.length-b.length)>max)return max+1;
+    let p=Array.from({length:b.length+1},(_,i)=>i);
+    for(let i=1;i<=a.length;i++){const c=[i];let m=c[0];
+      for(let j=1;j<=b.length;j++){c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));m=Math.min(m,c[j])}
+      if(m>max)return max+1;p=c}
+    return p[b.length];
+  }
+  function parseLine(line){
+    let t=norm(line),qty=1;
+    const m=t.match(/^(\d+)\s+(.+)$/)||t.match(/^(.+?)\s+(\d+)$/);
+    if(m){const n=/^\d+$/.test(m[1])?m[1]:m[2];qty=Math.min(+n,99);t=(/^\d+$/.test(m[1])?m[2]:m[1])}
+    return{raw:line.trim(),text:t,qty,tokens:t.split(" ").filter(Boolean).map(stem)};
+  }
+  function indexProduct(p){
+    const toks=norm([p.ar,p.en,p.cat,(p.kw||[]).join(" ")].join(" ")).split(" ").filter(Boolean).map(stem);
+    return Object.assign({},p,{_t:[...new Set(toks)],_name:stem(norm(p.ar).split(" ")[0])});
+  }
+  function tokScore(q,pt){
+    const alts=SYN.get(q)||new Set([q]);let best=0;
+    for(const a of alts){
+      if(a===pt)best=Math.max(best,1);
+      else if(a.length>=2&&pt.startsWith(a))best=Math.max(best,.85);
+      else if(pt.length>=3&&a.startsWith(pt)&&a.length-pt.length<=2)best=Math.max(best,.6);
+      else if(/[a-z]/.test(a)===/[a-z]/.test(pt)){
+        const latin=/[a-z]/.test(a);
+        const max=latin?(a.length>=7?1:0):(a.length>=7?2:a.length>=4?1:a.length===3&&a[0]===pt[0]?1:0);
+        if(max&&lev(a,pt,max)<=max)best=Math.max(best,.6)}
+    }
+    return best;
+  }
+  function search(q,catalog,limit){
+    if(!q.tokens.length)return[];
+    const out=[];
+    for(const p of catalog){
+      let sum=0,ok=true;
+      for(const qt of q.tokens){let b=0;for(const pt of p._t)b=Math.max(b,tokScore(qt,pt));if(b<.6){ok=false;break}sum+=b}
+      if(!ok)continue;
+      let s=sum/q.tokens.length;
+      if(tokScore(q.tokens[0],p._name)>=.85)s+=.15;
+      s+=(p.pop||0)*.05; if(p.stock===false)s-=.5;
+      out.push({p,s});
+    }
+    out.sort((a,b)=>b.s-a.s);
+    return out.slice(0,limit||60).map(x=>x.p);
+  }
+  root.Core={norm,stem,parseLine,indexProduct,search,lev};
+  if(typeof module!=="undefined")module.exports=root.Core;
+})(typeof window!=="undefined"?window:globalThis);
+</script>
+
+<script id="data">
+/* sample catalogue: invented names and prices, no real brands */
+const RAW=[
+["بطاطس محلية 1.5 كجم","Local potatoes","خضار",11.25,0,5],["بطاطس مقلية مجمدة 900 جم","Frozen fries","مجمدات",14.5,0,4],
+["رقائق بطاطس بالكاتشب 48 جم","Ketchup potato chips","سناكات",3.5,0,5],["رقائق بطاطس بالملح 180 جم","Salted potato chips","سناكات",7.75,9.5,3],["أصابع بطاطس حارة 40 جم","Spicy potato sticks","سناكات",4.5,0,2],
+["طماطم بلدي 1 كجم","Tomatoes","خضار",5.95,0,5],["معجون طماطم 135 جم","Tomato paste","معلبات",3.95,4.95,3],
+["كتشب بارد 340 جم","Cold ketchup","صلصات",4.95,6.95,4],["كتشب حار 340 جم","Hot ketchup","صلصات",5.95,7.95,3],["كتشب شيلي 340 جم","Chili ketchup","صلصات",6.95,8.95,2],["كاتشب أمريكي 425 جم","American ketchup","صلصات",11.95,14.95,2],
+["لبن طازج كامل الدسم 180 مل","Fresh laban","ألبان",2,0,5],["لبن طازج 2 لتر","Fresh laban 2L","ألبان",12.5,0,3],["لبن عيران 180 مل","Ayran","ألبان",2,0,3],["لبن قليل الدسم 1.75 لتر","Low-fat laban","ألبان",14.5,0,2],["لبن كامل الدسم 340 مل","Full fat laban","ألبان",3,0,2],
+["حليب طازج كامل الدسم 1 لتر","Fresh milk 1L","ألبان",6.5,0,5],["حليب طويل الأجل 1 لتر","Long life milk","ألبان",5.75,0,4],["حليب مجفف 900 جم","Powdered milk","ألبان",32,38,2],
+["زبادي يوناني 150 جم","Greek yogurt","ألبان",3.25,0,4],["زبادي طبيعي 400 جم","Plain yogurt","ألبان",4.5,0,4],["زبادي بالفواكه 120 جم","Fruit yogurt","ألبان",2.25,0,2],
+["سكر أبيض ناعم 5 كجم","White sugar 5kg","مواد أساسية",36.95,0,4],["سكر أبيض 2 كجم","White sugar 2kg","مواد أساسية",15.95,0,4],["سكر بني طبيعي 500 جم","Brown sugar","مواد أساسية",12.95,0,2],["سكر ستيفيا 50 ظرف","Stevia sugar","مواد أساسية",17.95,0,2],["حلواني سكر مكعب 500 جم","Sugar cubes","مواد أساسية",6.95,0,1],
+["مياه شرب 5 لتر","Drinking water 5L","مشروبات",8,0,4],["مياه شرب 200 مل × 48","Water 200ml x48","مشروبات",20.95,26.95,3],["مياه شرب 330 مل × 12","Water 330ml x12","مشروبات",7.5,0,4],["ماء جوز الهند 330 مل","Coconut water","مشروبات",13.95,0,2],
+["عصير برتقال طبيعي 1 لتر","Orange juice","مشروبات",9.95,0,3],["عصير تفاح 200 مل","Apple juice","مشروبات",2.5,0,2],
+["أرز بسمتي 5 كجم","Basmati rice 5kg","مواد أساسية",42,0,5],["أرز مصري 1 كجم","Egyptian rice","مواد أساسية",8.5,0,3],["رز بخاري 10 كجم","Bukhari rice","مواد أساسية",75,85,2],
+["خبز توست أبيض","White toast bread","مخبوزات",4.5,0,4],["خبز عربي 6 حبات","Arabic bread","مخبوزات",3,0,4],["صامولي بالحليب","Milk samoli","مخبوزات",1.5,0,3],
+["دجاج طازج كامل 1.2 كجم","Fresh whole chicken","لحوم",21.95,0,5],["صدور دجاج 1 كجم","Chicken breast","لحوم",27.5,0,4],
+["بيض أبيض 30 حبة","White eggs 30","بيض",21.95,0,5],["بيض بلدي 12 حبة","Free range eggs","بيض",16.5,0,3],
+["شاي أحمر 100 كيس","Black tea bags","مشروبات ساخنة",14.5,0,4],["شاي أخضر 25 كيس","Green tea","مشروبات ساخنة",8.95,0,2],["قهوة عربية 250 جم","Arabic coffee","مشروبات ساخنة",19.5,0,4],["قهوة سريعة الذوبان 200 جم","Instant coffee","مشروبات ساخنة",28,32,3],
+["زيت دوار الشمس 1.5 لتر","Sunflower oil","مواد أساسية",15.95,0,4],["زيت زيتون بكر 500 مل","Olive oil","مواد أساسية",29.95,0,3],
+["معكرونة سباغيتي 500 جم","Spaghetti","مواد أساسية",3.75,0,4],["نودلز بالدجاج 5 أكياس","Chicken noodles","مواد أساسية",7.95,0,3],
+["جبنة شرائح 200 جم","Sliced cheese","ألبان",9.5,0,3],["جبنة قريش 200 جم","Cottage cheese","ألبان",4.25,0,2],
+["موز 1 كجم","Bananas","فواكه",5.5,0,4],["تفاح أحمر 1 كجم","Red apples","فواكه",8.95,0,3],["خيار 1 كجم","Cucumber","خضار",4.95,0,3],["بصل أحمر 1 كجم","Red onion","خضار",3.95,0,4],
+["صابون سائل لليدين 500 مل","Hand soap","عناية",9.95,0,3],["شامبو للشعر الجاف 400 مل","Shampoo","عناية",18.95,0,3],["معجون أسنان 100 مل","Toothpaste","عناية",7.95,0,4],
+["حفاظات أطفال مقاس 3","Baby diapers size 3","أطفال",54,0,3],["مناديل ورقية 6 علب","Tissues 6 boxes","منزل",19.95,24.95,4],
+["بسكويت دايجستف 250 جم","Digestive biscuits","سناكات",11.95,0,2],["شوكولاتة بالبندق 350 جم","Hazelnut spread","سناكات",14.95,0,3],["ماء معدني فوار 330 مل","Sparkling water","مشروبات",3.5,0,1]
+];
+const COLORS=["#cfe8dc","#f6e1b8","#d9dff5","#f1d3d3","#e3d6ee","#d3ebee","#eee3c8"];
+const CATALOG=RAW.map((r,i)=>Core.indexProduct({id:i,ar:r[0],en:r[1],cat:r[2],price:r[3],old:r[4],pop:r[5]/5,stock:!(i%23===22),color:COLORS[i%COLORS.length]}));
+</script>
+
+<script id="app">
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const fmt=n=>n.toLocaleString("ar-SA",{minimumFractionDigits:2,maximumFractionDigits:2});
+let cart={};
+function renderRecent(){
+  const r=store.get("recent",[]);$("recentWrap").hidden=!r.length;$("recent").replaceChildren();
+  r.forEach(l=>{const b=document.createElement("button");b.type="button";b.textContent=l.split("\n").slice(0,3).join("، ")+(l.split("\n").length>3?"…":"");
+    b.onclick=()=>{$("list").value=l;sync();run()};$("recent").append(b)});
+}
+function sync(){$("go").disabled=!$("list").value.trim()}
+function card(p,qty){
+  const c=document.createElement("div");c.className="card"+(p.stock?"":" out");
+  const th=document.createElement("div");th.className="thumb";th.style.background=p.color;th.textContent=p.ar.trim()[0];
+  const nm=document.createElement("div");nm.className="name";nm.textContent=p.ar;
+  const pr=document.createElement("div");pr.className="price";
+  const now=document.createElement("span");now.className="now"+(p.old?" sale":"");now.textContent=fmt(p.price)+" ر.س";pr.append(now);
+  if(p.old){const s=document.createElement("s");s.textContent=fmt(p.old);pr.append(s)}
+  const add=document.createElement("button");add.className="add";add.type="button";add.textContent="+";add.setAttribute("aria-label","أضف "+p.ar);
+  add.onclick=()=>{cart[p.id]=(cart[p.id]||0)+qty;bar()};
+  c.append(th,nm,pr,add);
+  if(!p.stock){const t=document.createElement("span");t.className="tag";t.textContent="غير متوفر";c.append(t)}
+  return c;
+}
+function bar(){
+  const n=Object.values(cart).reduce((a,b)=>a+b,0);$("bar").hidden=!n;
+  const t=Object.entries(cart).reduce((a,[id,q])=>a+CATALOG[id].price*q,0);
+  $("cnt").textContent=n+" منتج في السلة";$("tot").textContent=fmt(t)+" ر.س";
+}
+function run(){
+  const lines=$("list").value.split("\n").map(s=>s.trim()).filter(Boolean);if(!lines.length)return;
+  const seen=new Set(),items=[];
+  lines.forEach(l=>{const q=Core.parseLine(l);const k=q.tokens.join(" ");if(k&&!seen.has(k)){seen.add(k);items.push(q)}});
+  const recent=[lines.join("\n"),...store.get("recent",[]).filter(x=>x!==lines.join("\n"))].slice(0,5);store.set("recent",recent);renderRecent();
+  const box=$("results");box.replaceChildren();
+  const h=document.createElement("h2");h.textContent="قائمتي";box.append(h);
+  const wrap=document.createElement("div");wrap.style.cssText="display:flex;flex-direction:column;gap:18px;margin-top:10px";box.append(wrap);
+  items.forEach(q=>{
+    const res=Core.search(q,CATALOG,40);
+    const it=document.createElement("div");it.className="item";
+    const hd=document.createElement("header");const t=document.createElement("h3");t.textContent=q.raw;
+    if(q.qty>1){const s=document.createElement("small");s.textContent="× "+q.qty;t.append(s)}hd.append(t);
+    if(res.length){
+      const rail=document.createElement("div");rail.className="rail";res.forEach(p=>rail.append(card(p,q.qty)));
+      if(res.length>2){const l=document.createElement("button");l.className="link";l.type="button";l.textContent="مشاهدة الكل ("+res.length+")";
+        l.onclick=()=>{const all=rail.classList.toggle("all");l.textContent=all?"إخفاء":"مشاهدة الكل ("+res.length+")"};hd.append(l)}
+      it.append(hd,rail);
+    }else{
+      const m=document.createElement("div");m.className="miss";m.textContent="ما لقيت «"+q.raw+"». جرّب كلمة ثانية أو اسم أبسط.";it.append(hd,m);
+    }
+    wrap.append(it);
+  });
+  const ed=document.createElement("button");ed.type="button";ed.textContent="تعديل القائمة";ed.onclick=()=>{$("list").focus();window.scrollTo({top:0,behavior:"smooth"})};box.append(ed);
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("list").addEventListener("input",sync);
+$("go").onclick=run;
+$("demo").onclick=()=>{$("list").value="بطاطس\nكتشب\nلبن\n٢ سكر\nماء\nبيظ\nحليب\nجبنه\nموز\nطماطم";sync();run()};
+$("clearRecent").onclick=()=>{store.set("recent",[]);renderRecent()};
+renderRecent();sync();
+</script>
