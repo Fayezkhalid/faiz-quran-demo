@@ -1,6 +1,7 @@
 ---
 name: replica-brand
 description: >-
+  الهوية: يختار الاسم والألوان والشعار ويفحص أي بقايا من الأصل. يُستخدم عند: "اختر اسم لتطبيقي"، "غيّر الهوية"، "خله ملكي".
   Names and rebrands an app clone so it is the user's own: name candidates
   with the trademark, domain, store and handle checks to run, a new palette
   checked for contrast, a logo brief, a voice guide, and a sweep tool that
@@ -11,6 +12,8 @@ description: >-
 ---
 
 # replica-brand
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Nothing launches under the original's identity. This skill is the line
 between "a clone" and "your app".

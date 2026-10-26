@@ -1,6 +1,7 @@
 ---
 name: replica-backend
 description: >-
+  الخلفية: تسجيل الدخول وقاعدة البيانات والدفع (Stripe) والبريد والمهام الخلفية وقائمة أمان. يُستخدم عند: "أضف تسجيل دخول"، "اربط الدفع"، "الباك إند".
   Builds the backend of an app clone: auth, database migrations and access
   rules, payments with Stripe, email, background jobs and third-party
   integrations through official APIs only, plus a security checklist. Use when
@@ -10,6 +11,8 @@ description: >-
 ---
 
 # replica-backend
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Reads `replica/architecture.md`. Writes migrations and server code, and keeps
 `replica/backend.md` (checklist below) up to date.

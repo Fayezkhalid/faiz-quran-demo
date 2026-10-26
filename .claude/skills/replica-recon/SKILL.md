@@ -1,6 +1,7 @@
 ---
 name: replica-recon
 description: >-
+  الاستطلاع: يحلل أي تطبيق ويطلع خريطة بشاشاته وتدفقاته وبياناته وميزاته. أول خطوة. يُستخدم عند: "استنسخ هذا التطبيق"، "حلل تطبيق كذا"، "أبي أسوي نسختي من تطبيق".
   Reverse-engineers any app into a recon map: screen inventory, user flows,
   component list, inferred data model and a feature matrix, from public pages,
   screenshots, app store listings, help docs and the user's own account. The
@@ -11,6 +12,8 @@ description: >-
 ---
 
 # replica-recon
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Everything else in the pack builds from what this skill writes. A bad recon
 map means a bad clone, so take the time here.

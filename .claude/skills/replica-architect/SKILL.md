@@ -1,6 +1,7 @@
 ---
 name: replica-architect
 description: >-
+  الهندسة المعمارية: يختار التقنيات ويصمم قاعدة البيانات والـ API وترتيب البناء. يُستخدم عند: "خطط للنسخة"، "أي تقنية أستخدم"، "صمم قاعدة البيانات".
   Plans the stack, database schema and API for an app clone, from the recon
   map replica-recon wrote. Picks boring, managed tech, turns the inferred data
   model into real SQL with indexes and access rules, lists every route by
@@ -11,6 +12,8 @@ description: >-
 ---
 
 # replica-architect
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Reads `replica/recon.md` and `replica/features.csv`. Writes
 `replica/architecture.md` (template: architecture.md in this folder).

@@ -1,6 +1,7 @@
 ---
 name: replica-entrepreneur
 description: >-
+  ريادة الأعمال: يقرأ مراجعات مستخدمي التطبيق الأصلي ويطلع الفجوات وخطة التحسين وزاوية التسويق. يُستخدم عند: "وش يكرهون في التطبيق"، "كيف أخلي نسختي أفضل".
   Researches the app being cloned and reads what its real users say in public
   reviews (App Store, Google Play, G2, Capterra, Trustpilot, Reddit, Hacker
   News, its own feature-request board), then ranks what they hate, what is
@@ -12,6 +13,8 @@ description: >-
 ---
 
 # replica-entrepreneur
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 A straight copy of an app has no reason to exist. This skill finds the reason:
 what the original's users hate, in their own words, and fixes it in yours.

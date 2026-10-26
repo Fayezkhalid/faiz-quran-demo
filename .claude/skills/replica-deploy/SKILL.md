@@ -1,6 +1,7 @@
 ---
 name: replica-deploy
 description: >-
+  النشر: يطلق النسخة على دومينك مع فحص ما قبل النشر وDNS والدفع والمراقبة. يُستخدم عند: "انشرها"، "اربط الدومين"، "ودّها للإنتاج".
   Ships an app clone live on the user's own domain: a preflight gate (tests
   green, parity must-haves done, rebrand sweep clean, listing linted, legal
   pages up), production database and env vars, the host, DNS records for the
@@ -11,6 +12,8 @@ description: >-
 ---
 
 # replica-deploy
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Reads everything in `replica/`. Writes `replica/deploy.md` (the checklist in
 `preflight.md` in this folder, filled in).

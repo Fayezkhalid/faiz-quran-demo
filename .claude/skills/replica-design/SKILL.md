@@ -1,6 +1,7 @@
 ---
 name: replica-design
 description: >-
+  التصميم: يبني نظام التصميم (ألوان وخطوط ومسافات ومكوّنات) مع فحص التباين. يُستخدم عند: "طابق التصميم"، "طلّع الألوان والخطوط".
   Rebuilds an app's design system for a clone: colour roles, type scale,
   spacing, radius, shadows and every component with its states, as design
   tokens plus component specs, with original assets instead of the target's
@@ -11,6 +12,8 @@ description: >-
 ---
 
 # replica-design
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Reads `replica/recon.md` and the screenshots in `replica/screens/`. Writes
 `replica/design/tokens.json` (template in this folder), `tokens.css`, the
