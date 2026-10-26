@@ -1,6 +1,7 @@
 ---
 name: replica-launch
 description: >-
+  الإطلاق: صفحة الهبوط والتسعير وقوائم App Store وGoogle Play وخطة الإطلاق. يُستخدم عند: "صفحة هبوط"، "كم أسعّر"، "خطة الإطلاق".
   Writes the launch for an app clone: the landing page built on the
   positioning angle, pricing set against the original's public pricing and
   its users' complaints, and the App Store and Google Play listing linted
@@ -11,6 +12,8 @@ description: >-
 ---
 
 # replica-launch
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Reads `replica/fixes.md` (the angle and the evidence), `replica/brand.md`,
 and `replica/brand.json`. Writes `replica/launch/`: `landing.md`,

@@ -1,6 +1,7 @@
 ---
 name: replica-build
 description: >-
+  البناء: يبني الشاشات واحدة واحدة من خريطة الاستطلاع. يُستخدم عند: "ابنِ النسخة"، "ابدأ البناء"، "نفّذ هذه الشاشة".
   Rebuilds an app screen by screen from the recon map: app shell first, then
   the core flow as a vertical slice, then every screen with all its states,
   ticking off the feature matrix as it goes. Writes every line fresh, never
@@ -10,6 +11,8 @@ description: >-
 ---
 
 # replica-build
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Reads `replica/recon.md`, `replica/architecture.md`, `replica/design/`.
 Updates `replica/features.csv` (the `clone` column) and keeps

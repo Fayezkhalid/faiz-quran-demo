@@ -1,6 +1,7 @@
 ---
 name: replica-test
 description: >-
+  الاختبار: خطة اختبار وفحص كل التدفقات وتقارير الأخطاء. يُستخدم عند: "اختبر النسخة"، "دوّر على أخطاء"، "افحص كل شيء".
   Clicks through every flow of an app clone and tests it for bugs: a test plan
   generated from the recon flows with happy paths and edge cases, Playwright
   end-to-end tests where possible, a browser click-through where not, and bug
@@ -11,6 +12,8 @@ description: >-
 ---
 
 # replica-test
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Reads the flows in `replica/recon.md`. Writes `replica/test-plan.md`,
 `replica/bugs.md`, and end-to-end tests in the project (`e2e/`). Templates in

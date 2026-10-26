@@ -1,6 +1,7 @@
 ---
 name: replica-diff
 description: >-
+  المقارنة: يقيس نسبة تطابق النسخة مع الأصل ويقارن الشاشات. يُستخدم عند: "قد إيش نسختي قريبة"، "وش الناقص"، "قارنها بالأصل".
   Compares an app clone against the original: a feature parity score from the
   feature matrix (weighted by must, should, could) with the missing list in
   build order, plus a screenshot layout diff that ignores colour so a rebrand
@@ -11,6 +12,8 @@ description: >-
 ---
 
 # replica-diff
+
+> **اللغة:** رُدّ على المستخدم دائمًا بالعربية (اللهجة السعودية البسيطة)، بما فيها العناوين والملخصات والتقارير والقوائم. أبقِ فقط أسماء الأوامر والأكواد والملفات ومصطلحات التقنية المعروفة (مثل API وStripe) بالإنجليزية.
 
 Two tools in this folder, both standard-library Python, no installs:
 
