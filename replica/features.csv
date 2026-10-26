@@ -1,21 +1,23 @@
 feature,area,priority,original,clone,notes
-Live suggestions while typing,suggestions,must,unconfirmed,no,needs-screenshot
+Search by list: one item per line then results per item,list search,must,yes,no,seen in recording (S02-S03)
+Per-item carousel of matching products,list results,must,yes,no,seen
+Show-all link per list item,list results,must,yes,no,seen
+Results button disabled until the list has text,list search,must,yes,no,seen
+Remove a line with an x,list search,should,yes,no,seen
+Edit the list from the results screen,list results,should,yes,no,seen (pencil icon)
+Greyed example lines and a tips box,list search,could,yes,no,seen
+Recent searches as chips with clear-all,history,must,yes,no,seen
+Trending products chips,discovery,should,yes,no,seen
+Personalised smart lists,discovery,could,yes,no,title seen only; behaviour unknown
 Arabic letter normalisation (alef forms; taa marbuta/haa; yaa/alef maqsura; strip diacritics and tatweel),arabic,must,unconfirmed,no,own design
-Typo tolerance (edit distance 1-2),relevance,must,unconfirmed,no,needs-screenshot
-Arabic and English synonyms (e.g. حليب = milk),arabic,must,unconfirmed,no,own design
-Result list with product cards,results,must,yes,no,listing says groceries/personal care/beauty/pharmacy
-Empty state with suggestions,results,must,unconfirmed,no,needs-screenshot
-Matched text highlighted in suggestions,suggestions,should,unconfirmed,no,needs-screenshot
-Recent searches,suggestions,should,unconfirmed,no,needs-screenshot
-Trending or popular searches,suggestions,should,unconfirmed,no,needs-screenshot
-Filters (category brand price),filters,should,unconfirmed,no,needs-screenshot
-Sort (relevance price),filters,should,unconfirmed,no,needs-screenshot
+Typo tolerance (edit distance 1-2),relevance,must,unconfirmed,no,not in recording
+Arabic and English synonyms (e.g. حليب = milk),arabic,should,unconfirmed,no,own design
+Quantity words in a list line (e.g. 2 لبن),list search,could,unconfirmed,no,own design
+Live suggestions while typing in the normal box,suggestions,should,unconfirmed,no,not in recording
+Filters and sort,filters,could,unconfirmed,no,not in recording
 Ranking by text match + popularity + in-stock,relevance,should,unconfirmed,no,own design
-Category hints inside suggestions,suggestions,could,unconfirmed,no,needs-screenshot
-Voice search,input,could,unconfirmed,no,needs-screenshot
-Barcode scan search,input,could,unconfirmed,no,needs-screenshot
 Web client,platform,must,n/a,no,user request
 Mobile client (iOS/Android),platform,must,n/a,no,user request
 One shared search API for both clients,platform,must,n/a,no,own design
-Ninja product catalogue and images,data,could,yes,skip,owned by Ninja; use own sample data
+Ninja product catalogue prices and images,data,could,yes,skip,owned by Ninja; use own sample data
 Ordering delivery and payments,commerce,could,yes,skip,out of scope for a personal search project
