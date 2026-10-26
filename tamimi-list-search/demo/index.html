@@ -1,83 +1,161 @@
-<title>البحث بالقائمة</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap">
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>List Search · البحث بالقائمة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: one narrow column. Input panel, before/after switch, one product row per list line. */
+/* Layout: app header, KPI strip, then a two-column workspace (list input | result rows). One light look. */
 :root{
-  --bg:#f6f5f3; --surface:#ffffff; --fg:#22201d; --muted:#6f6a63; --line:#e2ded8;
-  --accent:#9b1c24; --accent-fg:#ffffff; --good:#1f7a4d; --bad:#b4471a; --chip:#efebe6;
-  --font:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  --bg:#F5F4F4; --surface:#FFFFFF; --ink:#231F20; --ink-2:#4A4446; --muted:#77706F; --line:#E5E1E1;
+  --brand:#C8161D; --brand-ink:#FFFFFF; --brand-soft:#FBE8E9;
+  --good:#1F7A4D; --good-soft:#E5F2EB; --bad:#B4471A; --bad-soft:#FBECE4;
+  --radius:14px; --shadow:0 1px 2px rgba(35,31,32,.06),0 4px 16px rgba(35,31,32,.06);
+  --font-ar:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",system-ui,sans-serif;
+  --font-en:"Inter","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#171514; --surface:#211e1c; --fg:#efebe6; --muted:#a39d95; --line:#36312d;
-  --accent:#e2646b; --accent-fg:#1a0d0e; --good:#5cc592; --bad:#f08a5d; --chip:#2b2724; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#171514; --surface:#211e1c; --fg:#efebe6; --muted:#a39d95; --line:#36312d;
-  --accent:#e2646b; --accent-fg:#1a0d0e; --good:#5cc592; --bad:#f08a5d; --chip:#2b2724; color-scheme:dark}
-body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;direction:rtl;
-  padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-main{max-width:680px;margin-inline:auto;display:flex;flex-direction:column;gap:18px}
-h1{font-size:24px;line-height:1.25;margin:0;text-wrap:balance}
-.sub{color:var(--muted);margin:4px 0 0}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
-label.t{font-weight:600}
-textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:140px;resize:vertical;width:100%;box-sizing:border-box;line-height:1.9}
-textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.hint{color:var(--muted);font-size:13px;margin:0}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--chip);color:var(--fg);padding:8px 12px}
-button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700;padding:11px 18px;flex:1}
-button.primary:disabled{opacity:.45;cursor:not-allowed}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;background:var(--surface)}
-.seg button{border:0;border-radius:99px;background:none;padding:6px 14px;font-size:14px}
-.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg);font-weight:600}
-.mode-note{font-size:13px;color:var(--muted);margin:0}
-.item{display:flex;flex-direction:column;gap:8px;min-width:0}
-.item header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
-.item h3{margin:0;font-size:18px}
-.item h3 small{color:var(--muted);font-weight:400;font-size:13px;margin-inline-start:6px}
-.stat{font-size:13px;font-variant-numeric:tabular-nums}
-.stat .ok{color:var(--good);font-weight:600}.stat .no{color:var(--bad);font-weight:600}
-.rail{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
-.card{flex:0 0 140px;scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0}
-.card.off{border-color:var(--bad);border-style:dashed}
-.thumb{height:64px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--chip);color:var(--muted);text-align:center;padding:4px}
-.name{font-size:13px;line-height:1.4;min-height:2.8em;overflow-wrap:anywhere}
-.brand{font-size:11px;color:var(--accent);font-weight:600}
-.price{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
-.why{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
-.miss{border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--muted)}
-.note{font-size:12px;color:var(--muted)}
-</style>
-<main>
-  <header>
-    <h1>البحث بالقائمة</h1>
-    <p class="sub">نموذج مقترح لتطبيق أسواق التميمي: يكتب العميل قائمته سطرًا سطرًا، ويطلع له صف منتجات لكل غرض.</p>
-  </header>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ar);font-size:15px;line-height:1.55}
+html[lang="en"] body{font-family:var(--font-en)}
+button,textarea,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.wrap{max-width:1240px;margin-inline:auto;padding-inline:max(20px,env(safe-area-inset-left,0px))}
 
-  <section class="panel">
-    <label class="t" for="list">قائمة المقاضي</label>
-    <textarea id="list">لبن
-حليب
-2 خبز
-رز
-بيض
-شاي</textarea>
-    <p class="hint">سطر لكل غرض، أو افصل بفاصلة. الكمية قبل الغرض: «2 خبز». الأخطاء الإملائية البسيطة مقبولة.</p>
-    <div class="row">
-      <button class="primary" id="go">عرض النتائج</button>
+/* header */
+header.app{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header.app .wrap{display:flex;align-items:center;gap:16px;min-height:68px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand img{height:34px;width:auto;display:block}
+.brand .wordmark{font-weight:700;color:var(--brand);font-size:18px}
+.brand .sep{width:1px;height:28px;background:var(--line)}
+.brand h1{font-size:17px;margin:0;font-weight:600;white-space:nowrap}
+.tag{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--brand);background:var(--brand-soft);padding:3px 8px;border-radius:99px}
+.spacer{flex:1}
+.basket{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-variant-numeric:tabular-nums}
+.basket b{color:var(--ink)}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;background:var(--bg)}
+.lang button{border:0;background:none;border-radius:99px;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+/* KPI strip */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-block:22px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+.kpi .label{font-size:12.5px;color:var(--muted)}
+.kpi .value{font-size:28px;font-weight:700;line-height:1.2;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .value small{font-size:14px;color:var(--muted);font-weight:500}
+.kpi.good .value{color:var(--good)} .kpi.bad .value{color:var(--bad)}
+
+/* workspace */
+.work{display:grid;grid-template-columns:340px minmax(0,1fr);gap:22px;align-items:start;padding-bottom:40px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:sticky;top:88px}
+.panel h2{font-size:15px;margin:0}
+.panel p.help{font-size:12.5px;color:var(--muted);margin:0}
+textarea{width:100%;min-height:190px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#FCFBFB;line-height:1.9}
+textarea:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px var(--brand-soft)}
+.examples{display:flex;flex-wrap:wrap;gap:6px}
+.examples button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 10px;font-size:12.5px;cursor:pointer}
+.examples button:hover{border-color:var(--brand);color:var(--brand)}
+.primary{background:var(--brand);color:var(--brand-ink);border:0;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer;font-size:15px}
+.primary:hover{filter:brightness(.95)}
+.field-label{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--bg)}
+.seg button{border:0;background:none;border-radius:8px;padding:8px 6px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.seg button[data-mode="old"][aria-pressed="true"]{color:var(--bad)}
+.switch{display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;user-select:none}
+.switch input{width:36px;height:20px;appearance:none;background:var(--line);border-radius:99px;position:relative;cursor:pointer;margin:0;flex:none}
+.switch input::after{content:"";position:absolute;top:2px;inset-inline-start:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:inset-inline-start .15s}
+.switch input:checked{background:var(--brand)}
+.switch input:checked::after{inset-inline-start:18px}
+.mode-note{font-size:12.5px;line-height:1.6;padding:10px 12px;border-radius:10px;background:var(--good-soft);color:var(--good)}
+.mode-note.old{background:var(--bad-soft);color:var(--bad)}
+
+/* result rows */
+.rows{display:flex;flex-direction:column;gap:16px;min-width:0}
+.row{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 16px 12px;min-width:0}
+.row-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.row-head h3{margin:0;font-size:18px}
+.qty{font-size:12px;font-weight:700;background:var(--ink);color:#fff;border-radius:99px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.pill{font-size:12px;font-weight:600;border-radius:99px;padding:3px 10px;font-variant-numeric:tabular-nums}
+.pill.ok{background:var(--good-soft);color:var(--good)} .pill.no{background:var(--bad-soft);color:var(--bad)}
+.count{font-size:12.5px;color:var(--muted)}
+.see-all{margin-inline-start:auto;border:0;background:none;color:var(--brand);font-weight:600;font-size:13px;cursor:pointer;padding:4px 0}
+.rail{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+.rail.all{flex-wrap:wrap;overflow:visible}
+.card{flex:0 0 168px;scroll-snap-align:start;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;position:relative;background:var(--surface);min-width:0}
+.rail.all .card{flex:1 1 168px;max-width:200px}
+.card.off{border-color:var(--bad);background:#FFFBF9}
+.card.off::before{content:attr(data-off);position:absolute;top:8px;inset-inline-start:8px;font-size:10.5px;font-weight:700;background:var(--bad);color:#fff;border-radius:6px;padding:1px 6px;z-index:1}
+.tile{height:92px;border-radius:9px;display:grid;place-items:center;font-size:12.5px;font-weight:600;color:var(--ink-2);text-align:center;padding:6px}
+.brandname{font-size:11.5px;font-weight:700;color:var(--brand)}
+.pname{font-size:13px;line-height:1.4;min-height:3.6em;overflow-wrap:anywhere}
+.price-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.price{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.price small{font-weight:500;color:var(--muted);font-size:11px}
+.add{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;line-height:1;display:grid;place-items:center;color:var(--brand);font-weight:700}
+.add:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+.oos{font-size:11px;color:var(--bad);font-weight:600}
+.why{font-size:11px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px;overflow-wrap:anywhere;direction:ltr;text-align:start}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:14px;color:var(--muted);font-size:13.5px}
+footer.note{font-size:12px;color:var(--muted);padding-bottom:28px}
+
+@media (max-width:900px){
+  .work{grid-template-columns:1fr}
+  .panel{position:static}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .brand h1{white-space:normal}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="app">
+  <div class="wrap">
+    <div class="brand">
+      <span class="wordmark">Tamimi Markets</span>
+      <span class="sep" aria-hidden="true"></span>
+      <h1 data-i18n="title"></h1>
+      <span class="tag" data-i18n="prototype"></span>
     </div>
-    <div class="row" style="justify-content:space-between">
-      <div class="seg" role="group" aria-label="طريقة البحث">
-        <button type="button" id="mNew" aria-pressed="true">المقترح</button>
-        <button type="button" id="mOld" aria-pressed="false">البحث الحالي (محاكاة)</button>
-      </div>
-      <label class="row" style="gap:6px;font-size:13px"><input type="checkbox" id="showWhy"> ليش طلع؟</label>
+    <span class="spacer"></span>
+    <span class="basket" id="basket" aria-live="polite"></span>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="ar">العربية</button>
+      <button type="button" data-lang="en">English</button>
     </div>
-    <p class="mode-note" id="modeNote"></p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="kpis" aria-label="Summary">
+    <div class="kpi good"><div class="label" data-i18n="kpiNew"></div><div class="value" id="kNew"></div></div>
+    <div class="kpi bad"><div class="label" data-i18n="kpiOld"></div><div class="value" id="kOld"></div></div>
+    <div class="kpi"><div class="label" data-i18n="kpiItems"></div><div class="value" id="kItems"></div></div>
+    <div class="kpi"><div class="label" data-i18n="kpiFound"></div><div class="value" id="kFound"></div></div>
   </section>
 
-  <section id="results" aria-live="polite" style="display:flex;flex-direction:column;gap:20px"></section>
-  <p class="note">بيانات عيّنة (40 منتجًا) لعرض الفكرة، والأسعار تقريبية. «البحث الحالي» محاكاة تقريبية لما ظهر في التطبيق: مطابقة جزء من الكلمة، وترجمة «لبن» إلى حليب، والترتيب بالأكثر رواجًا.</p>
+  <div class="work">
+    <aside class="panel">
+      <h2><label for="list" data-i18n="listLabel"></label></h2>
+      <textarea id="list" spellcheck="false"></textarea>
+      <p class="help" data-i18n="listHelp"></p>
+      <div class="examples" id="examples"></div>
+      <button class="primary" id="go" type="button" data-i18n="show"></button>
+      <div class="field-label" data-i18n="modeLabel"></div>
+      <div class="seg" role="group">
+        <button type="button" data-mode="new" data-i18n="modeNew"></button>
+        <button type="button" data-mode="old" data-i18n="modeOld"></button>
+      </div>
+      <p class="mode-note" id="modeNote"></p>
+      <label class="switch"><input type="checkbox" id="why"><span data-i18n="why"></span></label>
+    </aside>
+    <section class="rows" id="rows" aria-live="polite"></section>
+  </div>
+  <footer class="note" data-i18n="footer"></footer>
 </main>
 
 <script>
@@ -310,74 +388,151 @@ return { normalize, tokenize, parseList, buildIndex, createSearcher,
 })();
 </script>
 <script>
-const DATA = {"products":[{"id":"p01","nameAr":"لبن طازج كامل الدسم 2 لتر","nameEn":"Fresh Laban Full Fat 2L","brandAr":"المراعي","brandEn":"Almarai","category":"laban","price":12.5,"popularity":0.9},{"id":"p02","nameAr":"لبن طازج كامل الدسم 180 مل","nameEn":"Fresh Laban Full Fat 180ml","brandAr":"المراعي","brandEn":"Almarai","category":"laban","price":2,"popularity":0.8},{"id":"p03","nameAr":"لبن طازج كامل الدسم 1.75 لتر","nameEn":"Fresh Laban Full Fat 1.75L","brandAr":"نادك","brandEn":"Nadec","category":"laban","price":11,"popularity":0.6},{"id":"p04","nameAr":"لبن قليل الدسم 1 لتر","nameEn":"Fresh Laban Low Fat 1L","brandAr":"الصافي","brandEn":"Al Safi","category":"laban","price":6.5,"popularity":0.5},{"id":"p05","nameAr":"لبن عيران 225 مل","nameEn":"Ayran Laban 225ml","brandAr":"نادك","brandEn":"Nadec","category":"laban","price":2.25,"popularity":0.4},{"id":"p06","nameAr":"لبن كفير 1.75 لتر","nameEn":"Laban Kefir 1.75L","brandAr":"أكتيفيا","brandEn":"Activia","category":"laban","price":20,"popularity":0.3},{"id":"p07","nameAr":"لبنة فاخرة كاملة الدسم 700 غرام","nameEn":"Premium Labneh Full Fat 700g","brandAr":"المراعي","brandEn":"Almarai","category":"labneh","price":12.99,"popularity":1},{"id":"p08","nameAr":"لبنة يونانية 700 غرام","nameEn":"Greek Labneh 700g","brandAr":"ندى","brandEn":"Nada","category":"labneh","price":21.95,"popularity":0.6},{"id":"p09","nameAr":"حليب طازج كامل الدسم 2 لتر","nameEn":"Fresh Milk Full Fat 2L","brandAr":"المراعي","brandEn":"Almarai","category":"milk","price":12.5,"popularity":0.95},{"id":"p10","nameAr":"حليب طويل الأجل كامل الدسم 1 لتر","nameEn":"UHT Milk Long Life Full Fat 1L","brandAr":"نادك","brandEn":"Nadec","category":"milk","price":5.75,"popularity":0.7},{"id":"p11","nameAr":"حليب خالي من اللاكتوز 1 لتر","nameEn":"UHT Milk Lactose Free 1L","brandAr":"المراعي","brandEn":"Almarai","category":"milk","price":7,"popularity":0.4},{"id":"p12","nameAr":"حليب بنكهة الشوكولاتة 18×125 مل","nameEn":"Chocolate Milk 18x125ml","brandAr":"نادك","brandEn":"Nadec","category":"flavoured-milk","price":14.99,"popularity":0.5},{"id":"p13","nameAr":"توت بري طازج 125 غرام","nameEn":"Blueberry 125g","brandAr":"دريسكولز","brandEn":"Driscoll's","category":"berries","price":12.5,"popularity":0.85},{"id":"p14","nameAr":"فراولة 250 غرام","nameEn":"Strawberry 250g","brandAr":"دريسكولز","brandEn":"Driscoll's","category":"berries","price":14.95,"popularity":0.6},{"id":"p15","nameAr":"دارنا مكدوس لبناني بالكيلو 100 غرام","nameEn":"Darna Lebanese Makdous 100g","brandAr":"أردني","brandEn":"Jordanian","category":"pickles","price":3.3,"popularity":0.3},{"id":"p16","nameAr":"زبادي بروتين سادة 150 غرام","nameEn":"Protein Yoghurt Plain 150g","brandAr":"يوبرو","brandEn":"YoPro","category":"yogurt","price":3.99,"popularity":0.5},{"id":"p17","nameAr":"زبادي طبيعي كامل الدسم 400 غرام","nameEn":"Plain Yoghurt Full Fat 400g","brandAr":"المراعي","brandEn":"Almarai","category":"yogurt","price":4.5,"popularity":0.6},{"id":"p18","nameAr":"جبنة رومي 100 غرام","nameEn":"Romi Cheese 100g","brandAr":"زينة","brandEn":"Zena","category":"cheese","price":5,"popularity":0.4},{"id":"p19","nameAr":"معجون الثوم الطازج 500 غرام","nameEn":"Fresh Garlic Paste 500g","brandAr":"لبن الخير","brandEn":"Laban Al Khair","category":"sauces","price":14.95,"popularity":0.2},{"id":"p20","nameAr":"لحم بقري مجفف أصلي 25 غرام","nameEn":"Beef Jerky Original 25g","brandAr":"جاك لينك","brandEn":"Jack Link's","category":"snacks","price":18.95,"popularity":0.2},{"id":"p21","nameAr":"أرز كالروز 5 كيلو","nameEn":"Calrose Rice 5kg","brandAr":"الوليمة","brandEn":"Alwalimah","category":"rice","price":42,"popularity":0.8},{"id":"p22","nameAr":"أرز بسمتي 10 كيلو","nameEn":"Basmati Rice 10kg","brandAr":"أبو كاس","brandEn":"Abu Kass","category":"rice","price":85,"popularity":0.9},{"id":"p23","nameAr":"دقيق الأرز 500 غرام","nameEn":"Rice Flour 500g","brandAr":"","brandEn":"","category":"flour","price":6,"popularity":0.1},{"id":"p24","nameAr":"سباغيتي 450 غرام","nameEn":"Pasta Spaghetti 450g","brandAr":"قودي","brandEn":"Goody","category":"pasta","price":3.75,"popularity":0.9},{"id":"p25","nameAr":"بيض أبيض طازج 30 حبة","nameEn":"Fresh White Eggs 30 pcs","brandAr":"العربية","brandEn":"Al Arabia","category":"eggs","price":18.99,"popularity":0.95},{"id":"p26","nameAr":"بيض أبيض كبير 15 حبة","nameEn":"White Eggs Large 15 pcs","brandAr":"الوطنية","brandEn":"Alwatania","category":"eggs","price":11.5,"popularity":0.6},{"id":"p27","nameAr":"صدور دجاج فيليه 1 كيلو","nameEn":"Chicken Breast Fillet 1kg","brandAr":"الوطنية","brandEn":"Alwatania","category":"chicken","price":27.5,"popularity":0.8},{"id":"p28","nameAr":"دجاج طازج كامل 1100 غرام","nameEn":"Fresh Chicken Premium 1100g","brandAr":"اليوم","brandEn":"Alyoum","category":"chicken","price":19.95,"popularity":0.85},{"id":"p29","nameAr":"كريمة طبخ كاملة الدسم","nameEn":"Cooking Cream Full Fat","brandAr":"بوك","brandEn":"Puck","category":"cream","price":6.5,"popularity":0.7},{"id":"p30","nameAr":"سكر ناعم 5 كيلو","nameEn":"Fine Sugar 5kg","brandAr":"الأسرة","brandEn":"Al Osra","category":"sugar","price":21.95,"popularity":0.85},{"id":"p31","nameAr":"دقيق لجميع الاستخدامات 1 كيلو","nameEn":"All Purpose Flour 1kg","brandAr":"فوم","brandEn":"Fom","category":"flour","price":4.5,"popularity":0.6},{"id":"p32","nameAr":"شاي أحمر 100 كيس","nameEn":"Black Tea 100 bags","brandAr":"ربيع","brandEn":"Rabea","category":"tea","price":19.5,"popularity":0.9},{"id":"p33","nameAr":"شاي مثلج بالخوخ 320 مل","nameEn":"Peach Ice Tea 320ml","brandAr":"ليبتون","brandEn":"Lipton","category":"soft-drinks","price":3,"popularity":0.7},{"id":"p34","nameAr":"مياه معدنية 330 مل × 40","nameEn":"Mineral Bottled Water 330ml x40","brandAr":"نوفا","brandEn":"Nova","category":"water","price":19.95,"popularity":0.9},{"id":"p35","nameAr":"بطاطس 1.5 كيلو","nameEn":"Potato 1.5kg","brandAr":"","brandEn":"","category":"potato","price":7.5,"popularity":0.8},{"id":"p36","nameAr":"معجون طماطم 8 × 135 غرام","nameEn":"Tomato Paste 8 x 135g","brandAr":"لونا","brandEn":"Luna","category":"canned","price":13.95,"popularity":0.7},{"id":"p37","nameAr":"خبز أبيض شرائح","nameEn":"White Sliced Bread","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":5,"popularity":0.9},{"id":"p38","nameAr":"خبز بر شرائح","nameEn":"Brown Sliced Bread","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":5.5,"popularity":0.6},{"id":"p39","nameAr":"صامولي صغير بالحليب","nameEn":"Milk Samoli Small","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":3,"popularity":0.7},{"id":"p40","nameAr":"كتشب 340 غرام","nameEn":"Ketchup 340g","brandAr":"هاينز","brandEn":"Heinz","category":"sauces","price":6.95,"popularity":0.7,"inStock":false}],"config":{"synonyms":[["لبن","laban"],["حليب","milk"],["لبنه","لبنة","labneh","labnah"],["زبادي","روب","yogurt","yoghurt"],["رز","ارز","أرز","rice"],["بيض","egg","eggs"],["دجاج","فروج","chicken"],["سكر","sugar"],["شاي","شاهي","tea"],["ماء","مياه","موية","مويه","water"],["بطاطس","بطاطا","potato","potatoes"],["خبز","عيش","bread","toast","توست"],["جبن","جبنه","cheese"],["قهوه","coffee"],["طماطم","بندوره","tomato","tomatoes"],["معكرونه","مكرونه","pasta"],["زيت","oil"],["كتشب","كاتشب","ketchup"]],"intents":{"لبن":["laban"],"laban":["laban"],"حليب":["milk","flavoured-milk"],"milk":["milk","flavoured-milk"],"رز":["rice"],"rice":["rice"],"شاي":["tea"],"tea":["tea"],"خبز":["bread"],"سكر":["sugar"],"دجاج":["chicken"],"بطاطس":["potato"]}}};
+const DATA = {"products":[{"id":"p01","nameAr":"لبن طازج كامل الدسم 2 لتر","nameEn":"Fresh Laban Full Fat 2L","brandAr":"المراعي","brandEn":"Almarai","category":"laban","price":12.5,"popularity":0.9},{"id":"p02","nameAr":"لبن طازج كامل الدسم 180 مل","nameEn":"Fresh Laban Full Fat 180ml","brandAr":"المراعي","brandEn":"Almarai","category":"laban","price":2,"popularity":0.8},{"id":"p03","nameAr":"لبن طازج كامل الدسم 1.75 لتر","nameEn":"Fresh Laban Full Fat 1.75L","brandAr":"نادك","brandEn":"Nadec","category":"laban","price":11,"popularity":0.6},{"id":"p04","nameAr":"لبن قليل الدسم 1 لتر","nameEn":"Fresh Laban Low Fat 1L","brandAr":"الصافي","brandEn":"Al Safi","category":"laban","price":6.5,"popularity":0.5},{"id":"p05","nameAr":"لبن عيران 225 مل","nameEn":"Ayran Laban 225ml","brandAr":"نادك","brandEn":"Nadec","category":"laban","price":2.25,"popularity":0.4},{"id":"p06","nameAr":"لبن كفير 1.75 لتر","nameEn":"Laban Kefir 1.75L","brandAr":"أكتيفيا","brandEn":"Activia","category":"laban","price":20,"popularity":0.3},{"id":"p07","nameAr":"لبنة فاخرة كاملة الدسم 700 غرام","nameEn":"Premium Labneh Full Fat 700g","brandAr":"المراعي","brandEn":"Almarai","category":"labneh","price":12.99,"popularity":1},{"id":"p08","nameAr":"لبنة يونانية 700 غرام","nameEn":"Greek Labneh 700g","brandAr":"ندى","brandEn":"Nada","category":"labneh","price":21.95,"popularity":0.6},{"id":"p09","nameAr":"حليب طازج كامل الدسم 2 لتر","nameEn":"Fresh Milk Full Fat 2L","brandAr":"المراعي","brandEn":"Almarai","category":"milk","price":12.5,"popularity":0.95},{"id":"p10","nameAr":"حليب طويل الأجل كامل الدسم 1 لتر","nameEn":"UHT Milk Long Life Full Fat 1L","brandAr":"نادك","brandEn":"Nadec","category":"milk","price":5.75,"popularity":0.7},{"id":"p11","nameAr":"حليب خالي من اللاكتوز 1 لتر","nameEn":"UHT Milk Lactose Free 1L","brandAr":"المراعي","brandEn":"Almarai","category":"milk","price":7,"popularity":0.4},{"id":"p12","nameAr":"حليب بنكهة الشوكولاتة 18×125 مل","nameEn":"Chocolate Milk 18x125ml","brandAr":"نادك","brandEn":"Nadec","category":"flavoured-milk","price":14.99,"popularity":0.5},{"id":"p13","nameAr":"توت بري طازج 125 غرام","nameEn":"Blueberry 125g","brandAr":"دريسكولز","brandEn":"Driscoll's","category":"berries","price":12.5,"popularity":0.85},{"id":"p14","nameAr":"فراولة 250 غرام","nameEn":"Strawberry 250g","brandAr":"دريسكولز","brandEn":"Driscoll's","category":"berries","price":14.95,"popularity":0.6},{"id":"p15","nameAr":"دارنا مكدوس لبناني بالكيلو 100 غرام","nameEn":"Darna Lebanese Makdous 100g","brandAr":"أردني","brandEn":"Jordanian","category":"pickles","price":3.3,"popularity":0.3},{"id":"p16","nameAr":"زبادي بروتين سادة 150 غرام","nameEn":"Protein Yoghurt Plain 150g","brandAr":"يوبرو","brandEn":"YoPro","category":"yogurt","price":3.99,"popularity":0.5},{"id":"p17","nameAr":"زبادي طبيعي كامل الدسم 400 غرام","nameEn":"Plain Yoghurt Full Fat 400g","brandAr":"المراعي","brandEn":"Almarai","category":"yogurt","price":4.5,"popularity":0.6},{"id":"p18","nameAr":"جبنة رومي 100 غرام","nameEn":"Romi Cheese 100g","brandAr":"زينة","brandEn":"Zena","category":"cheese","price":5,"popularity":0.4},{"id":"p19","nameAr":"معجون الثوم الطازج 500 غرام","nameEn":"Fresh Garlic Paste 500g","brandAr":"لبن الخير","brandEn":"Laban Al Khair","category":"sauces","price":14.95,"popularity":0.2},{"id":"p20","nameAr":"لحم بقري مجفف أصلي 25 غرام","nameEn":"Beef Jerky Original 25g","brandAr":"جاك لينك","brandEn":"Jack Link's","category":"snacks","price":18.95,"popularity":0.2},{"id":"p21","nameAr":"أرز كالروز 5 كيلو","nameEn":"Calrose Rice 5kg","brandAr":"الوليمة","brandEn":"Alwalimah","category":"rice","price":42,"popularity":0.8},{"id":"p22","nameAr":"أرز بسمتي 10 كيلو","nameEn":"Basmati Rice 10kg","brandAr":"أبو كاس","brandEn":"Abu Kass","category":"rice","price":85,"popularity":0.9},{"id":"p23","nameAr":"دقيق الأرز 500 غرام","nameEn":"Rice Flour 500g","brandAr":"","brandEn":"","category":"flour","price":6,"popularity":0.1},{"id":"p24","nameAr":"سباغيتي 450 غرام","nameEn":"Pasta Spaghetti 450g","brandAr":"قودي","brandEn":"Goody","category":"pasta","price":3.75,"popularity":0.9},{"id":"p25","nameAr":"بيض أبيض طازج 30 حبة","nameEn":"Fresh White Eggs 30 pcs","brandAr":"العربية","brandEn":"Al Arabia","category":"eggs","price":18.99,"popularity":0.95},{"id":"p26","nameAr":"بيض أبيض كبير 15 حبة","nameEn":"White Eggs Large 15 pcs","brandAr":"الوطنية","brandEn":"Alwatania","category":"eggs","price":11.5,"popularity":0.6},{"id":"p27","nameAr":"صدور دجاج فيليه 1 كيلو","nameEn":"Chicken Breast Fillet 1kg","brandAr":"الوطنية","brandEn":"Alwatania","category":"chicken","price":27.5,"popularity":0.8},{"id":"p28","nameAr":"دجاج طازج كامل 1100 غرام","nameEn":"Fresh Chicken Premium 1100g","brandAr":"اليوم","brandEn":"Alyoum","category":"chicken","price":19.95,"popularity":0.85},{"id":"p29","nameAr":"كريمة طبخ كاملة الدسم","nameEn":"Cooking Cream Full Fat","brandAr":"بوك","brandEn":"Puck","category":"cream","price":6.5,"popularity":0.7},{"id":"p30","nameAr":"سكر ناعم 5 كيلو","nameEn":"Fine Sugar 5kg","brandAr":"الأسرة","brandEn":"Al Osra","category":"sugar","price":21.95,"popularity":0.85},{"id":"p31","nameAr":"دقيق لجميع الاستخدامات 1 كيلو","nameEn":"All Purpose Flour 1kg","brandAr":"فوم","brandEn":"Fom","category":"flour","price":4.5,"popularity":0.6},{"id":"p32","nameAr":"شاي أحمر 100 كيس","nameEn":"Black Tea 100 bags","brandAr":"ربيع","brandEn":"Rabea","category":"tea","price":19.5,"popularity":0.9},{"id":"p33","nameAr":"شاي مثلج بالخوخ 320 مل","nameEn":"Peach Ice Tea 320ml","brandAr":"ليبتون","brandEn":"Lipton","category":"soft-drinks","price":3,"popularity":0.7},{"id":"p34","nameAr":"مياه معدنية 330 مل × 40","nameEn":"Mineral Bottled Water 330ml x40","brandAr":"نوفا","brandEn":"Nova","category":"water","price":19.95,"popularity":0.9},{"id":"p35","nameAr":"بطاطس 1.5 كيلو","nameEn":"Potato 1.5kg","brandAr":"","brandEn":"","category":"potato","price":7.5,"popularity":0.8},{"id":"p36","nameAr":"معجون طماطم 8 × 135 غرام","nameEn":"Tomato Paste 8 x 135g","brandAr":"لونا","brandEn":"Luna","category":"canned","price":13.95,"popularity":0.7},{"id":"p37","nameAr":"خبز أبيض شرائح","nameEn":"White Sliced Bread","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":5,"popularity":0.9},{"id":"p38","nameAr":"خبز بر شرائح","nameEn":"Brown Sliced Bread","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":5.5,"popularity":0.6},{"id":"p39","nameAr":"صامولي صغير بالحليب","nameEn":"Milk Samoli Small","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":3,"popularity":0.7},{"id":"p40","nameAr":"كتشب 340 غرام","nameEn":"Ketchup 340g","brandAr":"هاينز","brandEn":"Heinz","category":"sauces","price":6.95,"popularity":0.7,"inStock":false}],"config":{"synonyms":[["لبن","laban"],["حليب","milk"],["لبنه","لبنة","labneh","labnah"],["زبادي","روب","yogurt","yoghurt"],["رز","ارز","أرز","rice"],["بيض","egg","eggs"],["دجاج","فروج","chicken"],["سكر","sugar"],["شاي","شاهي","tea"],["ماء","مياه","موية","مويه","water"],["بطاطس","بطاطا","potato","potatoes"],["خبز","عيش","bread","toast","توست"],["جبن","جبنه","cheese"],["قهوه","coffee"],["طماطم","بندوره","tomato","tomatoes"],["معكرونه","مكرونه","pasta"],["زيت","oil"],["كتشب","كاتشب","ketchup"]],"intents":{"لبن":["laban"],"laban":["laban"],"حليب":["milk","flavoured-milk"],"milk":["milk","flavoured-milk"],"رز":["rice"],"rice":["rice"],"شاي":["tea"],"tea":["tea"],"خبز":["bread"],"سكر":["sugar"],"دجاج":["chicken"],"بطاطس":["potato"],"بيض":["eggs"],"eggs":["eggs"],"bread":["bread"],"sugar":["sugar"],"chicken":["chicken"],"potato":["potato"]}}};
 const search = ListSearch.createListSearch(DATA.products, DATA.config);
 const $ = (id) => document.getElementById(id);
-let mode = 'new';
 
-// Rough simulation of the current behaviour seen in the app, for the before/after comparison.
+const I18N = {
+  ar: {
+    title: 'البحث بالقائمة', prototype: 'نموذج تجريبي',
+    kpiNew: 'دقة أول 5 نتائج · المقترح', kpiOld: 'دقة أول 5 نتائج · البحث الحالي', kpiItems: 'أغراض القائمة', kpiFound: 'أغراض لها نتائج',
+    listLabel: 'قائمة المقاضي', listHelp: 'سطر لكل غرض، أو افصل بفاصلة. الكمية قبل الغرض مثل «2 خبز». الأخطاء الإملائية البسيطة مقبولة.',
+    show: 'عرض النتائج', modeLabel: 'طريقة البحث', modeNew: 'المقترح', modeOld: 'الحالي (محاكاة)', why: 'ليش طلع؟ (سبب ظهور كل منتج)',
+    noteNew: 'كلمة كاملة، مرادفات عربي وإنجليزي، القسم المقصود أولًا، والأكثر رواجًا للترجيح فقط.',
+    noteOld: 'محاكاة للبحث الحالي كما ظهر في التطبيق: يطابق جزءًا من الكلمة، و«لبن» يُفهم حليب، والترتيب بالأكثر رواجًا.',
+    seeAll: (n) => `عرض الكل (${n})`, hide: 'إخفاء', results: (n) => `${n} نتيجة`, relevant: (a, b) => `${a} من ${b} صحيحة`,
+    empty: (q) => `ما لقينا «${q}». جرّب اسمًا أبسط.`, off: 'قسم آخر', oos: 'غير متوفر', add: 'أضف',
+    basket: (n, t) => `السلة: <b>${n}</b> منتج · <b>${t}</b> ر.س`, sar: 'ر.س',
+    footer: 'بيانات عيّنة من 40 منتجًا لعرض الفكرة، والأسعار تقريبية. وضع «الحالي» محاكاة تقريبية لما ظهر في التطبيق، وليس البحث الفعلي.',
+    examples: ['لبن، حليب، 2 خبز، رز، بيض، شاي', 'بيظ، شاهي، أرز', 'laban, milk, rice, tea'],
+    defaultList: 'لبن\nحليب\n2 خبز\nرز\nبيض\nشاي',
+  },
+  en: {
+    title: 'Shopping-list search', prototype: 'Prototype',
+    kpiNew: 'Top-5 precision · proposed', kpiOld: 'Top-5 precision · current search', kpiItems: 'Items in the list', kpiFound: 'Items with results',
+    listLabel: 'Grocery list', listHelp: 'One item per line, or separate with commas. Quantity first, e.g. “2 bread”. Small typos are fine. Customers mostly type in Arabic.',
+    show: 'Show results', modeLabel: 'Search engine', modeNew: 'Proposed', modeOld: 'Current (simulated)', why: 'Why shown? (reason for each product)',
+    noteNew: 'Whole words, Arabic and English synonyms, intended category first, popularity only to break ties.',
+    noteOld: 'Simulation of today’s search as seen in the app: partial-word matching, “لبن” (laban) read as milk, sorted by popularity.',
+    seeAll: (n) => `See all (${n})`, hide: 'Show less', results: (n) => `${n} results`, relevant: (a, b) => `${a} of ${b} relevant`,
+    empty: (q) => `No match for “${q}”. Try a simpler name.`, off: 'Other category', oos: 'Out of stock', add: 'Add',
+    basket: (n, t) => `Basket: <b>${n}</b> items · SAR <b>${t}</b>`, sar: 'SAR',
+    footer: 'Sample data (40 products) to show the idea; prices are illustrative. “Current” is an approximate simulation of what the app showed, not the live search.',
+    examples: ['لبن، حليب، 2 خبز، رز، بيض، شاي', 'بيظ، شاهي، أرز', 'laban, milk, rice, tea'],
+    defaultList: 'لبن\nحليب\n2 خبز\nرز\nبيض\nشاي',
+  },
+};
+const CATS = {
+  laban: ['لبن', 'Laban', '#E3F0F7'], labneh: ['لبنة', 'Labneh', '#EEF3E6'], milk: ['حليب', 'Milk', '#E8EEF8'], 'flavoured-milk': ['حليب منكّه', 'Flavoured milk', '#F1E9F5'],
+  berries: ['توت', 'Berries', '#F8E3E7'], pickles: ['مخللات', 'Pickles', '#EEF0E2'], yogurt: ['زبادي', 'Yoghurt', '#EAF2F1'], cheese: ['أجبان', 'Cheese', '#FBF1DC'],
+  sauces: ['صلصات', 'Sauces', '#FBE8E1'], snacks: ['سناكات', 'Snacks', '#F7ECE0'], rice: ['أرز', 'Rice', '#F6F2E7'], flour: ['دقيق', 'Flour', '#F3F1EC'],
+  pasta: ['مكرونة', 'Pasta', '#FAF0D9'], eggs: ['بيض', 'Eggs', '#FBF3E2'], chicken: ['دجاج', 'Chicken', '#FBEDE6'], cream: ['كريمة', 'Cream', '#F4F1F6'],
+  sugar: ['سكر', 'Sugar', '#F2F2F4'], tea: ['شاي', 'Tea', '#F7EDE3'], 'soft-drinks': ['مشروبات', 'Soft drinks', '#FDEFE6'], water: ['مياه', 'Water', '#E5F1FA'],
+  potato: ['بطاطس', 'Potato', '#F7F0E1'], canned: ['معلبات', 'Canned', '#F6E7E4'], bread: ['خبز', 'Bread', '#F8EEDF'],
+};
+
+let lang = 'ar', mode = 'new', basket = {};
+const t = (k) => I18N[lang][k];
+
+// Rough simulation of today's behaviour, for the comparison only.
 const OLD_TRANSLATE = { 'لبن': 'milk' };
 function oldSearchLine(q) {
-  const n = ListSearch.normalize(q);
-  const en = OLD_TRANSLATE[n];
+  const n = ListSearch.normalize(q), en = OLD_TRANSLATE[n];
   const items = DATA.products.filter((p) => {
-    const ar = ListSearch.normalize(`${p.nameAr} ${p.brandAr}`);
-    const e = ListSearch.normalize(`${p.nameEn} ${p.brandEn}`);
-    return ar.includes(n) || (en && e.includes(en));
-  }).sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0)).map((p) => ({ product: p, reasons: ['جزء من الكلمة / الأكثر رواجًا'] }));
+    const ar = ListSearch.normalize(`${p.nameAr} ${p.brandAr}`), e = ListSearch.normalize(`${p.nameEn} ${p.brandEn}`);
+    return ar.includes(n) || e.includes(n) || (en && e.includes(en));
+  }).sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0)).map((p) => ({ product: p, reasons: ['substring', 'popularity'] }));
   return { total: items.length, items };
 }
-
 const intentOf = (q) => DATA.config.intents[ListSearch.normalize(q)] ?? DATA.config.intents[q];
-const CAT_AR = { laban:'لبن', labneh:'لبنة', milk:'حليب', 'flavoured-milk':'حليب منكّه', berries:'توت', pickles:'مخللات', yogurt:'زبادي', cheese:'أجبان', sauces:'صلصات', snacks:'سناكات', rice:'أرز', flour:'دقيق', pasta:'مكرونة', eggs:'بيض', chicken:'دجاج', cream:'كريمة', sugar:'سكر', tea:'شاي', 'soft-drinks':'مشروبات', water:'مياه', potato:'بطاطس', canned:'معلبات', bread:'خبز' };
+const top5Relevant = (r, intent) => r.items.slice(0, 5).filter((x) => intent.includes(x.product.category)).length;
 
-function card(x, intent) {
-  const p = x.product;
-  const c = document.createElement('div');
-  const relevant = !intent || intent.includes(p.category);
-  c.className = 'card' + (relevant ? '' : ' off');
-  const th = document.createElement('div'); th.className = 'thumb'; th.textContent = CAT_AR[p.category] ?? p.category;
-  const br = document.createElement('div'); br.className = 'brand'; br.textContent = p.brandAr || ' ';
-  const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = p.nameAr;
-  const pr = document.createElement('div'); pr.className = 'price'; pr.textContent = p.price.toFixed(2) + ' ر.س' + (p.inStock === false ? ' · غير متوفر' : '');
-  c.append(th, br, nm, pr);
-  if ($('showWhy').checked) { const w = document.createElement('div'); w.className = 'why'; w.textContent = x.reasons.join(' · '); c.append(w); }
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+const money = (n) => n.toLocaleString(lang === 'ar' ? 'ar-SA' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function card(x, intent, qty) {
+  const p = x.product, cat = CATS[p.category] ?? [p.category, p.category, '#EEE'];
+  const c = el('div', 'card');
+  if (intent && !intent.includes(p.category)) { c.classList.add('off'); c.dataset.off = t('off'); }
+  const tile = el('div', 'tile', lang === 'ar' ? cat[0] : cat[1]); tile.style.background = cat[2];
+  const br = el('div', 'brandname', (lang === 'ar' ? p.brandAr : p.brandEn) || ' ');
+  const nm = el('div', 'pname', lang === 'ar' ? p.nameAr : p.nameEn);
+  const pr = el('div', 'price-row');
+  const price = el('div', 'price'); price.innerHTML = `${money(p.price)} <small>${t('sar')}</small>`;
+  pr.append(price);
+  if (p.inStock === false) pr.append(el('span', 'oos', t('oos')));
+  else { const b = el('button', 'add', '+'); b.type = 'button'; b.setAttribute('aria-label', `${t('add')} ${nm.textContent}`); b.onclick = () => { basket[p.id] = (basket[p.id] ?? 0) + qty; renderBasket(); }; pr.append(b); }
+  c.append(tile, br, nm, pr);
+  if ($('why').checked) c.append(el('div', 'why', x.reasons.join(' · ')));
   return c;
+}
+
+function renderBasket() {
+  const n = Object.values(basket).reduce((a, b) => a + b, 0);
+  const total = Object.entries(basket).reduce((s, [id, q]) => s + DATA.products.find((p) => p.id === id).price * q, 0);
+  $('basket').innerHTML = t('basket')(n, money(total));
 }
 
 function run() {
   const lines = ListSearch.parseList($('list').value);
-  const box = $('results'); box.replaceChildren();
+  const box = $('rows'); box.replaceChildren();
+  let gNew = 0, gOld = 0, sNew = 0, sOld = 0, found = 0;
   for (const line of lines) {
-    const r = mode === 'new' ? search.searchLine(line.query, { limit: 12 }) : oldSearchLine(line.query);
-    const intent = intentOf(line.query);
-    const it = document.createElement('div'); it.className = 'item';
-    const hd = document.createElement('header');
-    const h = document.createElement('h3'); h.textContent = line.input;
-    if (line.quantity > 1) { const s = document.createElement('small'); s.textContent = '× ' + line.quantity; h.append(s); }
-    hd.append(h);
-    if (intent && r.items.length) {
-      const top = r.items.slice(0, 5); const good = top.filter((x) => intent.includes(x.product.category)).length;
-      const st = document.createElement('span'); st.className = 'stat';
-      st.innerHTML = `<span class="${good === top.length ? 'ok' : 'no'}">${good} من ${top.length}</span> صحيحة في أول النتائج · ${r.total} نتيجة`;
-      hd.append(st);
-    }
-    it.append(hd);
-    if (r.items.length) { const rail = document.createElement('div'); rail.className = 'rail'; r.items.slice(0, 12).forEach((x) => rail.append(card(x, intent))); it.append(rail); }
-    else { const m = document.createElement('div'); m.className = 'miss'; m.textContent = 'ما لقينا «' + line.input + '». جرّب اسمًا أبسط.'; it.append(m); }
-    box.append(it);
+    const rNew = search.searchLine(line.query, { limit: 20 }), rOld = oldSearchLine(line.query);
+    const r = mode === 'new' ? rNew : rOld, intent = intentOf(line.query);
+    if (rNew.total) found++;
+    if (intent) { gNew += top5Relevant(rNew, intent); sNew += Math.min(5, rNew.items.length); gOld += top5Relevant(rOld, intent); sOld += Math.min(5, rOld.items.length); }
+
+    const row = el('article', 'row'), head = el('div', 'row-head');
+    head.append(el('h3', null, line.input));
+    if (line.quantity > 1) head.append(el('span', 'qty', `× ${line.quantity}`));
+    if (intent && r.items.length) { const k = top5Relevant(r, intent), n = Math.min(5, r.items.length); head.append(el('span', `pill ${k === n ? 'ok' : 'no'}`, t('relevant')(k, n))); }
+    head.append(el('span', 'count', t('results')(r.total)));
+    row.append(head);
+    if (r.items.length) {
+      const rail = el('div', 'rail');
+      r.items.forEach((x) => rail.append(card(x, intent, line.quantity)));
+      if (r.items.length > 4) {
+        const b = el('button', 'see-all', t('seeAll')(r.items.length)); b.type = 'button';
+        b.onclick = () => { const all = rail.classList.toggle('all'); b.textContent = all ? t('hide') : t('seeAll')(r.items.length); };
+        head.append(b);
+      }
+      row.append(rail);
+    } else row.append(el('div', 'empty', t('empty')(line.input)));
+    box.append(row);
   }
+  const pct = (a, b) => (b ? `${Math.round((100 * a) / b)}%<small> · ${a}/${b}</small>` : '–');
+  $('kNew').innerHTML = pct(gNew, sNew);
+  $('kOld').innerHTML = pct(gOld, sOld);
+  $('kItems').textContent = lines.length;
+  $('kFound').innerHTML = `${found}<small> / ${lines.length}</small>`;
+}
+
+function setLang(l) {
+  const keepList = $('list').value && $('list').value !== I18N[lang].defaultList;
+  lang = l;
+  document.documentElement.lang = l; document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach((e) => { e.textContent = t(e.dataset.i18n); });
+  document.querySelectorAll('.lang button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.lang === l));
+  if (!keepList) $('list').value = t('defaultList');
+  const ex = $('examples'); ex.replaceChildren();
+  t('examples').forEach((s) => { const b = el('button', null, s); b.type = 'button'; b.onclick = () => { $('list').value = s.split(/،|,/).map((x) => x.trim()).join('\n'); run(); }; ex.append(b); });
+  setMode(mode); renderBasket();
+  try { localStorage.setItem('ls-lang', l); } catch (e) {}
 }
 function setMode(m) {
-  mode = m; $('mNew').setAttribute('aria-pressed', m === 'new'); $('mOld').setAttribute('aria-pressed', m === 'old');
-  $('modeNote').textContent = m === 'new'
-    ? 'المقترح: كلمة كاملة، مرادفات عربي وإنجليزي، القسم المقصود أولًا، والأكثر رواجًا للترجيح فقط.'
-    : 'محاكاة الحالي: أي منتج فيه جزء من الكلمة، و«لبن» يُترجم حليب، والترتيب بالأكثر رواجًا. البطاقات المنقّطة من قسم غير مقصود.';
+  mode = m;
+  document.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === m));
+  const n = $('modeNote'); n.textContent = m === 'new' ? t('noteNew') : t('noteOld'); n.classList.toggle('old', m === 'old');
   run();
 }
+
+document.querySelectorAll('.lang button').forEach((b) => (b.onclick = () => setLang(b.dataset.lang)));
+document.querySelectorAll('.seg button').forEach((b) => (b.onclick = () => setMode(b.dataset.mode)));
 $('go').onclick = run;
-$('mNew').onclick = () => setMode('new');
-$('mOld').onclick = () => setMode('old');
-$('showWhy').onchange = run;
-setMode('new');
+$('why').onchange = run;
+let saved = 'ar'; try { saved = localStorage.getItem('ls-lang') || 'ar'; } catch (e) {}
+setLang(saved === 'en' ? 'en' : 'ar');
 </script>
+</body>
+</html>
