@@ -1,0 +1,384 @@
+<title>البحث بالقائمة</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap">
+<style>
+/* Layout: one narrow column. Input panel, before/after switch, one product row per list line. */
+:root{
+  --bg:#f6f5f3; --surface:#ffffff; --fg:#22201d; --muted:#6f6a63; --line:#e2ded8;
+  --accent:#9b1c24; --accent-fg:#ffffff; --good:#1f7a4d; --bad:#b4471a; --chip:#efebe6;
+  --font:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171514; --surface:#211e1c; --fg:#efebe6; --muted:#a39d95; --line:#36312d;
+  --accent:#e2646b; --accent-fg:#1a0d0e; --good:#5cc592; --bad:#f08a5d; --chip:#2b2724; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171514; --surface:#211e1c; --fg:#efebe6; --muted:#a39d95; --line:#36312d;
+  --accent:#e2646b; --accent-fg:#1a0d0e; --good:#5cc592; --bad:#f08a5d; --chip:#2b2724; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;direction:rtl;
+  padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:680px;margin-inline:auto;display:flex;flex-direction:column;gap:18px}
+h1{font-size:24px;line-height:1.25;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+label.t{font-weight:600}
+textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:140px;resize:vertical;width:100%;box-sizing:border-box;line-height:1.9}
+textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--chip);color:var(--fg);padding:8px 12px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700;padding:11px 18px;flex:1}
+button.primary:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;background:var(--surface)}
+.seg button{border:0;border-radius:99px;background:none;padding:6px 14px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg);font-weight:600}
+.mode-note{font-size:13px;color:var(--muted);margin:0}
+.item{display:flex;flex-direction:column;gap:8px;min-width:0}
+.item header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.item h3{margin:0;font-size:18px}
+.item h3 small{color:var(--muted);font-weight:400;font-size:13px;margin-inline-start:6px}
+.stat{font-size:13px;font-variant-numeric:tabular-nums}
+.stat .ok{color:var(--good);font-weight:600}.stat .no{color:var(--bad);font-weight:600}
+.rail{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
+.card{flex:0 0 140px;scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card.off{border-color:var(--bad);border-style:dashed}
+.thumb{height:64px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:600;background:var(--chip);color:var(--muted);text-align:center;padding:4px}
+.name{font-size:13px;line-height:1.4;min-height:2.8em;overflow-wrap:anywhere}
+.brand{font-size:11px;color:var(--accent);font-weight:600}
+.price{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
+.why{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.miss{border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--muted)}
+.note{font-size:12px;color:var(--muted)}
+</style>
+<main>
+  <header>
+    <h1>البحث بالقائمة</h1>
+    <p class="sub">نموذج مقترح لتطبيق أسواق التميمي: يكتب العميل قائمته سطرًا سطرًا، ويطلع له صف منتجات لكل غرض.</p>
+  </header>
+
+  <section class="panel">
+    <label class="t" for="list">قائمة المقاضي</label>
+    <textarea id="list">لبن
+حليب
+2 خبز
+رز
+بيض
+شاي</textarea>
+    <p class="hint">سطر لكل غرض، أو افصل بفاصلة. الكمية قبل الغرض: «2 خبز». الأخطاء الإملائية البسيطة مقبولة.</p>
+    <div class="row">
+      <button class="primary" id="go">عرض النتائج</button>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <div class="seg" role="group" aria-label="طريقة البحث">
+        <button type="button" id="mNew" aria-pressed="true">المقترح</button>
+        <button type="button" id="mOld" aria-pressed="false">البحث الحالي (محاكاة)</button>
+      </div>
+      <label class="row" style="gap:6px;font-size:13px"><input type="checkbox" id="showWhy"> ليش طلع؟</label>
+    </div>
+    <p class="mode-note" id="modeNote"></p>
+  </section>
+
+  <section id="results" aria-live="polite" style="display:flex;flex-direction:column;gap:20px"></section>
+  <p class="note">بيانات عيّنة (40 منتجًا) لعرض الفكرة، والأسعار تقريبية. «البحث الحالي» محاكاة تقريبية لما ظهر في التطبيق: مطابقة جزء من الكلمة، وترجمة «لبن» إلى حليب، والترتيب بالأكثر رواجًا.</p>
+</main>
+
+<script>
+const ListSearch = (() => {
+// Arabic + English text normalisation shared by the index and the queries.
+// Rule: anything done to product names must be done to queries the same way.
+
+const ARABIC_DIGITS = '٠١٢٣٤٥٦٧٨٩';
+const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
+
+function normalize(text) {
+  return String(text ?? '')
+    .toLowerCase()
+    .replace(/[٠-٩]/g, (d) => String(ARABIC_DIGITS.indexOf(d)))
+    .replace(/[۰-۹]/g, (d) => String(PERSIAN_DIGITS.indexOf(d)))
+    .replace(/[ً-ٰٟـ]/g, '') // diacritics and tatweel
+    .replace(/[أإآٱ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/ؤ/g, 'و')
+    .replace(/ئ/g, 'ي')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Light stemming. It removes only what never changes the meaning of a grocery word:
+// the article "ال" and the plural endings "ات/ون/ين". It never cuts letters off the
+// end of a word otherwise, so "لبنه" (labneh) stays different from "لبن" (laban).
+function stem(word) {
+  let w = word;
+  if (w.length > 5 && /^(بال|وال|كال|فال)/.test(w)) w = w.slice(3); // "بالحليب" -> "حليب"
+  else if (w.length > 4 && w.startsWith('لل')) w = w.slice(2);
+  else if (w.length > 4 && w.startsWith('ال')) w = w.slice(2);
+  if (w.length > 5 && /(ات|ون|ين)$/.test(w)) w = w.slice(0, -2);
+  return w;
+}
+
+function tokenize(text) {
+  return normalize(text).split(' ').filter(Boolean).map(stem);
+}
+
+const isLatin = (w) => /[a-z]/.test(w);
+
+// Edit distance with an early exit once it passes `max`.
+function withinDistance(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return false;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    let rowMin = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      rowMin = Math.min(rowMin, cur[j]);
+    }
+    if (rowMin > max) return false;
+    prev = cur;
+  }
+  return prev[b.length] <= max;
+}
+
+
+
+// Turns what the customer typed or pasted into clean list lines.
+// Accepts new lines, Arabic or Latin commas, bullets and numbering ("1-", "2.").
+// A bare number before or after the item is read as a quantity: "2 حليب", "حليب 2", "حليب x2".
+function parseList(input, { maxLines = 40 } = {}) {
+  const lines = String(input ?? '')
+    .split(/\n|،|,|؛|;/)
+    .map((l) => l.replace(/^\s*(?:[-•*·▪]|\d+\s*[.)\-])\s*/u, '').trim())
+    .filter(Boolean);
+
+  const seen = new Set();
+  const out = [];
+  for (const raw of lines) {
+    const { text, quantity } = readQuantity(normalize(raw));
+    if (!text || seen.has(text)) continue;
+    seen.add(text);
+    out.push({ input: raw, query: text, quantity });
+    if (out.length >= maxLines) break;
+  }
+  return out;
+}
+
+function readQuantity(text) {
+  let m = text.match(/^(\d{1,2})\s+(.+)$/);
+  if (m) return { quantity: clamp(+m[1]), text: m[2] };
+  m = text.match(/^(.+?)\s+x?(\d{1,2})$/);
+  if (m) return { quantity: clamp(+m[2]), text: m[1] };
+  return { quantity: 1, text };
+}
+
+const clamp = (n) => Math.max(1, Math.min(n, 99));
+
+
+
+// Builds an in-memory index over the fields that describe the product itself.
+// Descriptions and marketing tags are left out on purpose: they are where
+// unrelated words come from (a jerky ad that mentions "laban", a berry box tagged "breakfast").
+function buildIndex(products) {
+  const docs = products.map((p, i) => {
+    const nameTokens = tokenize(`${p.nameAr ?? ''} ${p.nameEn ?? ''}`);
+    const brandTokens = tokenize(`${p.brandAr ?? ''} ${p.brandEn ?? ''}`);
+    return {
+      i,
+      product: p,
+      tokens: new Set([...nameTokens, ...brandTokens]),
+      firstWord: tokenize(p.nameAr ?? '')[0] ?? tokenize(p.nameEn ?? '')[0],
+    };
+  });
+
+  const postings = new Map(); // token -> Set(doc index)
+  for (const d of docs) {
+    for (const t of d.tokens) {
+      if (!postings.has(t)) postings.set(t, new Set());
+      postings.get(t).add(d.i);
+    }
+  }
+  const vocabulary = [...postings.keys()];
+  const vocabByScript = {
+    latin: vocabulary.filter(isLatin),
+    arabic: vocabulary.filter((w) => !isLatin(w)),
+  };
+  return { docs, postings, vocabByScript };
+}
+
+
+
+
+
+const WEIGHTS = { exact: 1, synonym: 0.9, typo: 0.7 };
+
+function createSearcher(index, config = {}) {
+  const synonyms = buildSynonyms(config.synonyms ?? []);
+  const intents = buildIntents(config.intents ?? {});
+
+  // All the ways one query word can match: itself, its synonyms, then close spellings.
+  function expand(word) {
+    const out = new Map([[word, { weight: WEIGHTS.exact, why: 'exact' }]]);
+    for (const s of synonyms.get(word) ?? []) if (!out.has(s)) out.set(s, { weight: WEIGHTS.synonym, why: `synonym:${s}` });
+    // Spelling fallback only when the word itself is unknown ("بيظ"), never for a known word:
+    // otherwise "لبن" would drift to "لبنه" (labneh), one letter away.
+    const known = [...out.keys()].some((t) => index.postings.has(t));
+    if (!known && word.length >= 3) {
+      const pool = isLatin(word) ? index.vocabByScript.latin : index.vocabByScript.arabic;
+      const max = word.length >= 7 ? 2 : 1;
+      for (const v of pool) {
+        if (out.has(v)) continue;
+        if (word.length === 3 && v[0] !== word[0]) continue; // short words: first letter must agree
+        if (v.length >= 3 && withinDistance(word, v, max)) out.set(v, { weight: WEIGHTS.typo, why: `typo:${v}` });
+      }
+    }
+    return out;
+  }
+
+  // One list line -> ranked products.
+  // Whole-word matching only: "لبن" no longer matches "لبنه" (labneh) or "لبناني" (Lebanese).
+  function searchLine(query, { limit = 20, includeOutOfStock = true } = {}) {
+    const words = tokenize(query);
+    if (!words.length) return { total: 0, items: [] };
+
+    const perWord = words.map((w) => {
+      const hits = new Map(); // doc index -> best {weight, why}
+      for (const [term, m] of expand(w)) {
+        for (const i of index.postings.get(term) ?? []) {
+          const prev = hits.get(i);
+          if (!prev || prev.weight < m.weight) hits.set(i, m);
+        }
+      }
+      return hits;
+    });
+
+    // Every word of the line must match (AND).
+    let candidates = [...perWord[0].keys()];
+    for (const hits of perWord.slice(1)) candidates = candidates.filter((i) => hits.has(i));
+
+    const intent = intents.get(normalize(query)) ?? intents.get(words.join(' '));
+    const scored = [];
+    for (const i of candidates) {
+      const doc = index.docs[i];
+      const p = doc.product;
+      if (!includeOutOfStock && p.inStock === false) continue;
+
+      const matches = perWord.map((h) => h.get(i));
+      let score = matches.reduce((s, m) => s + m.weight, 0) / words.length; // 0..1 text relevance
+      const reasons = matches.map((m) => m.why);
+
+      if (doc.firstWord && expand(words[0]).has(doc.firstWord)) { score += 0.15; reasons.push('starts-with'); }
+      if (intent) {
+        if (intent.has(p.category)) { score += 0.5; reasons.push(`category:${p.category}`); }
+        else { score -= 0.25; reasons.push('other-category'); }
+      }
+      if (p.inStock === false) { score -= 1; reasons.push('out-of-stock'); }
+      score += (p.popularity ?? 0) * 0.05; // popularity only breaks ties
+
+      scored.push({ product: p, score: +score.toFixed(3), reasons });
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return { total: scored.length, items: scored.slice(0, limit) };
+  }
+
+  // The feature itself: the whole list -> one result row per line.
+  function searchList(input, options = {}) {
+    return parseList(input, options).map((line) => ({ ...line, ...searchLine(line.query, options) }));
+  }
+
+  return { searchLine, searchList, expand };
+}
+
+function buildSynonyms(groups) {
+  const map = new Map();
+  for (const group of groups) {
+    const words = group.map((w) => tokenize(w).join(' ')).filter(Boolean);
+    for (const w of words) map.set(w, new Set([...(map.get(w) ?? []), ...words.filter((x) => x !== w)]));
+  }
+  return map;
+}
+
+function buildIntents(intents) {
+  const map = new Map();
+  for (const [term, categories] of Object.entries(intents)) {
+    map.set(normalize(term), new Set(categories));
+    map.set(tokenize(term).join(' '), new Set(categories));
+  }
+  return map;
+}
+
+return { normalize, tokenize, parseList, buildIndex, createSearcher,
+  createListSearch: (products, config) => createSearcher(buildIndex(products), config) };
+})();
+</script>
+<script>
+const DATA = {"products":[{"id":"p01","nameAr":"لبن طازج كامل الدسم 2 لتر","nameEn":"Fresh Laban Full Fat 2L","brandAr":"المراعي","brandEn":"Almarai","category":"laban","price":12.5,"popularity":0.9},{"id":"p02","nameAr":"لبن طازج كامل الدسم 180 مل","nameEn":"Fresh Laban Full Fat 180ml","brandAr":"المراعي","brandEn":"Almarai","category":"laban","price":2,"popularity":0.8},{"id":"p03","nameAr":"لبن طازج كامل الدسم 1.75 لتر","nameEn":"Fresh Laban Full Fat 1.75L","brandAr":"نادك","brandEn":"Nadec","category":"laban","price":11,"popularity":0.6},{"id":"p04","nameAr":"لبن قليل الدسم 1 لتر","nameEn":"Fresh Laban Low Fat 1L","brandAr":"الصافي","brandEn":"Al Safi","category":"laban","price":6.5,"popularity":0.5},{"id":"p05","nameAr":"لبن عيران 225 مل","nameEn":"Ayran Laban 225ml","brandAr":"نادك","brandEn":"Nadec","category":"laban","price":2.25,"popularity":0.4},{"id":"p06","nameAr":"لبن كفير 1.75 لتر","nameEn":"Laban Kefir 1.75L","brandAr":"أكتيفيا","brandEn":"Activia","category":"laban","price":20,"popularity":0.3},{"id":"p07","nameAr":"لبنة فاخرة كاملة الدسم 700 غرام","nameEn":"Premium Labneh Full Fat 700g","brandAr":"المراعي","brandEn":"Almarai","category":"labneh","price":12.99,"popularity":1},{"id":"p08","nameAr":"لبنة يونانية 700 غرام","nameEn":"Greek Labneh 700g","brandAr":"ندى","brandEn":"Nada","category":"labneh","price":21.95,"popularity":0.6},{"id":"p09","nameAr":"حليب طازج كامل الدسم 2 لتر","nameEn":"Fresh Milk Full Fat 2L","brandAr":"المراعي","brandEn":"Almarai","category":"milk","price":12.5,"popularity":0.95},{"id":"p10","nameAr":"حليب طويل الأجل كامل الدسم 1 لتر","nameEn":"UHT Milk Long Life Full Fat 1L","brandAr":"نادك","brandEn":"Nadec","category":"milk","price":5.75,"popularity":0.7},{"id":"p11","nameAr":"حليب خالي من اللاكتوز 1 لتر","nameEn":"UHT Milk Lactose Free 1L","brandAr":"المراعي","brandEn":"Almarai","category":"milk","price":7,"popularity":0.4},{"id":"p12","nameAr":"حليب بنكهة الشوكولاتة 18×125 مل","nameEn":"Chocolate Milk 18x125ml","brandAr":"نادك","brandEn":"Nadec","category":"flavoured-milk","price":14.99,"popularity":0.5},{"id":"p13","nameAr":"توت بري طازج 125 غرام","nameEn":"Blueberry 125g","brandAr":"دريسكولز","brandEn":"Driscoll's","category":"berries","price":12.5,"popularity":0.85},{"id":"p14","nameAr":"فراولة 250 غرام","nameEn":"Strawberry 250g","brandAr":"دريسكولز","brandEn":"Driscoll's","category":"berries","price":14.95,"popularity":0.6},{"id":"p15","nameAr":"دارنا مكدوس لبناني بالكيلو 100 غرام","nameEn":"Darna Lebanese Makdous 100g","brandAr":"أردني","brandEn":"Jordanian","category":"pickles","price":3.3,"popularity":0.3},{"id":"p16","nameAr":"زبادي بروتين سادة 150 غرام","nameEn":"Protein Yoghurt Plain 150g","brandAr":"يوبرو","brandEn":"YoPro","category":"yogurt","price":3.99,"popularity":0.5},{"id":"p17","nameAr":"زبادي طبيعي كامل الدسم 400 غرام","nameEn":"Plain Yoghurt Full Fat 400g","brandAr":"المراعي","brandEn":"Almarai","category":"yogurt","price":4.5,"popularity":0.6},{"id":"p18","nameAr":"جبنة رومي 100 غرام","nameEn":"Romi Cheese 100g","brandAr":"زينة","brandEn":"Zena","category":"cheese","price":5,"popularity":0.4},{"id":"p19","nameAr":"معجون الثوم الطازج 500 غرام","nameEn":"Fresh Garlic Paste 500g","brandAr":"لبن الخير","brandEn":"Laban Al Khair","category":"sauces","price":14.95,"popularity":0.2},{"id":"p20","nameAr":"لحم بقري مجفف أصلي 25 غرام","nameEn":"Beef Jerky Original 25g","brandAr":"جاك لينك","brandEn":"Jack Link's","category":"snacks","price":18.95,"popularity":0.2},{"id":"p21","nameAr":"أرز كالروز 5 كيلو","nameEn":"Calrose Rice 5kg","brandAr":"الوليمة","brandEn":"Alwalimah","category":"rice","price":42,"popularity":0.8},{"id":"p22","nameAr":"أرز بسمتي 10 كيلو","nameEn":"Basmati Rice 10kg","brandAr":"أبو كاس","brandEn":"Abu Kass","category":"rice","price":85,"popularity":0.9},{"id":"p23","nameAr":"دقيق الأرز 500 غرام","nameEn":"Rice Flour 500g","brandAr":"","brandEn":"","category":"flour","price":6,"popularity":0.1},{"id":"p24","nameAr":"سباغيتي 450 غرام","nameEn":"Pasta Spaghetti 450g","brandAr":"قودي","brandEn":"Goody","category":"pasta","price":3.75,"popularity":0.9},{"id":"p25","nameAr":"بيض أبيض طازج 30 حبة","nameEn":"Fresh White Eggs 30 pcs","brandAr":"العربية","brandEn":"Al Arabia","category":"eggs","price":18.99,"popularity":0.95},{"id":"p26","nameAr":"بيض أبيض كبير 15 حبة","nameEn":"White Eggs Large 15 pcs","brandAr":"الوطنية","brandEn":"Alwatania","category":"eggs","price":11.5,"popularity":0.6},{"id":"p27","nameAr":"صدور دجاج فيليه 1 كيلو","nameEn":"Chicken Breast Fillet 1kg","brandAr":"الوطنية","brandEn":"Alwatania","category":"chicken","price":27.5,"popularity":0.8},{"id":"p28","nameAr":"دجاج طازج كامل 1100 غرام","nameEn":"Fresh Chicken Premium 1100g","brandAr":"اليوم","brandEn":"Alyoum","category":"chicken","price":19.95,"popularity":0.85},{"id":"p29","nameAr":"كريمة طبخ كاملة الدسم","nameEn":"Cooking Cream Full Fat","brandAr":"بوك","brandEn":"Puck","category":"cream","price":6.5,"popularity":0.7},{"id":"p30","nameAr":"سكر ناعم 5 كيلو","nameEn":"Fine Sugar 5kg","brandAr":"الأسرة","brandEn":"Al Osra","category":"sugar","price":21.95,"popularity":0.85},{"id":"p31","nameAr":"دقيق لجميع الاستخدامات 1 كيلو","nameEn":"All Purpose Flour 1kg","brandAr":"فوم","brandEn":"Fom","category":"flour","price":4.5,"popularity":0.6},{"id":"p32","nameAr":"شاي أحمر 100 كيس","nameEn":"Black Tea 100 bags","brandAr":"ربيع","brandEn":"Rabea","category":"tea","price":19.5,"popularity":0.9},{"id":"p33","nameAr":"شاي مثلج بالخوخ 320 مل","nameEn":"Peach Ice Tea 320ml","brandAr":"ليبتون","brandEn":"Lipton","category":"soft-drinks","price":3,"popularity":0.7},{"id":"p34","nameAr":"مياه معدنية 330 مل × 40","nameEn":"Mineral Bottled Water 330ml x40","brandAr":"نوفا","brandEn":"Nova","category":"water","price":19.95,"popularity":0.9},{"id":"p35","nameAr":"بطاطس 1.5 كيلو","nameEn":"Potato 1.5kg","brandAr":"","brandEn":"","category":"potato","price":7.5,"popularity":0.8},{"id":"p36","nameAr":"معجون طماطم 8 × 135 غرام","nameEn":"Tomato Paste 8 x 135g","brandAr":"لونا","brandEn":"Luna","category":"canned","price":13.95,"popularity":0.7},{"id":"p37","nameAr":"خبز أبيض شرائح","nameEn":"White Sliced Bread","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":5,"popularity":0.9},{"id":"p38","nameAr":"خبز بر شرائح","nameEn":"Brown Sliced Bread","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":5.5,"popularity":0.6},{"id":"p39","nameAr":"صامولي صغير بالحليب","nameEn":"Milk Samoli Small","brandAr":"لوزين","brandEn":"L'usine","category":"bread","price":3,"popularity":0.7},{"id":"p40","nameAr":"كتشب 340 غرام","nameEn":"Ketchup 340g","brandAr":"هاينز","brandEn":"Heinz","category":"sauces","price":6.95,"popularity":0.7,"inStock":false}],"config":{"synonyms":[["لبن","laban"],["حليب","milk"],["لبنه","لبنة","labneh","labnah"],["زبادي","روب","yogurt","yoghurt"],["رز","ارز","أرز","rice"],["بيض","egg","eggs"],["دجاج","فروج","chicken"],["سكر","sugar"],["شاي","شاهي","tea"],["ماء","مياه","موية","مويه","water"],["بطاطس","بطاطا","potato","potatoes"],["خبز","عيش","bread","toast","توست"],["جبن","جبنه","cheese"],["قهوه","coffee"],["طماطم","بندوره","tomato","tomatoes"],["معكرونه","مكرونه","pasta"],["زيت","oil"],["كتشب","كاتشب","ketchup"]],"intents":{"لبن":["laban"],"laban":["laban"],"حليب":["milk","flavoured-milk"],"milk":["milk","flavoured-milk"],"رز":["rice"],"rice":["rice"],"شاي":["tea"],"tea":["tea"],"خبز":["bread"],"سكر":["sugar"],"دجاج":["chicken"],"بطاطس":["potato"]}}};
+const search = ListSearch.createListSearch(DATA.products, DATA.config);
+const $ = (id) => document.getElementById(id);
+let mode = 'new';
+
+// Rough simulation of the current behaviour seen in the app, for the before/after comparison.
+const OLD_TRANSLATE = { 'لبن': 'milk' };
+function oldSearchLine(q) {
+  const n = ListSearch.normalize(q);
+  const en = OLD_TRANSLATE[n];
+  const items = DATA.products.filter((p) => {
+    const ar = ListSearch.normalize(`${p.nameAr} ${p.brandAr}`);
+    const e = ListSearch.normalize(`${p.nameEn} ${p.brandEn}`);
+    return ar.includes(n) || (en && e.includes(en));
+  }).sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0)).map((p) => ({ product: p, reasons: ['جزء من الكلمة / الأكثر رواجًا'] }));
+  return { total: items.length, items };
+}
+
+const intentOf = (q) => DATA.config.intents[ListSearch.normalize(q)] ?? DATA.config.intents[q];
+const CAT_AR = { laban:'لبن', labneh:'لبنة', milk:'حليب', 'flavoured-milk':'حليب منكّه', berries:'توت', pickles:'مخللات', yogurt:'زبادي', cheese:'أجبان', sauces:'صلصات', snacks:'سناكات', rice:'أرز', flour:'دقيق', pasta:'مكرونة', eggs:'بيض', chicken:'دجاج', cream:'كريمة', sugar:'سكر', tea:'شاي', 'soft-drinks':'مشروبات', water:'مياه', potato:'بطاطس', canned:'معلبات', bread:'خبز' };
+
+function card(x, intent) {
+  const p = x.product;
+  const c = document.createElement('div');
+  const relevant = !intent || intent.includes(p.category);
+  c.className = 'card' + (relevant ? '' : ' off');
+  const th = document.createElement('div'); th.className = 'thumb'; th.textContent = CAT_AR[p.category] ?? p.category;
+  const br = document.createElement('div'); br.className = 'brand'; br.textContent = p.brandAr || ' ';
+  const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = p.nameAr;
+  const pr = document.createElement('div'); pr.className = 'price'; pr.textContent = p.price.toFixed(2) + ' ر.س' + (p.inStock === false ? ' · غير متوفر' : '');
+  c.append(th, br, nm, pr);
+  if ($('showWhy').checked) { const w = document.createElement('div'); w.className = 'why'; w.textContent = x.reasons.join(' · '); c.append(w); }
+  return c;
+}
+
+function run() {
+  const lines = ListSearch.parseList($('list').value);
+  const box = $('results'); box.replaceChildren();
+  for (const line of lines) {
+    const r = mode === 'new' ? search.searchLine(line.query, { limit: 12 }) : oldSearchLine(line.query);
+    const intent = intentOf(line.query);
+    const it = document.createElement('div'); it.className = 'item';
+    const hd = document.createElement('header');
+    const h = document.createElement('h3'); h.textContent = line.input;
+    if (line.quantity > 1) { const s = document.createElement('small'); s.textContent = '× ' + line.quantity; h.append(s); }
+    hd.append(h);
+    if (intent && r.items.length) {
+      const top = r.items.slice(0, 5); const good = top.filter((x) => intent.includes(x.product.category)).length;
+      const st = document.createElement('span'); st.className = 'stat';
+      st.innerHTML = `<span class="${good === top.length ? 'ok' : 'no'}">${good} من ${top.length}</span> صحيحة في أول النتائج · ${r.total} نتيجة`;
+      hd.append(st);
+    }
+    it.append(hd);
+    if (r.items.length) { const rail = document.createElement('div'); rail.className = 'rail'; r.items.slice(0, 12).forEach((x) => rail.append(card(x, intent))); it.append(rail); }
+    else { const m = document.createElement('div'); m.className = 'miss'; m.textContent = 'ما لقينا «' + line.input + '». جرّب اسمًا أبسط.'; it.append(m); }
+    box.append(it);
+  }
+}
+function setMode(m) {
+  mode = m; $('mNew').setAttribute('aria-pressed', m === 'new'); $('mOld').setAttribute('aria-pressed', m === 'old');
+  $('modeNote').textContent = m === 'new'
+    ? 'المقترح: كلمة كاملة، مرادفات عربي وإنجليزي، القسم المقصود أولًا، والأكثر رواجًا للترجيح فقط.'
+    : 'محاكاة الحالي: أي منتج فيه جزء من الكلمة، و«لبن» يُترجم حليب، والترتيب بالأكثر رواجًا. البطاقات المنقّطة من قسم غير مقصود.';
+  run();
+}
+$('go').onclick = run;
+$('mNew').onclick = () => setMode('new');
+$('mOld').onclick = () => setMode('old');
+$('showWhy').onchange = run;
+setMode('new');
+</script>

@@ -1,0 +1,17 @@
+{
+  "_about": "What the customer most likely means by a word, as category ids. Owned by the e-commerce team, updated from search logs. Products in these categories rank first; others stay but lower.",
+  "intents": {
+    "لبن": ["laban"],
+    "laban": ["laban"],
+    "حليب": ["milk", "flavoured-milk"],
+    "milk": ["milk", "flavoured-milk"],
+    "رز": ["rice"],
+    "rice": ["rice"],
+    "شاي": ["tea"],
+    "tea": ["tea"],
+    "خبز": ["bread"],
+    "سكر": ["sugar"],
+    "دجاج": ["chicken"],
+    "بطاطس": ["potato"]
+  }
+}

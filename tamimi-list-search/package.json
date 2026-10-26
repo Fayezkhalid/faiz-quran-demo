@@ -1,0 +1,14 @@
+{
+  "name": "tamimi-list-search",
+  "version": "0.1.0",
+  "description": "Search by shopping list for Tamimi Markets: one line per item, one result row per line, with Arabic-aware matching.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "serve": "node examples/server.js",
+    "build:demo": "node scripts/build-demo.js"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

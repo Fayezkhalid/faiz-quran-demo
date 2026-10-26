@@ -1,0 +1,23 @@
+{
+  "_about": "Words that mean the same product. Owned by the e-commerce team. Arabic and English in one group. Do NOT put لبن with حليب: in Saudi Arabia they are different products.",
+  "groups": [
+    ["لبن", "laban"],
+    ["حليب", "milk"],
+    ["لبنه", "لبنة", "labneh", "labnah"],
+    ["زبادي", "روب", "yogurt", "yoghurt"],
+    ["رز", "ارز", "أرز", "rice"],
+    ["بيض", "egg", "eggs"],
+    ["دجاج", "فروج", "chicken"],
+    ["سكر", "sugar"],
+    ["شاي", "شاهي", "tea"],
+    ["ماء", "مياه", "موية", "مويه", "water"],
+    ["بطاطس", "بطاطا", "potato", "potatoes"],
+    ["خبز", "عيش", "bread", "toast", "توست"],
+    ["جبن", "جبنه", "cheese"],
+    ["قهوه", "coffee"],
+    ["طماطم", "بندوره", "tomato", "tomatoes"],
+    ["معكرونه", "مكرونه", "pasta"],
+    ["زيت", "oil"],
+    ["كتشب", "كاتشب", "ketchup"]
+  ]
+}
