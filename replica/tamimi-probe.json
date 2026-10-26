@@ -1,0 +1,394 @@
+[
+ {
+  "q": "لبن",
+  "lang": "ar",
+  "total": 284,
+  "n": 39,
+  "p10": 1,
+  "first": 6,
+  "top": [
+   "Premium Labneh Full Fat-700g",
+   "Premium Labneh Full Fat-400g",
+   "Premium Labneh Full Fat-3 x 180g",
+   "Fresh Milk Full Fat-2L",
+   "Blueberry-125g",
+   "Fresh Laban Full Fat-2L",
+   "UHT Milk Long Life Full Fat-18 x 200ml",
+   "UHT Milk Long Life Full Fat-4 x 1L",
+   "UHT Milk Long Life Full Fat-1L",
+   "UHT Milk Long Life Full Fat-200ml"
+  ]
+ },
+ {
+  "q": "laban",
+  "lang": "en",
+  "total": 284,
+  "n": 31,
+  "p10": 10,
+  "first": 1,
+  "top": [
+   "Fresh Laban Full Fat-2L",
+   "Fresh Laban Full Fat-180ml",
+   "Fresh Laban Full Fat-1L",
+   "Fresh Laban Full Fat-1.75L",
+   "Maher Laban Strawberry-180ml",
+   "Fresh Laban Full Fat-2.85L",
+   "Fresh Laban Low Fat-2L ",
+   "Fresh Laban Low Fat-1L",
+   "Fresh Laban Low Fat-180ml",
+   "Fresh Laban Low Fat-360ml"
+  ]
+ },
+ {
+  "q": "حليب",
+  "lang": "ar",
+  "total": 284,
+  "n": 39,
+  "p10": 5,
+  "first": 4,
+  "top": [
+   "Premium Labneh Full Fat-700g",
+   "Premium Labneh Full Fat-400g",
+   "Premium Labneh Full Fat-3 x 180g",
+   "Fresh Milk Full Fat-2L",
+   "Fresh Laban Full Fat-2L",
+   "UHT Milk Long Life Full Fat-18 x 200ml",
+   "UHT Milk Long Life Full Fat-4 x 1L",
+   "UHT Milk Long Life Full Fat-1L",
+   "UHT Milk Long Life Full Fat-200ml",
+   "Fresh Laban Full Fat-180ml"
+  ]
+ },
+ {
+  "q": "milk",
+  "lang": "en",
+  "total": 284,
+  "n": 35,
+  "p10": 5,
+  "first": 4,
+  "top": [
+   "Premium Labneh Full Fat-700g",
+   "Premium Labneh Full Fat-400g",
+   "Premium Labneh Full Fat-3 x 180g",
+   "Fresh Milk Full Fat-2L",
+   "Fresh Laban Full Fat-2L",
+   "UHT Milk Long Life Full Fat-18 x 200ml",
+   "UHT Milk Long Life Full Fat-4 x 1L",
+   "UHT Milk Long Life Full Fat-1L",
+   "UHT Milk Long Life Full Fat-200ml",
+   "Fresh Laban Full Fat-180ml"
+  ]
+ },
+ {
+  "q": "رز",
+  "lang": "ar",
+  "total": 21,
+  "n": 2,
+  "p10": 2,
+  "first": 1,
+  "top": [
+   "Rice Flour-500g",
+   "Mango Sticky Rice With Coconut Protein Bar-45g"
+  ]
+ },
+ {
+  "q": "rice",
+  "lang": "en",
+  "total": 186,
+  "n": 22,
+  "p10": 2,
+  "first": 4,
+  "top": [
+   "Pasta Spaghetti-450g",
+   "Premium Spaghetti-400g",
+   "Premium Penne-400g",
+   "Calrose Rice-5kg",
+   "Calrose Rice-1kg",
+   "Ditalini Rigati-400g",
+   "Premium Sedano Half-400g",
+   "Chifferini-400g",
+   "Pasta Penne Lisce No. 11-450g",
+   "Pasta Ditalini Rigate No. 10-450g"
+  ]
+ },
+ {
+  "q": "بيض",
+  "lang": "ar",
+  "total": 1,
+  "n": 29,
+  "p10": 7,
+  "first": 1,
+  "top": [
+   "Large White Eggs Plastic Packaging-30 pcs",
+   "Fresh White Eggs-30 pcs",
+   "Fresh White Eggs-15 pcs",
+   "Fresh White Eggs-6 pcs",
+   "Eggs Large-30 pcs",
+   "White Eggs Large-30 pcs",
+   "Large Eggs White-30 pcs",
+   "Smooth Milk Chocolate-24 x 36g",
+   "Smooth Milk Chocolate-36g",
+   "Westminster Cheddar Cheese White-100 G"
+  ]
+ },
+ {
+  "q": "eggs",
+  "lang": "en",
+  "total": 1,
+  "n": 22,
+  "p10": 10,
+  "first": 1,
+  "top": [
+   "Large White Eggs Plastic Packaging-30 pcs",
+   "Fresh White Eggs-30 pcs",
+   "Fresh White Eggs-15 pcs",
+   "Fresh White Eggs-6 pcs",
+   "Eggs Large-30 pcs",
+   "White Eggs Large-30 pcs",
+   "Large Eggs White-30 pcs",
+   "Fresh White Large Egg-30 pcs",
+   "Fresh White Large Egg-15 pcs",
+   "Eggs Medium-30 pcs"
+  ]
+ },
+ {
+  "q": "دجاج",
+  "lang": "ar",
+  "total": 68,
+  "n": 24,
+  "p10": 6,
+  "first": 1,
+  "top": [
+   "Chicken Breast Fillet-450g",
+   "Cooking Cream Full Fat-1L",
+   "Cooking Cream Full Fat-500ml",
+   "Cooking Cream Full Fat-250ml",
+   "Chicken Breast Boneless-450g",
+   "Fresh Chicken Premium Tray-1000g",
+   "Breast Fillet-450g",
+   "Chicken Whole Legs-900g",
+   "Regular Chicken Strips-700g",
+   "Chicken Strips Plain-750g"
+  ]
+ },
+ {
+  "q": "chicken",
+  "lang": "en",
+  "total": 68,
+  "n": 24,
+  "p10": 6,
+  "first": 1,
+  "top": [
+   "Chicken Breast Fillet-450g",
+   "Cooking Cream Full Fat-1L",
+   "Cooking Cream Full Fat-500ml",
+   "Cooking Cream Full Fat-250ml",
+   "Chicken Breast Boneless-450g",
+   "Fresh Chicken Premium Tray-1000g",
+   "Breast Fillet-450g",
+   "Chicken Whole Legs-900g",
+   "Regular Chicken Strips-700g",
+   "Chicken Strips Plain-750g"
+  ]
+ },
+ {
+  "q": "سكر",
+  "lang": "ar",
+  "total": 21,
+  "n": 28,
+  "p10": 7,
+  "first": 1,
+  "top": [
+   "Fine Sugar-10kg",
+   "Fine Sugar-5kg",
+   "All Purpose Flour-10 x 1kg",
+   "All Purpose Flour-1kg",
+   "Apple Premium Juice-1.4L",
+   "Ice Tea Peach Zero Sugar-6 x 320ml",
+   "Ice Tea Peach Zero Sugar-320ml",
+   "Fine Sugar-5Kg",
+   "Fine Sugar-2kg",
+   "Fine Sugar-1kg"
+  ]
+ },
+ {
+  "q": "sugar",
+  "lang": "en",
+  "total": 21,
+  "n": 27,
+  "p10": 10,
+  "first": 1,
+  "top": [
+   "Fine Sugar-10 + 1kg",
+   "Coarse Sugar-10kg",
+   "Fine Sugar-10kg",
+   "Fine Sugar-5kg",
+   "Fine Sugar-5Kg",
+   "Fine Sugar-2kg",
+   "Fine Sugar-1kg",
+   "Coarse Sugar-5kg",
+   "Sugar Sachet-100 x 5g",
+   "Brown Sugar-1kg"
+  ]
+ },
+ {
+  "q": "شاي",
+  "lang": "ar",
+  "total": 90,
+  "n": 22,
+  "p10": 5,
+  "first": 2,
+  "top": [
+   "Classic Coffee-190g",
+   "Ice Tea Peach Zero Sugar-6 x 320ml",
+   "Ice Tea Peach Zero Sugar-320ml",
+   "Sliced Black Olives-345g",
+   "Ground Black Pepper-85g",
+   "Ice Tea Red Fruits Zero-6 x 320ml",
+   "Ice Tea Red Fruits Zero-320ml",
+   "Gold Dark Roast Arabica-95g",
+   "Whole Black Pepper-100g",
+   "Black Tea Bags-100 bags"
+  ]
+ },
+ {
+  "q": "tea",
+  "lang": "en",
+  "total": 60,
+  "n": 32,
+  "p10": 10,
+  "first": 1,
+  "top": [
+   "Ice Tea Peach Zero Sugar-6 x 320ml",
+   "Ice Tea Peach Zero Sugar-320ml",
+   "Peach Ice Tea-6 x 320ml",
+   "Peach Ice Tea-320ml",
+   "Peach Ice Tea-24 x 320ml",
+   "Ice Tea Red Fruits Zero-6 x 320ml",
+   "Ice Tea Red Fruits Zero-320ml",
+   "Ice Tea Peach-6 x 320ml",
+   "Ice Tea Peach-320ml",
+   "Black Tea Bags-100 bags"
+  ]
+ },
+ {
+  "q": "ماء",
+  "lang": "ar",
+  "total": 34,
+  "n": 29,
+  "p10": 8,
+  "first": 1,
+  "top": [
+   "Mineral Bottled Water-40 x 330ml",
+   "Mineral Bottled Water-330ml",
+   "Mineral Bottled Water-6 x 1.5L",
+   "Mineral Bottled Water-1.5L",
+   "Mineral Bottled Water-30 x 330ml",
+   "Mineral Bottled Water-48 x 200ml",
+   "Water-24 x 330ml",
+   "Water-330ml",
+   "Minis Can Sugar And Color Free-12 x 150ml",
+   "Minis Can Sugar And Color Free-150ml"
+  ]
+ },
+ {
+  "q": "water",
+  "lang": "en",
+  "total": 34,
+  "n": 34,
+  "p10": 8,
+  "first": 1,
+  "top": [
+   "Mineral Bottled Water-40 x 330ml",
+   "Mineral Bottled Water-330ml",
+   "Mineral Bottled Water-6 x 1.5L",
+   "Mineral Bottled Water-1.5L",
+   "Mineral Bottled Water-30 x 330ml",
+   "Mineral Bottled Water-48 x 200ml",
+   "Ice Tea Peach Zero Sugar-6 x 320ml",
+   "Ice Tea Peach Zero Sugar-320ml",
+   "Water-24 x 330ml",
+   "Water-330ml"
+  ]
+ },
+ {
+  "q": "بطاطس",
+  "lang": "ar",
+  "total": 522,
+  "n": 25,
+  "p10": 5,
+  "first": 1,
+  "top": [
+   "Potato-500 G",
+   "Potato-1.0 KG",
+   "Potato-1.5 KG",
+   "Potato-2.0 KG",
+   "Potatoes Bag-1.8kg",
+   "Tomato Paste-8 x 135g",
+   "Tomato Paste-135g",
+   "Seasoned Wedges Fries-1kg",
+   "Chopped Tomato Juice-400g",
+   "Frozen Molokheya-400g"
+  ]
+ },
+ {
+  "q": "potato",
+  "lang": "en",
+  "total": 522,
+  "n": 31,
+  "p10": 6,
+  "first": 1,
+  "top": [
+   "Potato-500 G",
+   "Potato-1.0 KG",
+   "Potato-1.5 KG",
+   "Potato-2.0 KG",
+   "Potatoes Bag-1.8kg",
+   "Seasoned Wedges Fries-1kg",
+   "Hash Browns-1kg",
+   "Coated Fries-1kg",
+   "Original Fries-2.5kg",
+   "Tasali Ketchup Potato Chips-12 x 25g"
+  ]
+ },
+ {
+  "q": "خبز",
+  "lang": "ar",
+  "total": 61,
+  "n": 26,
+  "p10": 4,
+  "first": 1,
+  "top": [
+   "White Sliced Bread-1 pc",
+   "Fine Sugar-10kg",
+   "Fine Sugar-5kg",
+   "Sliced White Bread-650g",
+   "Brown Sliced Bread-1 pc",
+   "Multigrain Sliced Bread-600g",
+   "All Purpose Flour-10 x 1kg",
+   "All Purpose Flour-1kg",
+   "White Sandwich Roll-200g",
+   "Fine Sugar-5Kg"
+  ]
+ },
+ {
+  "q": "bread",
+  "lang": "en",
+  "total": 61,
+  "n": 20,
+  "p10": 6,
+  "first": 1,
+  "top": [
+   "White Sliced Bread-1 pc",
+   "Sliced White Bread-650g",
+   "Brown Sliced Bread-1 pc",
+   "Multigrain Sliced Bread-600g",
+   "White Sandwich Roll-200g",
+   "Cocoa Cream Croissant-5 + 1 x 55g",
+   "Sliced Bran Bread-630g",
+   "Mini Milk Bread-315g",
+   "Burger Buns With Sesame Seeds-400g",
+   "Plain Burger Buns-400g"
+  ]
+ }
+]
