@@ -125,7 +125,7 @@ nav button.on{color:var(--hero-b);font-weight:600} :root[data-theme="dark"] nav 
 </head>
 <body>
 <header class="hero"><div class="wrap">
-  <div class="row"><div><h1>تغطية السعوديين · <span id="storeName">S192</span></h1><p id="subtitle">—</p></div><span class="badge" id="badge"></span></div>
+  <div class="row"><div><h1>تغطية السعوديين · <span id="storeName">S192</span></h1><p id="subtitle">—</p></div><span style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="badge" id="badge"></span><span class="badge" id="sync"></span></span></div>
 </div></header>
 <main class="wrap" id="app"></main>
 <nav id="nav" aria-label="التنقل"></nav>
@@ -166,13 +166,14 @@ function roleAr(pos){const k=String(pos||"").trim().toUpperCase();return ROLE_AR
 
 /* ===================== state ===================== */
 let S=load();
+const LOCAL0=JSON.parse(JSON.stringify(S));
 const ui={tab:"search",di:0,from:13,to:20,g:"all",wg:"cashier",ed:null,showAllAlerts:false,wk:0,panel:null};
 
 function load(){
   let o=null;
   try{o=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
   o=o||{};
-  const st={staff:o.staff||{},roster:o.roster||{dates:[],rows:{}},overrides:o.overrides||{},extra:o.extra||{},removed:o.removed||{},history:o.history||{},rosterAt:o.rosterAt||null,known:o.known||[],seedStamp:o.seedStamp||null,
+  const st={staff:o.staff||{},roster:o.roster||{dates:[],rows:{}},overrides:o.overrides||{},extra:o.extra||{},removed:o.removed||{},history:o.history||{},rosterAt:o.rosterAt||null,rosterUser:o.rosterUser||false,known:o.known||[],seedStamp:o.seedStamp||null,
     settings:Object.assign(JSON.parse(JSON.stringify(DEFAULTS)),o.settings||{})};
   for(const g of Object.keys(DEFAULTS.th)) st.settings.th[g]=Object.assign({},DEFAULTS.th[g],(o.settings&&o.settings.th&&o.settings.th[g])||{});
   try{
@@ -183,7 +184,8 @@ function load(){
   return st;
 }
 function finalizeStaff(base,extra,removed){const o=Object.assign({},base,extra);for(const id of Object.keys(removed))delete o[id];return o}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function cacheLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){cacheLocal();pushDiff()}
 function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3200)}
 
 /* ===================== schedule model ===================== */
@@ -622,7 +624,7 @@ async function importRoster(file){
     out[r[0]]={name:r[1],shifts:r.slice(2)};
   }
   if(!Object.keys(out).length)throw new Error("الجدول فارغ.");
-  S.roster={dates:ds,rows:out};S.rosterAt=Date.now();
+  S.roster={dates:ds,rows:out};S.rosterAt=Date.now();S.rosterUser=true;
   S.overrides=Object.fromEntries(Object.entries(S.overrides).filter(([k])=>k.split("|")[1]>ds[ds.length-1]));
   save();
   return Object.keys(out).length;
@@ -632,6 +634,7 @@ function render(){
   $("#storeName").textContent=S.settings.store;
   $("#subtitle").textContent=dates().length?"الجدول الأسبوعي الثابت · يتكرر كل أسبوع حتى تغيّره":"لم يتم تحميل الروستر";
   $("#badge").textContent=staffIds().length?`👥 ${staffIds().length} سعودي`:"";
+  $("#sync").textContent={connecting:"… جارٍ الاتصال",cloud:"☁ متزامن",ro:"👁 قراءة فقط",local:"💾 على هذا الجهاز"}[syncState];
   $("#nav").innerHTML=TABS.map(([k,l,i])=>`<button class="${ui.tab===k?"on":""}" data-act="tab" data-t="${k}" aria-current="${ui.tab===k}">${i}<span>${l}</span></button>`).join("");
   const f={search:tabSearch,week:tabWeek,leave:tabLeave,team:tabTeam,set:tabSet}[ui.tab];
   const y=window.scrollY,fo=document.activeElement&&document.activeElement.id;
@@ -647,6 +650,7 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("[data-act]");if(!b||b.tagName==="SELECT"||b.tagName==="INPUT")return;
   const d=b.dataset,a=d.act;
   if(a==="tab")return go(d.t);
+  if(RO&&MUT.has(a))return toast("عرضك للقراءة فقط، ما تقدر تعدّل.");
   if(a==="day"){ui.di=+d.i}
   else if(a==="grp"||a==="tile"){ui.g=d.g}
   else if(a==="wgrp"){ui.wg=d.g}
@@ -690,6 +694,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("change",e=>{
   const t=e.target,a=t.dataset&&t.dataset.act;if(!a)return;
+  if(RO&&MUT.has(a)){render();return toast("عرضك للقراءة فقط، ما تقدر تعدّل.")}
   if(a==="from"){ui.from=+t.value;clampRange("from")}
   else if(a==="to"){ui.to=+t.value;clampRange("to")}
   else if(a==="edemp"){ui.ed.id=t.value}
@@ -708,6 +713,7 @@ document.addEventListener("change",e=>{
 document.addEventListener("input",e=>{const t=e.target,a=t.dataset&&t.dataset.act;if(a==="q"){ui.q=t.value;render()}else if(a==="pf"&&ui.panel){ui.panel.f[t.dataset.k]=t.value}});
 async function handleFile(inp,fn,okMsg){
   const f=inp.files[0];inp.value="";if(!f)return;
+  if(RO)return toast("عرضك للقراءة فقط، ما تقدر تعدّل.");
   try{toast("جارٍ القراءة…");const n=await fn(f);toast(okMsg(n));ui.ed=null;ui.wk=0;initDay();render()}catch(err){toast("تعذّر الاستيراد: "+err.message)}
 }
 $("#fRoster").addEventListener("change",e=>handleFile(e.target,importRoster,n=>`تم استيراد جدول ${n} موظف ✓`));
@@ -716,8 +722,70 @@ function initDay(){
   const n=new Date(),iso=`${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`,i=dates().indexOf(iso);
   ui.di=i>=0?i:0;
 }
+/* ===================== cloud sync (db capability) ===================== */
+const MUT=new Set(["addemp","editemp","delemp","delok","restore","psave","apply","clear","undo","addsa","ignore","upRoster","weeks","lr","th","night","store","peak","resetth","remdow"]);
+let DB=null,RO=false,SYNC=false,syncState="local",_hasRoster=false;
+const _rem={ov:new Set(),hi:new Set()},_sent={},_ch={};
+const stable=o=>JSON.stringify(o,(k,v)=>v&&typeof v==="object"&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);
+let _rt=0;const scheduleRender=()=>{if(!_rt)_rt=requestAnimationFrame(()=>{_rt=0;render()})};
+function wr(path,fn){_ch[path]=(_ch[path]||Promise.resolve()).then(fn).catch(e=>{delete _sent[path];onWriteErr(e)})}
+function onWriteErr(e){
+  const c=e&&e.code;
+  if(c==="invalid_argument"||c==="revoked"){RO=true;syncState="ro";toast("ما تقدر تحفظ التعديلات لأن صلاحيتك للقراءة فقط.")}
+  else toast("تعذّر الحفظ في السحابة، حاول مرة ثانية.");
+  scheduleRender();
+}
+function want(path,doc){const j=stable(doc);if(_sent[path]===j)return;_sent[path]=j;wr(path,()=>DB.doc(path).set(doc))}
+function pushDiff(){
+  if(!DB||!SYNC||RO)return;
+  for(const [id,rec] of Object.entries(S.staff))want("staff/"+id,{rec,removed:false});
+  for(const [id,r] of Object.entries(S.removed))want("staff/"+id,{rec:r.rec,removed:true,reason:r.reason||"",at:r.at||0});
+  const live={ov:new Set(),hi:new Set()};
+  for(const [k,o] of Object.entries(S.overrides)){const [id,date]=k.split("|");const path="overrides/"+id+"_"+date;live.ov.add(path);want(path,{id,date,kind:o.kind,reason:o.reason||"",s:o.s||0,e:o.e||0})}
+  for(const [k,h] of Object.entries(S.history)){const [id,date]=k.split("|");const path="history/"+id+"_"+date;live.hi.add(path);want(path,{id,date,reason:h.reason||"",at:h.at||0})}
+  for(const [set,coll] of [["ov","overrides"],["hi","history"]])for(const path of _rem[set])if(!live[set].has(path)&&_sent[path]!=="__del__"){_sent[path]="__del__";wr(path,()=>DB.doc(path).delete())}
+  if(S.roster.dates.length)want("meta/roster",{dates:S.roster.dates,rows:S.roster.rows,at:S.rosterAt||0});
+  want("meta/settings",S.settings);
+  want("meta/known",{ids:S.known});
+}
+const mergeSettings=v=>{const o=JSON.parse(JSON.stringify(DEFAULTS));Object.assign(o,v);for(const g of Object.keys(DEFAULTS.th))o.th[g]=Object.assign({},DEFAULTS.th[g],(v.th&&v.th[g])||{});return o};
+function applySnap(kind,snap){
+  if(kind==="staff"){const st={},rm={};snap.docs.forEach(d=>{const v=d.data();if(!v||!v.rec)return;_sent["staff/"+d.id]=stable(v);if(v.removed)rm[d.id]={rec:v.rec,reason:v.reason||"",at:v.at||0};else st[d.id]=v.rec});S.staff=st;S.removed=rm}
+  else if(kind==="ov"||kind==="hi"){const o={},old=new Set(_rem[kind]);_rem[kind].clear();snap.docs.forEach(d=>{const v=d.data();if(!v)return;const path=(kind==="ov"?"overrides/":"history/")+d.id;_rem[kind].add(path);_sent[path]=stable(v);o[v.id+"|"+v.date]=kind==="ov"?(v.kind==="off"?{kind:"off",reason:v.reason}:{kind:"shift",s:v.s,e:v.e}):{reason:v.reason,at:v.at}});for(const x of old)if(!_rem[kind].has(x))delete _sent[x];if(kind==="ov")S.overrides=o;else S.history=o}
+  else{const v=snap.exists?snap.data():null;if(!v)return;if(kind==="roster")_hasRoster=true;_sent["meta/"+kind]=stable(v);
+    if(kind==="roster"){S.roster={dates:v.dates,rows:v.rows};S.rosterAt=v.at||null}
+    else if(kind==="settings")S.settings=mergeSettings(v);
+    else if(kind==="known")S.known=v.ids||[]}
+  cacheLocal();if(SYNC)scheduleRender();
+}
+function migrate(){
+  let done=false;try{done=!!localStorage.getItem(KEY+".mig")}catch(e){}
+  if(done||RO)return;
+  const L=LOCAL0,empty=!Object.keys(S.staff).length&&!Object.keys(S.removed).length&&!_hasRoster;
+  if(empty){S.staff=L.staff;S.removed=L.removed;S.roster=L.roster;S.rosterAt=L.rosterAt;S.known=L.known;S.settings=L.settings}
+  for(const [id,r] of Object.entries(L.removed)){if(!S.removed[id]){S.removed[id]=r;delete S.staff[id]}}
+  for(const [id,r] of Object.entries(L.extra))if(!S.removed[id])S.staff[id]=r;
+  for(const [k,o] of Object.entries(L.overrides))if(!(k in S.overrides))S.overrides[k]=o;
+  for(const [k,h] of Object.entries(L.history))if(!(k in S.history))S.history[k]=h;
+  if(L.rosterUser&&L.roster.dates.length&&(!S.roster.dates.length||(L.rosterAt||0)>(S.rosterAt||0))){S.roster=L.roster;S.rosterAt=L.rosterAt}
+  try{localStorage.setItem(KEY+".mig","1")}catch(e){}
+  cacheLocal();pushDiff();
+}
+async function initSync(){
+  if(!(window.claude&&window.claude.use)){syncState="local";render();return}
+  syncState="connecting";render();
+  try{DB=await window.claude.use("db")}catch(e){DB=null}
+  if(!DB){syncState="local";render();return}
+  try{const u=await window.claude.use("user");RO=!!(u&&u.can&&(await u.can("data.write"))===false)}catch(e){}
+  const got=new Set();let started=false;
+  const ready=()=>{if(started)return;started=true;SYNC=true;syncState=RO?"ro":"cloud";migrate();render()};
+  const sub=(kind,ref)=>ref.onSnapshot(snap=>{applySnap(kind,snap);got.add(kind);if(got.size>=6)ready()},e=>{if(!started){started=true;syncState="local";render()}});
+  sub("staff",DB.collection("staff"));sub("ov",DB.collection("overrides"));sub("hi",DB.collection("history"));
+  sub("roster",DB.doc("meta/roster"));sub("settings",DB.doc("meta/settings"));sub("known",DB.doc("meta/known"));
+  setTimeout(ready,8000);
+}
 try{const t=localStorage.getItem(KEY+".theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
-initDay();render();
+initDay();render();initSync();
 </script>
 </body>
 </html>

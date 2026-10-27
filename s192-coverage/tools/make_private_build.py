@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Builds a private, ready-to-use copy of the S192 coverage app with data embedded.
 
-Usage: make_private_build.py ROSTER.xls MANPOWER.xlsx OUT.html [--store S192] [--exclude ID,ID] [--names names_ar.json] [--artifact]
+Usage: make_private_build.py ROSTER.xls MANPOWER.xlsx OUT.html [--store S192] [--exclude ID,ID] [--names names_ar.json] [--artifact] [--no-seed] [--sync-ops ops.json]
   --names     JSON file {employee_id: "الاسم بالعربي"} (keep it outside the repo)
+  --no-seed   do not embed the data (cloud-synced artifact reads it from the db)
+  --sync-ops  also write the initial db documents as JSON [{path, data}]
   --artifact  strip the <html>/<head>/<body> wrapper (for publishing as an Artifact page)
 The output contains employee names and phone numbers: never commit or publish it.
 """
@@ -15,6 +17,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("roster"); ap.add_argument("manpower"); ap.add_argument("out")
 ap.add_argument("--store", default="S192"); ap.add_argument("--exclude", default="")
 ap.add_argument("--names"); ap.add_argument("--artifact", action="store_true")
+ap.add_argument("--no-seed", action="store_true"); ap.add_argument("--sync-ops")
 a = ap.parse_args()
 roster_path, man_path, out_path, store = a.roster, a.manpower, a.out, a.store
 exclude = {x.strip() for x in a.exclude.split(",") if x.strip()}
@@ -66,7 +69,13 @@ for r in it:
     if i in names_ar: staff[i]["ar"] = names_ar[i]
 
 seed = {"stamp": str(int(time.time())), "store": store, "staff": staff, "known": known, "roster": {"dates": dates, "rows": ros}}
+if a.sync_ops:
+    ops = [{"path": f"staff/{i}", "data": {"rec": rec, "removed": False}} for i, rec in staff.items()]
+    ops.append({"path": "meta/known", "data": {"ids": known}})
+    ops.append({"path": "meta/roster", "data": {"dates": dates, "rows": ros, "at": int(time.time()) * 1000}})
+    json.dump(ops, open(a.sync_ops, "w", encoding="utf-8"), ensure_ascii=False)
 src = open(__file__.replace("tools/make_private_build.py", "index.html"), encoding="utf-8").read()
+if a.no_seed: seed = None
 src = src.replace('<script id="seed" type="application/json">null</script>',
                   '<script id="seed" type="application/json">' + json.dumps(seed, ensure_ascii=False).replace("</", "<\\/") + "</script>")
 if a.artifact:
