@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FAYEX Studio</title>
+  <meta name="description" content="استوديو غناء على جوالك: موسيقى بدون صوت المغني، تصحيح نغمة احترافي، ومؤثرات ستوديو.">
+  <meta name="theme-color" content="#020603">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FAYEX">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <img src="icons/icon.svg" alt="" width="30" height="30">
+        <span><span id="brandName" class="brand-name">FAYEX</span> <small>ستوديو</small></span>
+      </div>
+      <div id="topActions" class="top-actions"></div>
+    </header>
+
+    <main>
+      <!-- المكتبة -->
+      <section id="view-library" class="view active" aria-label="المكتبة">
+        <div id="hero" class="hero" title="المس الشاشة">
+          <canvas id="matrix" aria-hidden="true"></canvas>
+          <div class="hero-tag"><span id="heroGreet">&gt; WELCOME</span><b>_</b></div>
+          <h1 id="heroName" class="hero-name" data-text="FAYEX">FAYEX</h1>
+          <div class="hero-sub">VOICE STUDIO</div>
+          <div id="heroEq" class="hero-eq" aria-hidden="true"></div>
+          <div class="hero-line">SYS://FAYEX · MIC READY · PITCH ENGINE ONLINE</div>
+        </div>
+        <div class="search">
+          <span class="ico" data-icon="search"></span>
+          <input id="search" type="search" placeholder="ابحث عن أغنية، فنان، أو نوع…" autocomplete="off">
+        </div>
+        <div id="genreChips" class="chips scroll"></div>
+        <div class="lib-actions">
+          <button id="btnImport" class="btn primary"><span data-icon="plus"></span>أضف موسيقى</button>
+          <button id="btnCatalog" class="btn ghost"><span data-icon="cloud"></span>الكتالوج</button>
+        </div>
+        <div id="trackList" class="track-list"></div>
+      </section>
+
+      <!-- الاستوديو -->
+      <section id="view-studio" class="view" aria-label="الاستوديو">
+        <div id="studioEmpty" class="empty">
+          <div class="empty-ico" data-icon="mic"></div>
+          <h3>اختر أغنية وابدأ</h3>
+          <p>من المكتبة اختر الموسيقى اللي تبي تغني عليها.</p>
+          <button class="btn primary" data-goto="library">افتح المكتبة</button>
+        </div>
+        <div id="studioMain" hidden>
+          <div class="now">
+            <div id="stCover" class="cover sm"></div>
+            <div class="now-meta">
+              <h2 id="stTitle"></h2>
+              <p id="stArtist"></p>
+            </div>
+            <button id="stKey" class="pill" title="المقام"></button>
+          </div>
+
+          <div id="lyrics" class="lyrics">
+            <p class="l-prev"></p>
+            <p class="l-cur"><span></span></p>
+            <p class="l-next"></p>
+            <button id="syncTap" class="sync-tap" hidden>اضغط عند بداية السطر</button>
+          </div>
+
+          <div class="pitch-wrap">
+            <canvas id="pitchCanvas"></canvas>
+            <div class="pitch-hud">
+              <span id="noteNow" class="note-now">—</span>
+              <span id="scoreNow" class="score-now"></span>
+            </div>
+            <div id="micHint" class="mic-hint">فعّل المايك (🎧) عشان تشوف نغمتك مباشرة</div>
+          </div>
+
+          <div class="seek">
+            <span id="tCur">0:00</span>
+            <input id="seek" type="range" min="0" max="1000" value="0" aria-label="موضع الأغنية">
+            <span id="tDur">0:00</span>
+          </div>
+
+          <div class="transport">
+            <button id="btnMon" class="round ghost" title="اسمع صوتك بالمؤثرات" data-icon="headphones"></button>
+            <button id="btnBack" class="round ghost" title="من البداية" data-icon="back"></button>
+            <button id="btnPlay" class="round big" title="تشغيل" data-icon="play"></button>
+            <button id="btnRec" class="round rec" title="تسجيل" data-icon="rec"></button>
+            <button id="btnSync" class="round ghost" title="الكلمات" data-icon="pen"></button>
+          </div>
+          <div class="meter" aria-hidden="true"><div id="meterFill"></div></div>
+          <div id="recBadge" class="rec-badge" hidden><i></i> جاري التسجيل <b id="recTime">0:00</b></div>
+
+          <div id="studioControls"></div>
+        </div>
+      </section>
+
+      <!-- التسجيلات -->
+      <section id="view-takes" class="view" aria-label="تسجيلاتي">
+        <h2 class="view-title">تسجيلاتي</h2>
+        <div id="takeList" class="take-list"></div>
+      </section>
+
+      <!-- الإعدادات -->
+      <section id="view-settings" class="view" aria-label="الإعدادات">
+        <h2 class="view-title">الإعدادات</h2>
+        <div class="card">
+          <label class="row-toggle">
+            <span><b>أستخدم سماعات</b><small>أفضل جودة: يطفي إلغاء الصدى ويسمح لك تسمع صوتك بالمؤثرات وأنت تغني.</small></span>
+            <input id="setHeadphones" type="checkbox" class="switch">
+          </label>
+        </div>
+        <div class="card">
+          <div class="row-head"><b>تعويض تأخير الجهاز</b><output id="latencyOut"></output></div>
+          <small class="muted">يضبط تزامن صوتك مع الموسيقى. السماعات البلوتوث تحتاج تأخير أعلى.</small>
+          <input id="setLatency" type="range" min="0" max="400" step="5">
+          <div class="row-btns">
+            <button id="btnCalibrate" class="btn ghost sm">قياس تلقائي</button>
+            <button id="btnLatencyAuto" class="btn ghost sm">رجّع للافتراضي</button>
+          </div>
+          <small class="muted">القياس التلقائي: شيل السماعات، ارفع الصوت، وخلّ الجوال على الطاولة بهدوء.</small>
+        </div>
+        <div class="card">
+          <div class="row-head"><b>اسمك في الواجهة</b></div>
+          <small class="muted">يظهر بالإنجليزي في الواجهة الرئيسية بتأثير الماتريكس.</small>
+          <input id="setName" type="text" dir="ltr" maxlength="14" class="field" autocomplete="off">
+        </div>
+        <div class="card">
+          <div class="row-head"><b>رابط الكتالوج</b></div>
+          <small class="muted">ملف JSON فيه قائمة الموسيقى الجديدة. تقدر تحدّثه أنت وتنزل الإضافات للتطبيق.</small>
+          <input id="setCatalog" type="url" dir="ltr" class="field">
+        </div>
+        <div class="card">
+          <div class="row-head"><b>التخزين</b><output id="storageOut"></output></div>
+          <div class="row-btns">
+            <button id="btnPersist" class="btn ghost sm">احمِ بياناتي من الحذف</button>
+            <button id="btnReset" class="btn danger sm">مسح كل البيانات</button>
+          </div>
+        </div>
+        <div class="card about">
+          <b>نصائح لصوت احترافي</b>
+          <ul>
+            <li>استخدم سماعات سلكية: البلوتوث يسبب تأخير.</li>
+            <li>غنِّ في غرفة فيها أثاث وستائر، وابعد عن الجدران الفاضية.</li>
+            <li>خلّ الجوال على بعد شبر من فمك وبزاوية بسيطة.</li>
+            <li>ابدأ بإعداد «ستوديو»، وجرّب «بوب حديث» لصوت الأوتوتيون الواضح.</li>
+            <li>بعد التسجيل تقدر تغيّر كل المؤثرات وتعيد التصدير بدون ما تغني من جديد.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="التنقل">
+      <button data-tab="library" class="active"><span data-icon="library"></span>المكتبة</button>
+      <button data-tab="studio"><span data-icon="mic"></span>الاستوديو</button>
+      <button data-tab="takes"><span data-icon="wave"></span>تسجيلاتي</button>
+      <button data-tab="settings"><span data-icon="settings"></span>الإعدادات</button>
+    </nav>
+  </div>
+
+  <div id="sheet" class="sheet" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true">
+      <div class="sheet-handle"></div>
+      <div id="sheetBody"></div>
+    </div>
+  </div>
+
+  <div id="busy" class="busy" hidden><div class="spinner"></div><p id="busyText"></p></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <div id="welcome" class="welcome" hidden>
+    <div class="welcome-card">
+      <img src="icons/icon.svg" alt="" width="72" height="72">
+      <h1>أهلاً بك في <span class="brand-name">FAYEX</span> Studio</h1>
+      <p>غنِّ على موسيقى بدون صوت المغني، وخلّ التطبيق يضبط نغمتك ويضيف لمسة ستوديو احترافية.</p>
+      <ul>
+        <li><b>🎧 سماعات</b> للحصول على أنظف تسجيل</li>
+        <li><b>🎚️ تصحيح نغمة</b> يدعم المقامات العربية حتى ربع التون</li>
+        <li><b>🎼 مكتبتك</b> أضف أي موسيقى، وحدّثها من الكتالوج</li>
+      </ul>
+      <button id="btnWelcome" class="btn primary block">يلا نبدأ</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
