@@ -14,7 +14,7 @@
 :root{
   --bg:#040605;--surface:#0D1410;--soft:#09100C;--ink:#EEF7F2;--muted:#86A092;--line:#1C2A23;
   --acc:#34F5A0;--acc-bg:rgba(52,245,160,.08);
-  --bad:#FF6F61;--bad-bg:rgba(255,111,97,.13);--warn:#F5B83D;--warn-bg:rgba(245,184,61,.13);--ok:#7BE38B;--ok-bg:rgba(123,227,139,.12);--none:#8C969C;--none-bg:rgba(255,255,255,.06);
+  --bad:#FF6F61;--bad-bg:rgba(255,111,97,.13);--warn:#F5B83D;--warn-bg:rgba(245,184,61,.13);--ok:#7BE38B;--ok-bg:rgba(123,227,139,.12);--none:#8C969C;--none-bg:rgba(255,255,255,.06);--blue:#4DA3FF;--blue-bg:rgba(77,163,255,.13);
   --display:"El Messiri","Cairo",system-ui,sans-serif;--num:"Montserrat","Cairo",system-ui,sans-serif;--body:"Montserrat","Cairo",system-ui,-apple-system,"Segoe UI",sans-serif;
   color-scheme:dark;
 }
@@ -79,7 +79,7 @@ button{cursor:pointer;border:0;background:none}
 .day .fire{font-size:11px;color:var(--bad)}
 .pill{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:2px 10px;font-size:12.5px;font-weight:600}
 .s-bad{background:var(--bad-bg);color:var(--bad)} .s-warn{background:var(--warn-bg);color:var(--warn)}
-.s-ok{background:var(--ok-bg);color:var(--ok)} .s-none{background:var(--none-bg);color:var(--none)}
+.s-ok{background:var(--ok-bg);color:var(--ok)} .s-none{background:var(--none-bg);color:var(--none)} .s-blue{background:var(--blue-bg);color:var(--blue)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 label.f{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px}
 select,input[type=text],input[type=search],input[type=number]{width:100%;min-height:44px;border:1px solid #243a2f;border-radius:12px;background:rgba(6,10,8,.8);padding:6px 12px}
@@ -113,6 +113,11 @@ select option{background:#0D1410}
 .av{width:44px;height:44px;border-radius:50%;border:1px solid rgba(52,245,160,.45);background:var(--acc-bg);color:var(--acc);display:flex;align-items:center;justify-content:center;font:700 17px var(--display)}
 .emp .nm{font-weight:600;line-height:1.3;text-align:right;unicode-bidi:plaintext}
 .emp .meta{font-size:12.5px;color:var(--muted)}
+.emp.sup .av{border-color:rgba(77,163,255,.75);background:var(--blue-bg);color:var(--blue);box-shadow:0 0 14px rgba(77,163,255,.5)}
+.sup-card{border-color:rgba(77,163,255,.45);box-shadow:0 0 0 1px rgba(77,163,255,.18),0 0 26px -6px rgba(77,163,255,.45)}
+.sup-card h2{color:var(--blue);text-shadow:0 0 14px rgba(77,163,255,.5)}
+.supchip{display:inline-flex;white-space:nowrap;max-width:100%;align-items:center;gap:6px;margin-top:12px;padding:5px 14px;border-radius:999px;border:1px solid rgba(77,163,255,.6);background:var(--blue-bg);color:#cfe5ff;font-size:13px;box-shadow:0 0 18px -4px rgba(77,163,255,.7)}
+.supchip i{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px var(--blue)}
 .btnrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .dig summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0;color:var(--ink)}
 .dig summary::-webkit-details-marker{display:none}
@@ -168,7 +173,7 @@ nav button.on{color:var(--acc);font-weight:600}
 <header class="hero"><div class="wrap">
   <div class="topbar"><span class="brand" data-act="tab" data-t="home" role="link" aria-label="الرئيسية"><span class="logo" id="logoBox"></span><span class="mark">S192</span><span class="mt">تغطية السعوديين</span></span><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center"><span class="badge" id="badge"></span><span class="badge" id="sync"></span></span></div>
   <div class="clock" role="timer" aria-label="الساعة والتاريخ"><div class="ct"><span id="clkT">--:--</span><span class="cs" id="clkS">00</span><span class="ca" id="clkA">م</span></div><div class="cd" id="clkD"></div><div class="ch" id="clkH"></div></div>
-  <div class="herogrid"><div><h1>تغطية<br>السعوديين</h1><p class="lead" id="subtitle">—</p><button class="btn pri" data-act="homedetail">التفاصيل ←</button></div>
+  <div class="herogrid"><div><h1>تغطية<br>السعوديين</h1><p class="lead" id="subtitle">—</p><button class="btn pri" data-act="homedetail">التفاصيل ←</button><div><span class="supchip" id="supChip"></span></div></div>
   <div class="glow" aria-hidden="true"><i></i><i></i><i></i><div><b id="ringN">0</b><small id="ringL">كاشير الآن</small></div></div></div>
 </div></header>
 <main class="wrap" id="app"></main>
@@ -338,9 +343,9 @@ function dispShift(id,di,h){
   const p=effShift(id,di-1);
   return(p.s!=null&&p.e>1440&&t+1440<p.e&&t+1440>=p.s)?Object.assign({},p,{prev:true}):c;
 }
-function empRow(id,extra,di){
+function empRow(id,extra,di,cls){
   const e=S.staff[id];
-  return `<div class="emp"><div class="av" aria-hidden="true">${esc(initials(dn(e)))}</div>
+  return `<div class="emp${cls?" "+cls:""}"><div class="av" aria-hidden="true">${esc(initials(dn(e)))}</div>
   <div><div class="nm">${esc(dn(e))}</div>
   <div class="meta">${esc(roleAr(e.pos))} · رقم ${esc(id)} · ${esc(disp(e.phone))}</div>
   ${extra||""}</div>
@@ -355,13 +360,16 @@ function nowState(){
   if(di<0){di=0;note=" (أول يوم بالجدول)"}
   const ids=members("cashier").filter(id=>present(id,di,h));
   const n=ids.length,st=statusOf("cashier",n,di,h);
-  return{di,h,n,st,ids,note,label:`${AR_DAYS[dowOf(di)]} ${dmy(di).slice(0,5)}${note}`,all:countAt("all",di,h)};
+  const isSup=id=>/^CUSTOMER SERVICE (MANAGER|SUPERVISOR)$/i.test(String(S.staff[id].pos||"").trim());
+  const sups=members("cs").filter(id=>isSup(id)&&present(id,di,h)).sort((a,b)=>/MANAGER/i.test(S.staff[b].pos)-/MANAGER/i.test(S.staff[a].pos));
+  return{di,h,n,st,ids,sups,note,label:`${AR_DAYS[dowOf(di)]} ${dmy(di).slice(0,5)}${note}`,all:countAt("all",di,h)};
 }
 function tabHome(){
   const NS=nowState();if(!NS)return emptyCard();
   const [w,g]=needOf("cashier",NS.di,NS.h);
   const msg={bad:`أقل من الحد الأدنى (${w})`,warn:`مقبول، والمطلوب ${g} للوضع الكافي`,ok:"التغطية كافية",none:""}[NS.st];
-  return `<div class="card"><h2>الكاشير الموجودون الآن</h2>
+  const supHtml=`<div class="card sup-card"><h2>مشرف خدمة العملاء الآن</h2>${NS.sups.map(id=>empRow(id,`<span class="pill s-blue">${esc(roleAr(S.staff[id].pos))}</span> <span class="pill s-none">${esc(shiftTxt(dispShift(id,NS.di,NS.h)))}</span>`,0,"sup")).join("")||'<p class="muted" style="text-align:center;margin:6px 0">لا يوجد مشرف أو مدير خدمة عملاء الآن</p>'}</div>`;
+  return supHtml+`<div class="card"><h2>الكاشير الموجودون الآن</h2>
     <div style="text-align:center;margin-bottom:6px"><span class="pill s-${NS.st}">${STLBL[NS.st]}</span> ${msg?`<span class="small muted"> ${msg}</span>`:""}</div>
     ${NS.ids.map(id=>empRow(id,`<span class="pill s-none">${esc(shiftTxt(dispShift(id,NS.di,NS.h)))}</span>`)).join("")||'<p class="muted" style="text-align:center">لا أحد حاليًا</p>'}
     <p class="small muted" style="text-align:center;margin:10px 0 0">إجمالي السعوديين الآن: <b>${NS.all}</b></p></div>`;
@@ -720,6 +728,7 @@ function render(){
   const NS=nowState();
   $("#ringN").textContent=NS?NS.n:"–";
   $("#subtitle").textContent=NS?NS.label:"لم يتم تحميل الروستر";
+  $("#supChip").innerHTML=NS&&NS.sups.length?`<i></i>${/MANAGER/i.test(S.staff[NS.sups[0]].pos)?"المدير":"المشرف"}: ${esc(dn(S.staff[NS.sups[0]]))}${NS.sups.length>1?" +"+(NS.sups.length-1):""}`:'<i style="background:#5b6b7c;box-shadow:none"></i>لا يوجد مشرف الآن';
   const gl=document.querySelector(".glow");gl.className="glow"+(NS?" st-"+NS.st:"");
   document.querySelector(".hero").classList.toggle("compact",ui.tab!=="home");
   document.title="تغطية السعوديين "+S.settings.store;
