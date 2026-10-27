@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 """Builds a private, ready-to-use copy of the S192 coverage app with data embedded.
 
-Usage: make_private_build.py ROSTER.xls MANPOWER.xlsx OUT.html [STORE]
+Usage: make_private_build.py ROSTER.xls MANPOWER.xlsx OUT.html [--store S192] [--exclude ID,ID] [--names names_ar.json] [--artifact]
+  --names     JSON file {employee_id: "الاسم بالعربي"} (keep it outside the repo)
+  --artifact  strip the <html>/<head>/<body> wrapper (for publishing as an Artifact page)
 The output contains employee names and phone numbers: never commit or publish it.
 """
 import sys, re, json, time
 from html.parser import HTMLParser
 import openpyxl
 
-roster_path, man_path, out_path = sys.argv[1:4]
-store = sys.argv[4] if len(sys.argv) > 4 else "S192"
+import argparse
+ap = argparse.ArgumentParser()
+ap.add_argument("roster"); ap.add_argument("manpower"); ap.add_argument("out")
+ap.add_argument("--store", default="S192"); ap.add_argument("--exclude", default="")
+ap.add_argument("--names"); ap.add_argument("--artifact", action="store_true")
+a = ap.parse_args()
+roster_path, man_path, out_path, store = a.roster, a.manpower, a.out, a.store
+exclude = {x.strip() for x in a.exclude.split(",") if x.strip()}
+names_ar = json.load(open(a.names, encoding="utf-8")) if a.names else {}
 
 def group_of(pos, dept):
     p = (pos or "").upper()
@@ -51,12 +60,20 @@ for r in it:
     pos = str(r[ix["pos"]] or "").strip()
     if pos.upper() == "STORE MANAGER": continue
     i = re.sub(r"\D", "", str(r[ix["id"]]))
+    if i in exclude: continue
     staff[i] = dict(id=i, name=re.sub(r"\s+", " ", str(r[ix["name"]])).strip(), pos=pos, dept=str(r[ix["cc"]] or ""),
                     phone=re.sub(r"\D", "", str(r[ix["mob"]] or "")), grp=group_of(pos, r[ix["cc"]]))
+    if i in names_ar: staff[i]["ar"] = names_ar[i]
 
 seed = {"stamp": str(int(time.time())), "staff": staff, "known": known, "roster": {"dates": dates, "rows": ros}}
 src = open(__file__.replace("tools/make_private_build.py", "index.html"), encoding="utf-8").read()
 src = src.replace('<script id="seed" type="application/json">null</script>',
                   '<script id="seed" type="application/json">' + json.dumps(seed, ensure_ascii=False).replace("</", "<\\/") + "</script>")
+if a.artifact:
+    src = re.sub(r"<!doctype html>\s*<html[^>]*>\s*<head>", "", src, flags=re.I)
+    src = src.replace('<meta charset="utf-8">\n', "").replace('<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n', "")
+    src = src.replace("</head>\n<body>", "").replace("</body>\n</html>", "")
+    src = src.replace("<title>", '<script>document.documentElement.dir="rtl";document.documentElement.lang="ar"</script>\n<title>', 1)
+    src = src.replace("padding:calc(18px + env(safe-area-inset-top,0px)) 0 18px", "padding:18px 0")
 open(out_path, "w", encoding="utf-8").write(src)
 print(f"{len(staff)} Saudi staff, {len(ros)} roster rows, {dates[0]}..{dates[-1]} -> {out_path}")
