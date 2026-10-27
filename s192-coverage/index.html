@@ -51,9 +51,8 @@ button{cursor:pointer;border:0;background:none}
 .glow i:nth-child(3){inset:30px;background:radial-gradient(circle,color-mix(in srgb,currentColor 30%,transparent),transparent 72%)}
 .glow b{position:relative;font:800 34px/1 var(--num)} .glow small{position:relative;display:block;font-size:11px;color:var(--muted)}
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
-.brand{cursor:pointer}.hero.compact .mt{display:none}.hero.compact .logo.plate img{max-height:24px}
-.logo.plate{background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 0 0 1px rgba(52,245,160,.55),0 0 16px rgba(52,245,160,.5),0 0 38px rgba(52,245,160,.22)}
-.logo img{display:block;max-height:40px;max-width:170px}
+.brand{cursor:pointer}.hero.compact .mt{display:none}.hero.compact .logo img{max-height:26px}
+.logo img{display:block;max-height:44px;max-width:180px;filter:drop-shadow(0 0 1.2px #fff) drop-shadow(0 0 1.2px #fff) drop-shadow(0 0 9px rgba(255,255,255,.45))}
 .wm{display:flex;flex-direction:column;line-height:1.1}
 .wm b{font:800 17px var(--num);letter-spacing:.22em;color:#eafff4;text-shadow:0 0 8px rgba(52,245,160,.9),0 0 22px rgba(52,245,160,.5)}
 .wm small{font-size:11px;color:var(--acc);letter-spacing:.04em;text-shadow:0 0 10px rgba(52,245,160,.6)}
@@ -256,8 +255,8 @@ function typical(id){
   const b=Object.entries(c).sort((a,z)=>z[1]-a[1])[0];return(_typ[id]=b?b[0]:null);
 }
 function baseStr(id,di){
-  const r=S.roster.rows[id],L=r.shifts.length,k=di+offK();let sh=r.shifts[k%L];
-  if(k>=L&&S.settings.leaveReturn){const p=parseShift(sh);if(p.off&&p.type==="leave"){const t=typical(id);if(t)sh=t}}
+  const r=S.roster.rows[id],L=r.shifts.length,k=di+offK();let sh=r.shifts[((k%L)+L)%L];
+  if((k>=L||k<0)&&S.settings.leaveReturn){const p=parseShift(sh);if(p.off&&p.type==="leave"){const t=typical(id);if(t)sh=t}}
   return sh;
 }
 const dowOf=di=>{const [y,m,d]=dates()[di].split("-").map(Number);return new Date(y,m-1,d).getDay()};
@@ -275,17 +274,17 @@ function parseShift(str){
   return{off:true,type:"leave",label:t||"—"};
 }
 function effShift(id,di,ov=S.overrides){
-  const o=ov[id+"|"+dates()[di]];
+  const o=ov[id+"|"+(di>=0?dates()[di]:addDays(dates()[0],di))];
   if(o){return o.kind==="off"?{off:true,type:"absent",label:o.reason||"غياب",ovr:true}:{s:o.s,e:o.e,ovr:true}}
   return S.roster.rows[id]?parseShift(baseStr(id,di)):{off:true,type:"dayoff",label:"—"};
 }
 function present(id,di,h,ov){
   const t=h*60+30,c=effShift(id,di,ov);
   if(c.s!=null&&c.s<=t&&t<c.e)return true;
-  if(di>0){const p=effShift(id,di-1,ov);if(p.s!=null&&p.e>1440&&t+1440<p.e&&t+1440>=p.s)return true}
+  {const p=effShift(id,di-1,ov);if(p.s!=null&&p.e>1440&&t+1440<p.e&&t+1440>=p.s)return true}
   return false;
 }
-const unknownPrev=(di,h)=>di+offK()===0&&h<8;
+const unknownPrev=()=>false; // الجدول أسبوع ثابت يتكرر، فاليوم السابق معروف دائمًا
 function members(g){return staffIds().filter(id=>g==="all"||grpOf(id)===g)}
 function countAt(g,di,h,ov){let n=0;for(const id of members(g))if(present(id,di,h,ov))n++;return n}
 function statusOf(g,n,di,h){
@@ -332,7 +331,13 @@ function contact(id){
   const d=String(p).replace(/\D/g,"");
   return `<a class="ic" href="tel:+${d}" aria-label="اتصال">📞</a><a class="ic wa" href="https://wa.me/${d}" target="_blank" rel="noopener" aria-label="واتساب">💬</a>`;
 }
-function shiftTxt(c){return c.off?c.label:minLbl(c.s)+" ← "+minLbl(c.e)}
+function shiftTxt(c){return (c.off?c.label:minLbl(c.s)+" ← "+minLbl(c.e))+(c.prev?" · أمس":"")}
+function dispShift(id,di,h){
+  const c=effShift(id,di),t=h*60+30;
+  if(c.s!=null&&c.s<=t&&t<c.e)return c;
+  const p=effShift(id,di-1);
+  return(p.s!=null&&p.e>1440&&t+1440<p.e&&t+1440>=p.s)?Object.assign({},p,{prev:true}):c;
+}
 function empRow(id,extra,di){
   const e=S.staff[id];
   return `<div class="emp"><div class="av" aria-hidden="true">${esc(initials(dn(e)))}</div>
@@ -358,7 +363,7 @@ function tabHome(){
   const msg={bad:`أقل من الحد الأدنى (${w})`,warn:`مقبول، والمطلوب ${g} للوضع الكافي`,ok:"التغطية كافية",none:""}[NS.st];
   return `<div class="card"><h2>الكاشير الموجودون الآن</h2>
     <div style="text-align:center;margin-bottom:6px"><span class="pill s-${NS.st}">${STLBL[NS.st]}</span> ${msg?`<span class="small muted"> ${msg}</span>`:""}</div>
-    ${NS.ids.map(id=>empRow(id,`<span class="pill s-none">${esc(shiftTxt(effShift(id,NS.di)))}</span>`)).join("")||'<p class="muted" style="text-align:center">لا أحد حاليًا</p>'}
+    ${NS.ids.map(id=>empRow(id,`<span class="pill s-none">${esc(shiftTxt(dispShift(id,NS.di,NS.h)))}</span>`)).join("")||'<p class="muted" style="text-align:center">لا أحد حاليًا</p>'}
     <p class="small muted" style="text-align:center;margin:10px 0 0">إجمالي السعوديين الآن: <b>${NS.all}</b></p></div>`;
 }
 /* ===================== TAB: search ===================== */
@@ -378,7 +383,7 @@ function tabSearch(){
   const full=[],part=[],none=[];
   for(const id of ids){
     const pres=[];for(let h=from;h<to;h++)pres.push(present(id,di,h));
-    const c=effShift(id,di);
+    const c=dispShift(id,di,from);
     if(pres.every(Boolean))full.push([id,c]);
     else if(pres.some(Boolean)){const rr=runs(pres).map(([a,b])=>hourLbl(from+a)+" – "+endLbl(from+b)).join(" ، ");part.push([id,c,rr])}
     else none.push([id,c]);
@@ -495,7 +500,7 @@ function tabWeek(){
   ${W>1?weekChips(W):""}<div class="card"><h2>⚠ فجوات الأسبوع</h2><p class="small muted" style="margin:0">فترات أقل من الحد الأدنى (أيام الذروة أولاً). اضغط لفتح التفاصيل.</p>${alertsHtml}</div>
   <h2 class="sec">خريطة التغطية (ساعة × يوم)</h2>${groupChips(g,"wgrp")}
   <div class="card hmwrap"><table class="hm"><thead>${head}</thead><tbody>${body}</tbody></table>
-  <p class="small muted">🔴 خطر · 🟡 تنبيه · 🟢 كافٍ · ؟ = جدول اليوم السابق غير متوفر. اضغط على أي خلية للتفاصيل.</p></div>
+  <p class="small muted">🔴 خطر · 🟡 تنبيه · 🟢 كافٍ. اضغط على أي خلية للتفاصيل.</p></div>
   ${dataWarnings()}`;
 }
 function dataWarnings(){
@@ -666,7 +671,7 @@ function tabSet(){
     <button class="btn sm" data-act="resetth">استعادة الحدود الافتراضية</button>
   </div>
   <div class="card"><h2>الشعار</h2>
-    <p class="small muted" style="margin-top:0">ارفع شعار أسواق التميمي بألوانه الأصلية؛ يظهر على لوحة بيضاء بإطار أخضر متوهج أعلى الصفحة، ويتزامن مع كل الأجهزة.</p>
+    <p class="small muted" style="margin-top:0">ارفع شعار أسواق التميمي بألوانه الأصلية؛ يظهر أعلى الصفحة بتوهج خفيف، ويتزامن مع كل الأجهزة.</p>
     <div class="row2"><button class="btn pri" data-act="upLogo">رفع الشعار</button><button class="btn" data-act="rmLogo">إزالة</button></div></div>
   <div class="card"><h2>الجدول الثابت والتذكير</h2>
     <p class="small muted" style="margin-top:0">طالما ما استوردت روستر جديد، يتكرر جدول الأسبوع تلقائياً للأسابيع القادمة. تقدر تفحص إجازة بعد أسابيع، مثل اليوم الوطني.</p>
