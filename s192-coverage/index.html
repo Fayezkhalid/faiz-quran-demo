@@ -87,8 +87,8 @@ select,input[type=text],input[type=search],input[type=number]{width:100%;min-hei
 .acts{display:flex;gap:6px}
 .ic{width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--surface);text-decoration:none;font-size:18px}
 .ic.wa{background:#E3F8EC;border-color:transparent}
-.wkgrid{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
-.wk{border-radius:10px;padding:6px 10px;background:var(--none-bg);color:var(--none);line-height:1.35;font-size:12.5px}
+.wkgrid{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.wk{flex:0 0 auto;border-radius:10px;padding:4px 10px;background:var(--none-bg);color:var(--none);line-height:1.35;font-size:12.5px}
 .wk b{display:block;font-weight:600;font-size:13px}
 .wk.w{background:var(--ok-bg);color:var(--ok)} .wk.l{background:var(--warn-bg);color:var(--warn)} .wk.a{background:var(--bad-bg);color:var(--bad)}
 details{margin-top:10px} summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--muted)}
@@ -177,6 +177,7 @@ function load(){
   for(const g of Object.keys(DEFAULTS.th)) st.settings.th[g]=Object.assign({},DEFAULTS.th[g],(o.settings&&o.settings.th&&o.settings.th[g])||{});
   try{
     const seed=JSON.parse($("#seed").textContent);
+    if(seed&&seed.store)st.settings.store=seed.store;
     if(seed&&seed.stamp&&seed.stamp!==st.seedStamp){st.staff=finalizeStaff(seed.staff,st.extra,st.removed);st.roster=seed.roster;st.known=seed.known||[];st.rosterAt=+seed.stamp*1000;st.seedStamp=seed.stamp}
   }catch(e){}
   return st;

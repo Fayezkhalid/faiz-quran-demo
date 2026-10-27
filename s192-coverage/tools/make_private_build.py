@@ -65,7 +65,7 @@ for r in it:
                     phone=re.sub(r"\D", "", str(r[ix["mob"]] or "")), grp=group_of(pos, r[ix["cc"]]))
     if i in names_ar: staff[i]["ar"] = names_ar[i]
 
-seed = {"stamp": str(int(time.time())), "staff": staff, "known": known, "roster": {"dates": dates, "rows": ros}}
+seed = {"stamp": str(int(time.time())), "store": store, "staff": staff, "known": known, "roster": {"dates": dates, "rows": ros}}
 src = open(__file__.replace("tools/make_private_build.py", "index.html"), encoding="utf-8").read()
 src = src.replace('<script id="seed" type="application/json">null</script>',
                   '<script id="seed" type="application/json">' + json.dumps(seed, ensure_ascii=False).replace("</", "<\\/") + "</script>")
