@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Builds a private, ready-to-use copy of the S192 coverage app with data embedded.
 
-Usage: make_private_build.py ROSTER.xls MANPOWER.xlsx OUT.html [--store S192] [--exclude ID,ID] [--names names_ar.json] [--artifact] [--no-seed] [--sync-ops ops.json]
+Usage: make_private_build.py ROSTER.xls MANPOWER.xlsx OUT.html [--store S192] [--exclude ID,ID] [--names names_ar.json] [--artifact] [--no-seed] [--sync-ops ops.json] [--logo logo.png]
   --names     JSON file {employee_id: "الاسم بالعربي"} (keep it outside the repo)
   --no-seed   do not embed the data (cloud-synced artifact reads it from the db)
   --sync-ops  also write the initial db documents as JSON [{path, data}]
@@ -17,7 +17,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("roster"); ap.add_argument("manpower"); ap.add_argument("out")
 ap.add_argument("--store", default="S192"); ap.add_argument("--exclude", default="")
 ap.add_argument("--names"); ap.add_argument("--artifact", action="store_true")
-ap.add_argument("--no-seed", action="store_true"); ap.add_argument("--sync-ops")
+ap.add_argument("--no-seed", action="store_true"); ap.add_argument("--logo"); ap.add_argument("--sync-ops")
 a = ap.parse_args()
 roster_path, man_path, out_path, store = a.roster, a.manpower, a.out, a.store
 exclude = {x.strip() for x in a.exclude.split(",") if x.strip()}
@@ -75,6 +75,9 @@ if a.sync_ops:
     ops.append({"path": "meta/roster", "data": {"dates": dates, "rows": ros, "at": int(time.time()) * 1000}})
     json.dump(ops, open(a.sync_ops, "w", encoding="utf-8"), ensure_ascii=False)
 src = open(__file__.replace("tools/make_private_build.py", "index.html"), encoding="utf-8").read()
+if a.logo:
+    import base64
+    seed["logo"] = "data:image/png;base64," + base64.b64encode(open(a.logo, "rb").read()).decode()
 if a.no_seed: seed = None
 src = src.replace('<script id="seed" type="application/json">null</script>',
                   '<script id="seed" type="application/json">' + json.dumps(seed, ensure_ascii=False).replace("</", "<\\/") + "</script>")

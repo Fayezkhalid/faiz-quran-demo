@@ -51,7 +51,9 @@ button{cursor:pointer;border:0;background:none}
 .glow i:nth-child(3){inset:30px;background:radial-gradient(circle,color-mix(in srgb,currentColor 30%,transparent),transparent 72%)}
 .glow b{position:relative;font:800 34px/1 var(--num)} .glow small{position:relative;display:block;font-size:11px;color:var(--muted)}
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
-.logo img{display:block;max-height:34px;max-width:150px;filter:drop-shadow(0 0 6px rgba(52,245,160,.75)) drop-shadow(0 0 18px rgba(52,245,160,.4))}
+.brand{cursor:pointer}.hero.compact .mt{display:none}.hero.compact .logo.plate img{max-height:24px}
+.logo.plate{background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 0 0 1px rgba(52,245,160,.55),0 0 16px rgba(52,245,160,.5),0 0 38px rgba(52,245,160,.22)}
+.logo img{display:block;max-height:40px;max-width:170px}
 .wm{display:flex;flex-direction:column;line-height:1.1}
 .wm b{font:800 17px var(--num);letter-spacing:.22em;color:#eafff4;text-shadow:0 0 8px rgba(52,245,160,.9),0 0 22px rgba(52,245,160,.5)}
 .wm small{font-size:11px;color:var(--acc);letter-spacing:.04em;text-shadow:0 0 10px rgba(52,245,160,.6)}
@@ -60,7 +62,7 @@ button{cursor:pointer;border:0;background:none}
 .ct .cs{font-size:20px;opacity:.75;width:1.4em;text-align:left} .ct .ca{font:600 18px var(--display);color:var(--acc)}
 .cd{margin-top:8px;font-size:13px;color:var(--ink)} .ch{font-size:12px;color:var(--muted);margin-top:2px}
 .hero.compact .clock,.hero.compact .mark{display:none}
-.hero.compact{padding:12px 0}.hero.compact .herogrid{display:none}.hero .mt{display:none;font:700 13px var(--display);margin-inline-start:10px}.hero.compact .mt{display:inline;white-space:nowrap}.hero.compact #badge{display:none}.mark{white-space:nowrap}
+.hero.compact{padding:12px 0}.hero.compact .herogrid{display:none}.hero .mt{display:none;font:700 13px var(--display);margin-inline-start:10px}.hero.compact #badge{display:none}.mark{white-space:nowrap}
 .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:3px 12px;font-size:12px;color:var(--ink);background:rgba(255,255,255,.03)}
 /* generic */
 .card{background:linear-gradient(180deg,rgba(16,24,19,.84),rgba(9,14,11,.84));backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
@@ -165,7 +167,7 @@ nav button.on{color:var(--acc);font-weight:600}
 <body>
 <div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
 <header class="hero"><div class="wrap">
-  <div class="topbar"><span class="brand"><span class="logo" id="logoBox"></span><span class="mark">S192</span><span class="mt">تغطية السعوديين</span></span><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><span class="badge" id="badge"></span><span class="badge" id="sync"></span></span></div>
+  <div class="topbar"><span class="brand" data-act="tab" data-t="home" role="link" aria-label="الرئيسية"><span class="logo" id="logoBox"></span><span class="mark">S192</span><span class="mt">تغطية السعوديين</span></span><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center"><span class="badge" id="badge"></span><span class="badge" id="sync"></span></span></div>
   <div class="clock" role="timer" aria-label="الساعة والتاريخ"><div class="ct"><span id="clkT">--:--</span><span class="cs" id="clkS">00</span><span class="ca" id="clkA">م</span></div><div class="cd" id="clkD"></div><div class="ch" id="clkH"></div></div>
   <div class="herogrid"><div><h1>تغطية<br>السعوديين</h1><p class="lead" id="subtitle">—</p><button class="btn pri" data-act="homedetail">التفاصيل ←</button></div>
   <div class="glow" aria-hidden="true"><i></i><i></i><i></i><div><b id="ringN">0</b><small id="ringL">كاشير الآن</small></div></div></div>
@@ -223,6 +225,7 @@ function load(){
   try{
     const seed=JSON.parse($("#seed").textContent);
     if(seed&&seed.store)st.settings.store=seed.store;
+    if(seed&&seed.logo&&!st.logo)st.logo=seed.logo;
     if(seed&&seed.stamp&&seed.stamp!==st.seedStamp){st.staff=finalizeStaff(seed.staff,st.extra,st.removed);st.roster=seed.roster;st.known=seed.known||[];st.rosterAt=+seed.stamp*1000;st.seedStamp=seed.stamp}
   }catch(e){}
   return st;
@@ -663,7 +666,7 @@ function tabSet(){
     <button class="btn sm" data-act="resetth">استعادة الحدود الافتراضية</button>
   </div>
   <div class="card"><h2>الشعار</h2>
-    <p class="small muted" style="margin-top:0">ارفع شعار أسواق التميمي ليظهر متوهجًا أعلى الصفحة، ويتزامن مع كل الأجهزة. الأفضل صورة شفافة بألوان فاتحة.</p>
+    <p class="small muted" style="margin-top:0">ارفع شعار أسواق التميمي بألوانه الأصلية؛ يظهر على لوحة بيضاء بإطار أخضر متوهج أعلى الصفحة، ويتزامن مع كل الأجهزة.</p>
     <div class="row2"><button class="btn pri" data-act="upLogo">رفع الشعار</button><button class="btn" data-act="rmLogo">إزالة</button></div></div>
   <div class="card"><h2>الجدول الثابت والتذكير</h2>
     <p class="small muted" style="margin-top:0">طالما ما استوردت روستر جديد، يتكرر جدول الأسبوع تلقائياً للأسابيع القادمة. تقدر تفحص إجازة بعد أسابيع، مثل اليوم الوطني.</p>
@@ -707,6 +710,7 @@ async function importRoster(file){
 }
 /* ===================== render + events ===================== */
 function render(){
+  $("#logoBox").className=S.logo?"logo plate":"logo";
   $("#logoBox").innerHTML=S.logo?`<img alt="شعار التميمي" src="${esc(S.logo)}">`:'<span class="wm"><b>TAMIMI</b><small>أسواق التميمي</small></span>';
   const NS=nowState();
   $("#ringN").textContent=NS?NS.n:"–";
