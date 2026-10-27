@@ -29,7 +29,7 @@ export const REVERB_TYPES = [
   ['plate', 'بليت (ستوديو)'],
   ['hall', 'قاعة كبيرة'],
 ];
-export const GENRES = ['بوب', 'خليجي', 'طرب', 'بالاد', 'شيلات', 'راب', 'أخرى'];
+export const GENRES = ['بوب', 'خليجي', 'طرب', 'بالاد', 'غربي', 'R&B', 'راب', 'روك', 'شيلات', 'أخرى'];
 
 export const DEFAULT_VOICE = {
   preset: 'studio',

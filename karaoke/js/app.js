@@ -8,6 +8,7 @@ import {
 import { DEMOS, renderDemo, demoLRC } from './demos.js';
 import { decodeAudio, detectKey, detectBPM, removeVocals } from './analysis.js';
 import { encodeWav } from './wav.js';
+import { initHero } from './hero.js';
 
 // ---------------------------------------------------------------- أدوات
 const $ = (s, r = document) => r.querySelector(s);
@@ -18,7 +19,7 @@ const fmt = (s) => {
   s = Math.max(0, Math.floor(s || 0));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
-const hue = (str) => [...String(str)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+const hue = (str) => 95 + ([...String(str)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7) % 70);
 const el = (tag, cls, html) => {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -88,7 +89,7 @@ const state = {
   filter: 'all',
   query: '',
   current: null,
-  settings: { headphones: true, monitor: false, latencyMs: null, catalogUrl: './catalog.json', welcomed: false, seeded: false, ...LS.get('settings', {}) },
+  settings: { displayName: 'FAYEX', headphones: true, monitor: false, latencyMs: null, catalogUrl: './catalog.json', welcomed: false, seeded: false, ...LS.get('settings', {}) },
   voice: normalizeVoice(LS.get('voice', null)),
 };
 const saveSettings = () => LS.set('settings', state.settings);
@@ -118,6 +119,7 @@ function go(tab) {
   $$('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-' + tab));
   $$('.tabbar button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
   state.tab = tab;
+  hero && hero.sync();
   if (tab === 'studio') requestAnimationFrame(sizeCanvas);
   window.scrollTo(0, 0);
 }
@@ -899,9 +901,9 @@ function drawPitch() {
       const m = key + 12 * o + s;
       if (m < lo || m > lo + range) return;
       const yy = y(m);
-      cx.fillStyle = i === 0 ? 'rgba(139,92,246,0.16)' : 'rgba(255,255,255,0.04)';
+      cx.fillStyle = i === 0 ? 'rgba(0,255,102,0.13)' : 'rgba(0,255,102,0.035)';
       cx.fillRect(0, yy - 5, cw, 10);
-      cx.fillStyle = 'rgba(255,255,255,0.28)';
+      cx.fillStyle = 'rgba(0,255,102,0.4)';
       cx.fillText(midiName(m), 6, yy + 3);
     });
   }
@@ -926,8 +928,11 @@ function drawPitch() {
     }
     cx.stroke();
   };
-  line('m', 'rgba(255,255,255,0.35)', 2);
-  if (state.voice.tune.enabled) line('tg', '#f472b6', 3.5);
+  line('m', 'rgba(227,255,233,0.35)', 2);
+  cx.shadowColor = '#00ff66';
+  cx.shadowBlur = 10;
+  if (state.voice.tune.enabled) line('tg', '#00ff66', 3.5);
+  cx.shadowBlur = 0;
 }
 
 function frame() {
@@ -1074,11 +1079,11 @@ async function exportTake(take, track, share) {
     const buf = await getBuffer(track);
     const blob = await renderMix(take, buf);
     busy('');
-    const name = `${take.trackTitle} - نغم.wav`.replace(/[\\/:*?"<>|]/g, '');
+    const name = `${take.trackTitle} - FAYEX.wav`.replace(/[\\/:*?"<>|]/g, '');
     const file = new File([blob], name, { type: 'audio/wav' });
     if (share && navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: take.trackTitle, text: 'سجلتها في نغم ستوديو 🎤' });
+        await navigator.share({ files: [file], title: take.trackTitle, text: 'سجلتها في FAYEX Studio 🎤' });
       } catch (e) {}
       return;
     }
@@ -1126,6 +1131,8 @@ function renderSettings() {
   const s = state.settings;
   $('#setHeadphones').checked = s.headphones;
   $('#setCatalog').value = s.catalogUrl;
+  $('#setName').value = s.displayName;
+  $('#brandName').textContent = s.displayName;
   $('#setLatency').value = s.latencyMs ?? 40;
   $('#latencyOut').textContent = s.latencyMs == null ? 'تلقائي' : s.latencyMs + ' ms';
   if (navigator.storage?.estimate) {
@@ -1169,6 +1176,12 @@ function bindSettings() {
       toast(err.message === 'not-heard' ? 'ما سمعنا النقرات. ارفع الصوت وشيل السماعات وجرب مرة ثانية.' : 'تعذر القياس، تأكد من إذن المايك.', 4500);
     }
     $('#micHint').hidden = false;
+  };
+  $('#setName').onchange = (e) => {
+    state.settings.displayName = e.target.value.trim().toUpperCase().slice(0, 14) || 'FAYEX';
+    saveSettings();
+    renderSettings();
+    hero && hero.refresh();
   };
   $('#setCatalog').onchange = (e) => {
     state.settings.catalogUrl = e.target.value.trim() || './catalog.json';
@@ -1290,8 +1303,10 @@ function bind() {
   window.addEventListener('resize', sizeCanvas);
 }
 
+let hero = null;
 async function init() {
   bind();
+  hero = initHero(() => state.settings.displayName);
   try {
     if (!state.settings.seeded) await seedDemos();
     state.tracks = await db.all('tracks');

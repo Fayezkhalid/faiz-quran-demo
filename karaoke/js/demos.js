@@ -4,7 +4,7 @@ import { lrcStamp } from './music.js';
 export const DEMOS = {
   ballad: {
     title: 'نسيم الليل',
-    artist: 'نغم · عرض تجريبي',
+    artist: 'FAYEX · عرض تجريبي',
     genre: 'بالاد',
     bpm: 76,
     key: 9,
@@ -32,7 +32,7 @@ export const DEMOS = {
   },
   pop: {
     title: 'على الطريق',
-    artist: 'نغم · عرض تجريبي',
+    artist: 'FAYEX · عرض تجريبي',
     genre: 'بوب',
     bpm: 104,
     key: 0,
@@ -64,7 +64,7 @@ export const DEMOS = {
   },
   khaleeji: {
     title: 'ليل الحجاز',
-    artist: 'نغم · عرض تجريبي',
+    artist: 'FAYEX · عرض تجريبي',
     genre: 'خليجي',
     bpm: 92,
     key: 2,

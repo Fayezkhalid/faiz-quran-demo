@@ -1,5 +1,5 @@
 // يخلي التطبيق يشتغل بدون إنترنت بعد أول فتح
-const VERSION = 'nagham-v1';
+const VERSION = 'nagham-v2';
 const SHELL = [
   './',
   'index.html',
@@ -15,6 +15,7 @@ const SHELL = [
   'js/analysis.js',
   'js/wav.js',
   'js/db.js',
+  'js/hero.js',
 ];
 
 self.addEventListener('install', (e) => {
