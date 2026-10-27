@@ -45,10 +45,21 @@ button{cursor:pointer;border:0;background:none}
 .herogrid{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
 .glow{position:relative;width:132px;height:132px;display:grid;place-items:center;text-align:center}
 .glow i{position:absolute;border-radius:50%}
-.glow i:nth-child(1){inset:0;border:1px solid rgba(52,245,160,.55);box-shadow:0 0 46px -10px rgba(52,245,160,.6)}
+.glow{color:var(--acc)}.glow.st-bad{color:var(--bad)}.glow.st-warn{color:var(--warn)}.glow.st-ok{color:var(--ok)}
+.glow i:nth-child(1){inset:0;border:1px solid currentColor;box-shadow:0 0 46px -10px currentColor}
 .glow i:nth-child(2){inset:14px;border:1px solid rgba(255,255,255,.16)}
-.glow i:nth-child(3){inset:30px;background:radial-gradient(circle,rgba(52,245,160,.3),transparent 72%)}
+.glow i:nth-child(3){inset:30px;background:radial-gradient(circle,color-mix(in srgb,currentColor 30%,transparent),transparent 72%)}
 .glow b{position:relative;font:800 34px/1 var(--num)} .glow small{position:relative;display:block;font-size:11px;color:var(--muted)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo img{display:block;max-height:34px;max-width:150px;filter:drop-shadow(0 0 6px rgba(52,245,160,.75)) drop-shadow(0 0 18px rgba(52,245,160,.4))}
+.wm{display:flex;flex-direction:column;line-height:1.1}
+.wm b{font:800 17px var(--num);letter-spacing:.22em;color:#eafff4;text-shadow:0 0 8px rgba(52,245,160,.9),0 0 22px rgba(52,245,160,.5)}
+.wm small{font-size:11px;color:var(--acc);letter-spacing:.04em;text-shadow:0 0 10px rgba(52,245,160,.6)}
+.clock{text-align:center;margin-top:16px}
+.ct{display:inline-flex;align-items:baseline;gap:8px;direction:ltr;font:700 46px/1 var(--num);letter-spacing:.03em;font-variant-numeric:tabular-nums;color:#eafff4;text-shadow:0 0 12px rgba(52,245,160,.75),0 0 34px rgba(52,245,160,.35)}
+.ct .cs{font-size:20px;opacity:.75;width:1.4em;text-align:left} .ct .ca{font:600 18px var(--display);color:var(--acc)}
+.cd{margin-top:8px;font-size:13px;color:var(--ink)} .ch{font-size:12px;color:var(--muted);margin-top:2px}
+.hero.compact .clock,.hero.compact .mark{display:none}
 .hero.compact{padding:12px 0}.hero.compact .herogrid{display:none}.hero .mt{display:none;font:700 13px var(--display);margin-inline-start:10px}.hero.compact .mt{display:inline;white-space:nowrap}.hero.compact #badge{display:none}.mark{white-space:nowrap}
 .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:3px 12px;font-size:12px;color:var(--ink);background:rgba(255,255,255,.03)}
 /* generic */
@@ -136,9 +147,9 @@ table.hm button.c{width:100%;min-height:30px;border-radius:7px;font-weight:700;f
 .imp{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
 .imp td,.imp th{padding:6px 4px;border-top:1px solid var(--line);text-align:right}
 /* tabbar */
-nav{position:fixed;inset-inline:0;bottom:0;background:rgba(4,7,5,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
-nav button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--muted);padding:4px 0;min-height:52px;border-radius:12px}
-nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav{position:fixed;inset-inline:0;bottom:0;background:rgba(4,7,5,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
+nav button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);padding:4px 0;min-height:52px;border-radius:12px}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 nav button.on{color:var(--acc);font-weight:600}
 .toast{position:fixed;inset-inline:16px;bottom:calc(90px + env(safe-area-inset-bottom,0px));background:#E6FBF0;color:#06110B;padding:12px 16px;border-radius:999px;z-index:50;text-align:center}
 .empty{text-align:center;padding:28px 12px}
@@ -154,14 +165,16 @@ nav button.on{color:var(--acc);font-weight:600}
 <body>
 <div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
 <header class="hero"><div class="wrap">
-  <div class="topbar"><span><span class="mark">S192</span><span class="mt">تغطية السعوديين</span></span><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><span class="badge" id="badge"></span><span class="badge" id="sync"></span></span></div>
-  <div class="herogrid"><div><h1>تغطية<br>السعوديين</h1><p class="lead" id="subtitle">—</p><button class="btn pri" data-act="weekgo">ملخص الأسبوع ←</button></div>
-  <div class="glow" aria-hidden="true"><i></i><i></i><i></i><div><b id="ringN">0</b><small>سعودي</small></div></div></div>
+  <div class="topbar"><span class="brand"><span class="logo" id="logoBox"></span><span class="mark">S192</span><span class="mt">تغطية السعوديين</span></span><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><span class="badge" id="badge"></span><span class="badge" id="sync"></span></span></div>
+  <div class="clock" role="timer" aria-label="الساعة والتاريخ"><div class="ct"><span id="clkT">--:--</span><span class="cs" id="clkS">00</span><span class="ca" id="clkA">م</span></div><div class="cd" id="clkD"></div><div class="ch" id="clkH"></div></div>
+  <div class="herogrid"><div><h1>تغطية<br>السعوديين</h1><p class="lead" id="subtitle">—</p><button class="btn pri" data-act="homedetail">التفاصيل ←</button></div>
+  <div class="glow" aria-hidden="true"><i></i><i></i><i></i><div><b id="ringN">0</b><small id="ringL">كاشير الآن</small></div></div></div>
 </div></header>
 <main class="wrap" id="app"></main>
 <nav id="nav" aria-label="التنقل"></nav>
 <div class="toast" id="toast" hidden></div>
 <input type="file" id="fRoster" accept=".xls,.html,.htm" hidden>
+<input type="file" id="fLogo" accept="image/*" hidden>
 
 <script id="seed" type="application/json">null</script>
 <script>
@@ -198,13 +211,13 @@ function roleAr(pos){const k=String(pos||"").trim().toUpperCase();return ROLE_AR
 /* ===================== state ===================== */
 let S=load();
 const LOCAL0=JSON.parse(JSON.stringify(S));
-const ui={tab:"search",di:0,from:13,to:20,g:"all",wg:"cashier",ed:null,showAllAlerts:false,wk:0,panel:null};
+const ui={tab:"home",di:0,from:13,to:20,g:"all",wg:"cashier",ed:null,showAllAlerts:false,wk:0,panel:null};
 
 function load(){
   let o=null;
   try{o=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
   o=o||{};
-  const st={staff:o.staff||{},roster:o.roster||{dates:[],rows:{}},overrides:o.overrides||{},extra:o.extra||{},removed:o.removed||{},history:o.history||{},rosterAt:o.rosterAt||null,rosterUser:o.rosterUser||false,known:o.known||[],seedStamp:o.seedStamp||null,
+  const st={staff:o.staff||{},roster:o.roster||{dates:[],rows:{}},overrides:o.overrides||{},extra:o.extra||{},removed:o.removed||{},history:o.history||{},rosterAt:o.rosterAt||null,rosterUser:o.rosterUser||false,logo:o.logo||"",known:o.known||[],seedStamp:o.seedStamp||null,
     settings:Object.assign(JSON.parse(JSON.stringify(DEFAULTS)),o.settings||{})};
   for(const g of Object.keys(DEFAULTS.th)) st.settings.th[g]=Object.assign({},DEFAULTS.th[g],(o.settings&&o.settings.th&&o.settings.th[g])||{});
   try{
@@ -293,13 +306,14 @@ function runs(arr){ // contiguous ranges of truthy hours -> [[a,b)]
 
 /* ===================== icons ===================== */
 const IC={
+  home:'<svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>',
   search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
   grid:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
   cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M9.5 14.5l5 4M14.5 14.5l-5 4"/></svg>',
   users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14.3c2.2.7 3.5 2.6 3.5 5.7"/></svg>',
   gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>'
 };
-const TABS=[["search","البحث",IC.search],["week","الأسبوع",IC.grid],["leave","إجازة / غياب",IC.cal],["team","الفريق",IC.users],["set","الإعدادات",IC.gear]];
+const TABS=[["home","الرئيسية",IC.home],["search","البحث",IC.search],["week","الأسبوع",IC.grid],["leave","إجازة",IC.cal],["team","الفريق",IC.users],["set","الإعدادات",IC.gear]];
 
 /* ===================== shared UI pieces ===================== */
 function dayChips(sel,act,multi){
@@ -325,6 +339,25 @@ function empRow(id,extra,di){
   <div class="acts">${contact(id)}</div></div>`;
 }
 
+/* ===================== TAB: home (right now) ===================== */
+function needOf(g,di,h){return h<S.settings.nightEnd?[1,1]:S.settings.th[g][isPeak(di)?"p":"n"]}
+function nowState(){
+  if(!dates().length)return null;
+  const now=new Date(),h=now.getHours();let di=dates().indexOf(isoToday()),note="";
+  if(di<0){di=0;note=" (أول يوم بالجدول)"}
+  const ids=members("cashier").filter(id=>present(id,di,h));
+  const n=ids.length,st=statusOf("cashier",n,di,h);
+  return{di,h,n,st,ids,note,label:`${AR_DAYS[dowOf(di)]} ${dmy(di).slice(0,5)}${note}`,all:countAt("all",di,h)};
+}
+function tabHome(){
+  const NS=nowState();if(!NS)return emptyCard();
+  const [w,g]=needOf("cashier",NS.di,NS.h);
+  const msg={bad:`أقل من الحد الأدنى (${w})`,warn:`مقبول، والمطلوب ${g} للوضع الكافي`,ok:"التغطية كافية",none:""}[NS.st];
+  return `<div class="card"><h2>الكاشير الموجودون الآن</h2>
+    <div style="text-align:center;margin-bottom:6px"><span class="pill s-${NS.st}">${STLBL[NS.st]}</span> ${msg?`<span class="small muted"> ${msg}</span>`:""}</div>
+    ${NS.ids.map(id=>empRow(id,`<span class="pill s-none">${esc(shiftTxt(effShift(id,NS.di)))}</span>`)).join("")||'<p class="muted" style="text-align:center">لا أحد حاليًا</p>'}
+    <p class="small muted" style="text-align:center;margin:10px 0 0">إجمالي السعوديين الآن: <b>${NS.all}</b></p></div>`;
+}
 /* ===================== TAB: search ===================== */
 function tabSearch(){
   if(!dates().length)return emptyCard();
@@ -629,6 +662,9 @@ function tabSet(){
     <p class="small muted">في الليل يكفي وجود كاشير واحد (لا يُقيَّم إلا «الكل» و«كاشير»).</p>
     <button class="btn sm" data-act="resetth">استعادة الحدود الافتراضية</button>
   </div>
+  <div class="card"><h2>الشعار</h2>
+    <p class="small muted" style="margin-top:0">ارفع شعار أسواق التميمي ليظهر متوهجًا أعلى الصفحة، ويتزامن مع كل الأجهزة. الأفضل صورة شفافة بألوان فاتحة.</p>
+    <div class="row2"><button class="btn pri" data-act="upLogo">رفع الشعار</button><button class="btn" data-act="rmLogo">إزالة</button></div></div>
   <div class="card"><h2>الجدول الثابت والتذكير</h2>
     <p class="small muted" style="margin-top:0">طالما ما استوردت روستر جديد، يتكرر جدول الأسبوع تلقائياً للأسابيع القادمة. تقدر تفحص إجازة بعد أسابيع، مثل اليوم الوطني.</p>
     <label class="f" for="wks">عدد الأسابيع القادمة المعروضة</label>
@@ -671,14 +707,17 @@ async function importRoster(file){
 }
 /* ===================== render + events ===================== */
 function render(){
-  $("#subtitle").textContent=dates().length?"الجدول الأسبوعي الثابت · يتكرر كل أسبوع حتى تغيّره":"لم يتم تحميل الروستر";
-  $("#ringN").textContent=staffIds().length;
-  document.querySelector(".hero").classList.toggle("compact",ui.tab!=="search");
+  $("#logoBox").innerHTML=S.logo?`<img alt="شعار التميمي" src="${esc(S.logo)}">`:'<span class="wm"><b>TAMIMI</b><small>أسواق التميمي</small></span>';
+  const NS=nowState();
+  $("#ringN").textContent=NS?NS.n:"–";
+  $("#subtitle").textContent=NS?NS.label:"لم يتم تحميل الروستر";
+  const gl=document.querySelector(".glow");gl.className="glow"+(NS?" st-"+NS.st:"");
+  document.querySelector(".hero").classList.toggle("compact",ui.tab!=="home");
   document.title="تغطية السعوديين "+S.settings.store;
   $("#badge").textContent=staffIds().length?`👥 ${staffIds().length} سعودي`:"";
   $("#sync").textContent={connecting:"… جارٍ الاتصال",cloud:"☁ متزامن",ro:"👁 قراءة فقط",local:"💾 على هذا الجهاز"}[syncState];
   $("#nav").innerHTML=TABS.map(([k,l,i])=>`<button class="${ui.tab===k?"on":""}" data-act="tab" data-t="${k}" aria-current="${ui.tab===k}">${i}<span>${l}</span></button>`).join("");
-  const f={search:tabSearch,week:tabWeek,leave:tabLeave,team:tabTeam,set:tabSet}[ui.tab];
+  const f={home:tabHome,search:tabSearch,week:tabWeek,leave:tabLeave,team:tabTeam,set:tabSet}[ui.tab];
   const y=window.scrollY,fo=document.activeElement&&document.activeElement.id;
   $("#app").innerHTML=f();
   if(fo){const el=document.getElementById(fo);if(el&&el.focus){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
@@ -725,12 +764,15 @@ document.addEventListener("click",e=>{
   else if(a==="restore"){const r=S.removed[d.id];S.staff[d.id]=r.rec;delete S.removed[d.id];save();toast("تم الاسترجاع ✓")}
   else if(a==="psave"){savePanel()}
   else if(a==="pcancel"){ui.panel=null}
+  else if(a==="homedetail"){const q=nowState();if(q){ui.di=q.di;ui.from=q.h;ui.to=Math.min(24,q.h+1);ui.g="cashier"}ui.tab="search";render();return window.scrollTo(0,0)}
   else if(a==="wk"){ui.wk=+d.w}
   else if(a==="weekgo"){ui.wk=0;ui.tab="week";render();return window.scrollTo(0,0)}
   else if(a==="lr"){S.settings.leaveReturn=d.v==="1";save()}
   else if(a==="peak"){const x=+d.d,p=S.settings.peakDays;S.settings.peakDays=p.includes(x)?p.filter(v=>v!==x):[...p,x];save()}
   else if(a==="resetth"){S.settings.th=JSON.parse(JSON.stringify(DEFAULTS.th));S.settings.nightEnd=DEFAULTS.nightEnd;S.settings.peakDays=[...DEFAULTS.peakDays];save()}
   else if(a==="upRoster")return $("#fRoster").click();
+  else if(a==="upLogo")return $("#fLogo").click();
+  else if(a==="rmLogo"){S.logo="";save();toast("أُزيل الشعار")}
   else if(a==="wipe"){if(confirm("مسح كل البيانات المحفوظة على هذا الجهاز؟")){try{localStorage.removeItem(KEY)}catch(x){}S=load();ui.ed=null;toast("تم المسح")}else return}
   render();
 });
@@ -758,6 +800,18 @@ async function handleFile(inp,fn,okMsg){
   if(RO)return toast("عرضك للقراءة فقط، ما تقدر تعدّل.");
   try{toast("جارٍ القراءة…");const n=await fn(f);toast(okMsg(n));ui.ed=null;ui.wk=0;initDay();render()}catch(err){toast("تعذّر الاستيراد: "+err.message)}
 }
+async function importLogo(file){
+  const url=URL.createObjectURL(file),img=new Image();
+  await new Promise((res,rej)=>{img.onload=res;img.onerror=()=>rej(new Error("الصورة غير مقروءة"));img.src=url});
+  for(const max of [640,420,280]){
+    const k=Math.min(1,max/img.width,(max/3)/img.height),c=document.createElement("canvas");
+    c.width=Math.max(1,Math.round(img.width*k));c.height=Math.max(1,Math.round(img.height*k));
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    const d=c.toDataURL("image/png");if(d.length<190000){S.logo=d;save();URL.revokeObjectURL(url);return}
+  }
+  URL.revokeObjectURL(url);throw new Error("الصورة كبيرة، جرّب صورة أبسط");
+}
+$("#fLogo").addEventListener("change",e=>handleFile(e.target,importLogo,()=>"تم رفع الشعار ✓"));
 $("#fRoster").addEventListener("change",e=>handleFile(e.target,importRoster,n=>`تم استيراد جدول ${n} موظف ✓`));
 
 function initDay(){
@@ -765,7 +819,7 @@ function initDay(){
   ui.di=i>=0?i:0;
 }
 /* ===================== cloud sync (db capability) ===================== */
-const MUT=new Set(["addemp","editemp","delemp","delok","restore","psave","apply","clear","undo","addsa","ignore","upRoster","weeks","lr","th","night","store","peak","resetth","remdow"]);
+const MUT=new Set(["upLogo","rmLogo","addemp","editemp","delemp","delok","restore","psave","apply","clear","undo","addsa","ignore","upRoster","weeks","lr","th","night","store","peak","resetth","remdow"]);
 let DB=null,RO=false,SYNC=false,syncState="local",_hasRoster=false;
 const _rem={ov:new Set(),hi:new Set()},_sent={},_ch={};
 const stable=o=>JSON.stringify(o,(k,v)=>v&&typeof v==="object"&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);
@@ -789,6 +843,7 @@ function pushDiff(){
   if(S.roster.dates.length)want("meta/roster",{dates:S.roster.dates,rows:S.roster.rows,at:S.rosterAt||0});
   want("meta/settings",S.settings);
   want("meta/known",{ids:S.known});
+  want("meta/logo",{data:S.logo||""});
 }
 const mergeSettings=v=>{const o=JSON.parse(JSON.stringify(DEFAULTS));Object.assign(o,v);for(const g of Object.keys(DEFAULTS.th))o.th[g]=Object.assign({},DEFAULTS.th[g],(v.th&&v.th[g])||{});return o};
 function applySnap(kind,snap){
@@ -797,7 +852,8 @@ function applySnap(kind,snap){
   else{const v=snap.exists?snap.data():null;if(!v)return;if(kind==="roster")_hasRoster=true;_sent["meta/"+kind]=stable(v);
     if(kind==="roster"){S.roster={dates:v.dates,rows:v.rows};S.rosterAt=v.at||null}
     else if(kind==="settings")S.settings=mergeSettings(v);
-    else if(kind==="known")S.known=v.ids||[]}
+    else if(kind==="known")S.known=v.ids||[];
+    else if(kind==="logo")S.logo=v.data||""}
   cacheLocal();if(SYNC)scheduleRender();
 }
 function migrate(){
@@ -821,12 +877,22 @@ async function initSync(){
   try{const u=await window.claude.use("user");RO=!!(u&&u.can&&(await u.can("data.write"))===false)}catch(e){}
   const got=new Set();let started=false;
   const ready=()=>{if(started)return;started=true;SYNC=true;syncState=RO?"ro":"cloud";migrate();render()};
-  const sub=(kind,ref)=>ref.onSnapshot(snap=>{applySnap(kind,snap);got.add(kind);if(got.size>=6)ready()},e=>{if(!started){started=true;syncState="local";render()}});
+  const REQ=["staff","ov","hi","roster","settings","known"];
+  const sub=(kind,ref)=>ref.onSnapshot(snap=>{applySnap(kind,snap);got.add(kind);if(REQ.every(k=>got.has(k)))ready()},e=>{if(!started){started=true;syncState="local";render()}});
   sub("staff",DB.collection("staff"));sub("ov",DB.collection("overrides"));sub("hi",DB.collection("history"));
-  sub("roster",DB.doc("meta/roster"));sub("settings",DB.doc("meta/settings"));sub("known",DB.doc("meta/known"));
+  sub("roster",DB.doc("meta/roster"));sub("logo",DB.doc("meta/logo"));sub("settings",DB.doc("meta/settings"));sub("known",DB.doc("meta/known"));
   setTimeout(ready,8000);
 }
+function tickClock(){
+  const d=new Date();let h=d.getHours();const ap=h<12?"ص":"م";h=h%12||12;
+  $("#clkT").textContent=h+":"+pad(d.getMinutes());$("#clkS").textContent=pad(d.getSeconds());$("#clkA").textContent=ap;
+  const g=d.toLocaleDateString("ar-SA-u-ca-gregory-nu-latn",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  if($("#clkD").textContent!==g)$("#clkD").textContent=g;
+  try{const hj=d.toLocaleDateString("ar-SA-u-ca-islamic-umalqura-nu-latn",{day:"numeric",month:"long",year:"numeric"});if($("#clkH").textContent!==hj)$("#clkH").textContent=hj}catch(e){}
+}
+tickClock();setInterval(tickClock,1000);
 initDay();render();initSync();
+setInterval(()=>{if(ui.tab==="home"&&!ui.panel)render()},30000);
 </script>
 </body>
 </html>
