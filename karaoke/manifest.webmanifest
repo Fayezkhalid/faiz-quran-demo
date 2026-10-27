@@ -1,0 +1,20 @@
+{
+  "name": "نغم ستوديو",
+  "short_name": "نغم",
+  "description": "استوديو غناء على جوالك: موسيقى بدون صوت المغني، تصحيح نغمة احترافي، ومؤثرات ستوديو.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0a14",
+  "theme_color": "#0c0a14",
+  "categories": ["music", "entertainment"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
