@@ -88,8 +88,8 @@ select,input[type=text],input[type=search],input[type=number]{width:100%;min-hei
 .ic{width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--surface);text-decoration:none;font-size:18px}
 .ic.wa{background:#E3F8EC;border-color:transparent}
 .wkgrid{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.wk{flex:0 0 auto;border-radius:10px;padding:4px 10px;background:var(--none-bg);color:var(--none);line-height:1.35;font-size:12.5px}
-.wk b{display:block;font-weight:600;font-size:13px}
+.wk{flex:0 0 auto;white-space:nowrap;border-radius:10px;padding:4px 10px;background:var(--none-bg);color:var(--none);line-height:1.35;font-size:12.5px}
+.wk b{font-weight:600;font-size:13px}
 .wk.w{background:var(--ok-bg);color:var(--ok)} .wk.l{background:var(--warn-bg);color:var(--warn)} .wk.a{background:var(--bad-bg);color:var(--bad)}
 details{margin-top:10px} summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--muted)}
 /* heatmap */
@@ -553,7 +553,7 @@ function tabTeam(){
   <div class="card">${ids.map(id=>{
     const e=S.staff[id],hc=histCount(id);
     const strip=S.roster.rows[id]?"":'<span class="pill s-warn">غير مدرج في الروستر</span>';
-    const wl=S.roster.rows[id]?`<div class="wkgrid">${dates().slice(0,7).map((_,di)=>{const c=effShift(id,di);return`<div class="wk ${c.off?(c.type==="leave"?"l":c.type==="absent"?"a":""):"w"}"><b>${AR_DAYS[dowOf(di)]} ${dmy(di).slice(0,5)}</b>${c.off?esc(c.label):minLbl(c.s)+" ← "+minLbl(c.e)}</div>`}).join("")}</div>`:"";
+    const wl=S.roster.rows[id]?`<div class="wkgrid">${dates().slice(0,7).map((_,di)=>{const c=effShift(id,di);return`<div class="wk ${c.off?(c.type==="leave"?"l":c.type==="absent"?"a":""):"w"}"><b>${AR_DAYS[dowOf(di)]} ${dmy(di).slice(0,5)}</b>&nbsp;·&nbsp;${c.off?esc(c.label):minLbl(c.s)+" ← "+minLbl(c.e)}</div>`}).join("")}</div>`:"";
     const hs=(hc.a||hc.l)?`<div class="small muted" style="margin-top:4px">آخر 90 يوم: غياب ${hc.a} · إجازات ${hc.l}</div>`:"";
     return empRow(id,strip+hs+`<div class="btnrow">${S.roster.rows[id]?`<button class="btn sm" data-act="edit" data-id="${esc(id)}" data-i="${ui.di}">غياب / وردية</button>`:""}<button class="btn sm" data-act="editemp" data-id="${esc(id)}">تعديل البيانات</button><button class="btn sm dan" data-act="delemp" data-id="${esc(id)}">حذف</button></div>`).replace(/<\/div><\/div>$/,"</div>"+wl+"</div>");
   }).join("")||'<p class="muted">لا نتائج</p>'}</div>
