@@ -51,11 +51,11 @@ export function applyLook() {
 export function initSettings() {
   const root = $('#view-settings');
   const s = store.all();
-  // نحمّل عيّنة صغيرة من كل خط للمعاينة فقط
+  // نحمّل الخطوط كاملة للمعاينة. النسخ المصغّرة تكسر وصل الحروف في الآيفون لأنها تُستخدم في كل التطبيق
   const sample = 'بسم الله نبدأ يومنا';
   const pv = document.createElement('link');
   pv.rel = 'stylesheet';
-  pv.href = 'https://fonts.googleapis.com/css2?' + FONTS.map((f) => 'family=' + f.q.split(':')[0] + ':wght@700').join('&') + '&text=' + encodeURIComponent(sample + 'أكبرالخطوصغير') + '&display=swap';
+  pv.href = 'https://fonts.googleapis.com/css2?' + FONTS.filter((f) => f.id !== 'naskh').map((f) => 'family=' + f.q).join('&') + '&display=swap';
 
   root.innerHTML = `
     <h2 class="page-title">الإعدادات</h2>
