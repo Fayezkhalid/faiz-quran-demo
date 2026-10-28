@@ -692,7 +692,7 @@ function tabSet(){
   <div class="card"><h2>واتساب</h2>
     <p class="small muted" style="margin-top:0">اختر التطبيق اللي تفتح فيه المحادثات. الاختيار لهذا الجهاز فقط.</p>
     <div class="chips"><button class="chip${waApp()==="regular"?" on":""}" data-act="wapp" data-v="regular">واتساب عادي</button><button class="chip${waApp()==="business"?" on":""}" data-act="wapp" data-v="business">واتساب للأعمال</button></div>
-    <p class="small muted" style="margin-bottom:0">المتصفح داخل claude.ai قد يمنع فتح واتساب للأعمال مباشرة، فيُنسخ الرقم لك تلقائيًا لتلصقه. الحل الدائم في أندرويد: الإعدادات ← التطبيقات ← واتساب (العادي) ← «فتح بشكل افتراضي» ← أوقف «فتح الروابط المدعومة»، فتفتح روابط المحادثات في الأعمال.</p>
+    <p class="small muted" style="margin-bottom:0">يُنسخ رقم الموظف تلقائيًا عند الضغط، ويحاول التطبيق فتح واتساب للأعمال. إذا ما فتح، افتحه وألصق الرقم في محادثة جديدة. أندرويد: الحل الدائم من إعدادات واتساب العادي ← «فتح بشكل افتراضي» ← أوقف «فتح الروابط المدعومة». آيفون: جرّب فتح الرابط من سفاري مباشرة بدل تطبيق Claude.</p>
   </div>
   <div class="card"><h2>الشعار</h2>
     <p class="small muted" style="margin-top:0">ارفع شعار أسواق التميمي بألوانه الأصلية؛ يظهر أعلى الصفحة بتوهج خفيف، ويتزامن مع كل الأجهزة.</p>
@@ -807,11 +807,10 @@ document.addEventListener("click",e=>{
   else if(a==="upRoster")return $("#fRoster").click();
   else if(a==="wa"){
     if(waApp()!=="business")return; // العادي: الرابط يشتغل كما هو
-    e.preventDefault();
+    // الأعمال: ننسخ الرقم دائمًا ونترك الرابط يحاول فتح التطبيق بنفسه (بدون منعه)
     const copy=d.d?"+"+d.d:(d.t||"");
     try{navigator.clipboard.writeText(copy).catch(()=>{})}catch(x){}
-    let w=null;try{w=window.open(waLink(d.d,d.t||""),"_blank")}catch(x){}
-    toast(w?"جارٍ فتح واتساب للأعمال…":(d.d?"نُسخ الرقم +"+d.d+"، افتح واتساب للأعمال وألصقه في محادثة جديدة":"نُسخ النص، الصقه في واتساب للأعمال"));
+    toast(d.d?"نُسخ الرقم +"+d.d+"، إذا ما فتح واتساب للأعمال افتحه وألصق الرقم في محادثة جديدة":"نُسخ النص، إذا ما فتح واتساب للأعمال الصقه فيه");
     return;
   }
   else if(a==="wapp"){try{localStorage.setItem(KEY+".wa",d.v)}catch(e){}}
