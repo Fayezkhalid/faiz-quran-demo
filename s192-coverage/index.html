@@ -331,21 +331,12 @@ function dayChips(sel,act,multi){
 function groupChips(sel,act){
   return '<div class="chips" role="group" aria-label="التصفية">'+Object.entries(GROUPS).map(([k,v])=>`<button class="chip${sel===k?" on":""}" data-act="${act}" data-g="${k}" aria-pressed="${sel===k}">${v}</button>`).join("")+'</div>';
 }
-/* واتساب: العادي أو للأعمال، يُحفظ لكل جهاز لأن الأجهزة تختلف */
-function waApp(){try{return localStorage.getItem(KEY+".wa")==="business"?"business":"regular"}catch(e){return"regular"}}
-function waLink(d,text){
-  const q=[d?"phone="+d:"",text?"text="+encodeURIComponent(text):""].filter(Boolean).join("&");
-  if(waApp()==="business"){
-    const ua=navigator.userAgent||"";
-    if(/Android/i.test(ua))return`intent://send?${q}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;end`;
-    if(/iPhone|iPad|iPod/i.test(ua))return`whatsapp-business://send?${q}`;
-  }
-  return"https://wa.me/"+(d||"")+(text?"?text="+encodeURIComponent(text):"");
-}
+/* واتساب: رابط wa.me؛ التطبيق نفسه يعرض خيار الاستكمال على واتساب للأعمال */
+function waLink(d,text){return"https://wa.me/"+(d||"")+(text?"?text="+encodeURIComponent(text):"")}
 function contact(id){
   const p=S.staff[id]&&S.staff[id].phone;if(!p)return'<span class="muted small">لا يوجد جوال</span>';
   const d=String(p).replace(/\D/g,"");
-  return `<a class="ic" href="tel:+${d}" aria-label="اتصال">📞</a><a class="ic wa" href="${waLink(d)}" data-act="wa" data-d="${d}" target="_blank" rel="noopener" aria-label="واتساب">💬</a>`;
+  return `<a class="ic" href="tel:+${d}" aria-label="اتصال">📞</a><a class="ic wa" href="${waLink(d)}" target="_blank" rel="noopener" aria-label="واتساب">💬</a>`;
 }
 function shiftTxt(c){return (c.off?c.label:minLbl(c.s)+" ← "+minLbl(c.e))+(c.prev?" · أمس":"")}
 function dispShift(id,di,h){
@@ -451,7 +442,7 @@ function tabSearch(){
   </div>
   ${specCard()}
   <div class="card"><h2>مشاركة</h2><div class="row2">
-    <a class="btn pri" target="_blank" rel="noopener" data-act="wa" data-d="" data-t="${esc(summary(A,full,part))}" href="${waLink("",summary(A,full,part))}">واتساب</a>
+    <a class="btn pri" target="_blank" rel="noopener" href="${waLink("",summary(A,full,part))}">واتساب</a>
     <button class="btn" data-act="copy">نسخ الملخص</button></div></div>`;
 }
 function specCard(){
@@ -499,7 +490,7 @@ function digestCard(){
   const at=S.rosterAt?new Date(S.rosterAt):null;
   return `<div class="card dig"><details${al.length?" open":""}><summary><b>📋 ملخص الأيام السبعة القادمة</b><span class="pill s-${al.length?"bad":"ok"}">${al.length?al.length+" فجوة":"مستقر"}</span></summary>
     ${top.length?'<div class="tline">':""}${top.map(x=>`<button class="alert" data-act="goto" data-i="${x.di}" data-a="${x.a}" data-b="${x.b}" data-g="${x.g}"><span class="pill s-bad">${GROUPS[x.g]} ${x.mn}</span><span><b>${AR_DAYS[dowOf(x.di)]} ${dmy(x.di).slice(0,5)}</b> ${x.peak?"🔥":""}<br><span class="small muted">${hourLbl(x.a)} ← ${endLbl(x.b)} · المطلوب ${x.need} على الأقل</span></span></button>`).join("")||'<p class="muted small">التغطية ضمن الحدود في كل الأيام السبعة القادمة.</p>'}${top.length?"</div>":""}
-    <div class="row2" style="margin-top:10px"><button class="btn sm" data-act="weekgo">كل الفجوات</button><a class="btn sm pri" target="_blank" rel="noopener" data-act="wa" data-d="" data-t="${esc(txt)}" href="${waLink("",txt)}">مشاركة واتساب</a></div>
+    <div class="row2" style="margin-top:10px"><button class="btn sm" data-act="weekgo">كل الفجوات</button><a class="btn sm pri" target="_blank" rel="noopener" href="${waLink("",txt)}">مشاركة واتساب</a></div>
     <p class="small muted" style="margin:8px 0 0">الجدول أسبوع ثابت يتكرر كل أسبوع إلى أن تستورد روستر جديد${at?" · آخر تحديث "+pad(at.getDate())+"/"+pad(at.getMonth()+1):""}.</p></details></div>`;
 }
 function tabWeek(){
@@ -581,7 +572,7 @@ function tabLeave(){
   const imp=impact(),cand=candidates();
   const V={ok:["s-ok","🟢 آمن — الموافقة لا تُنزل التغطية عن الحد الأدنى","بإمكانك الموافقة دون قلق."],warn:["s-warn","🟡 ممكن بحذر — تنخفض التغطية إلى مستوى «تنبيه»","يُفضّل ترتيب بديل إن أمكن."],bad:["s-bad","🔴 خطر — ستنزل التغطية تحت الحد الأدنى","أنصح بتأجيل الموافقة أو ترتيب بديل أولاً."]}[imp.level];
   const reps=cand.slice(0,6).map(c=>{const e=S.staff[c.id];const msg=`السلام عليكم ${dn(e).split(" ")[0]}، نحتاج تغطية ${[...ed.dates].sort().map(i=>AR_DAYS[dowOf(i)]+" "+dmy(i).slice(0,5)).join(" و ")} في فرع ${S.settings.store}. تقدر تساعدنا؟`;const d=String(e.phone||"").replace(/\D/g,"");
-    return empRow(c.id,`<div><span class="pill ${c.same?"s-ok":"s-none"}">${c.same?"نفس التخصص":"تخصص آخر"} · يوم راحة</span></div>`+(d?`<a class="btn sm pri" style="margin-top:6px" target="_blank" rel="noopener" data-act="wa" data-d="${d}" data-t="${esc(msg)}" href="${waLink(d,msg)}">💬 اطلب تغطية عبر واتساب</a>`:""))}).join("")||'<p class="muted small">لا يوجد سعودي في يوم راحة لكل الأيام المختارة.</p>';
+    return empRow(c.id,`<div><span class="pill ${c.same?"s-ok":"s-none"}">${c.same?"نفس التخصص":"تخصص آخر"} · يوم راحة</span></div>`+(d?`<a class="btn sm pri" style="margin-top:6px" target="_blank" rel="noopener" href="${waLink(d,msg)}">💬 اطلب تغطية عبر واتساب</a>`:""))}).join("")||'<p class="muted small">لا يوجد سعودي في يوم راحة لكل الأيام المختارة.</p>';
   const log=Object.entries(S.overrides).map(([k,o])=>{const [id,d]=k.split("|");const e=S.staff[id];if(!e)return"";return`<div class="emp"><div class="av">${esc(initials(dn(e)))}</div><div><div class="nm">${esc(dn(e))}</div><div class="meta">${esc(d)} · ${o.kind==="off"?esc(o.reason):minLbl(o.s)+" ← "+minLbl(o.e)}</div></div><button class="btn sm dan" data-act="undo" data-k="${esc(k)}">تراجع</button></div>`}).join("");
   return `
   <div class="card"><h2>فحص قبل الموافقة</h2>
@@ -688,11 +679,6 @@ function tabSet(){
     <select id="ne" data-act="night">${[0,3,5,6,7,8].map(h=>`<option value="${h}"${h===st.nightEnd?" selected":""}>${h===0?"بدون تخفيف":hourLbl(h)}</option>`).join("")}</select>
     <p class="small muted">في الليل يكفي وجود كاشير واحد (لا يُقيَّم إلا «الكل» و«كاشير»).</p>
     <button class="btn sm" data-act="resetth">استعادة الحدود الافتراضية</button>
-  </div>
-  <div class="card"><h2>واتساب</h2>
-    <p class="small muted" style="margin-top:0">اختر التطبيق اللي تفتح فيه المحادثات. الاختيار لهذا الجهاز فقط.</p>
-    <div class="chips"><button class="chip${waApp()==="regular"?" on":""}" data-act="wapp" data-v="regular">واتساب عادي</button><button class="chip${waApp()==="business"?" on":""}" data-act="wapp" data-v="business">واتساب للأعمال</button></div>
-    <p class="small muted" style="margin-bottom:0">يُنسخ رقم الموظف تلقائيًا عند الضغط، ويحاول التطبيق فتح واتساب للأعمال. إذا ما فتح، افتحه وألصق الرقم في محادثة جديدة. أندرويد: الحل الدائم من إعدادات واتساب العادي ← «فتح بشكل افتراضي» ← أوقف «فتح الروابط المدعومة». آيفون: جرّب فتح الرابط من سفاري مباشرة بدل تطبيق Claude.</p>
   </div>
   <div class="card"><h2>الشعار</h2>
     <p class="small muted" style="margin-top:0">ارفع شعار أسواق التميمي بألوانه الأصلية؛ يظهر أعلى الصفحة بتوهج خفيف، ويتزامن مع كل الأجهزة.</p>
@@ -805,15 +791,6 @@ document.addEventListener("click",e=>{
   else if(a==="peak"){const x=+d.d,p=S.settings.peakDays;S.settings.peakDays=p.includes(x)?p.filter(v=>v!==x):[...p,x];save()}
   else if(a==="resetth"){S.settings.th=JSON.parse(JSON.stringify(DEFAULTS.th));S.settings.nightEnd=DEFAULTS.nightEnd;S.settings.peakDays=[...DEFAULTS.peakDays];save()}
   else if(a==="upRoster")return $("#fRoster").click();
-  else if(a==="wa"){
-    if(waApp()!=="business")return; // العادي: الرابط يشتغل كما هو
-    // الأعمال: ننسخ الرقم دائمًا ونترك الرابط يحاول فتح التطبيق بنفسه (بدون منعه)
-    const copy=d.d?"+"+d.d:(d.t||"");
-    try{navigator.clipboard.writeText(copy).catch(()=>{})}catch(x){}
-    toast(d.d?"نُسخ الرقم +"+d.d+"، إذا ما فتح واتساب للأعمال افتحه وألصق الرقم في محادثة جديدة":"نُسخ النص، إذا ما فتح واتساب للأعمال الصقه فيه");
-    return;
-  }
-  else if(a==="wapp"){try{localStorage.setItem(KEY+".wa",d.v)}catch(e){}}
   else if(a==="upLogo")return $("#fLogo").click();
   else if(a==="rmLogo"){S.logo="";save();toast("أُزيل الشعار")}
   else if(a==="wipe"){if(confirm("مسح كل البيانات المحفوظة على هذا الجهاز؟")){try{localStorage.removeItem(KEY)}catch(x){}S=load();ui.ed=null;toast("تم المسح")}else return}
