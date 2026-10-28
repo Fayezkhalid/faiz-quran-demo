@@ -78,6 +78,8 @@ function skyFor(phase) {
 export function initHome() {
   root = $('#view-home');
   root.innerHTML = `
+    <div id="installTip"></div>
+    <div id="msgBox"></div>
     <div class="hero" id="hero">
       <canvas id="sky" aria-hidden="true"></canvas>
       <p class="hero-greet" id="hGreet"></p>
@@ -90,9 +92,6 @@ export function initHome() {
       </div>
       <div class="hero-hint">المسي الساعة لتغيير شكلها</div>
     </div>
-
-    <div id="installTip"></div>
-    <div id="msgBox"></div>
 
     <section class="card" aria-label="الصلاة القادمة">
       <div class="next-prayer">
