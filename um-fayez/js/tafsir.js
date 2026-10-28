@@ -221,9 +221,11 @@ async function runSearch(text) {
   });
 }
 
-// الآيفون والآيباد: التعرّف على الكلام ما يشتغل في التطبيق المثبّت على الشاشة الرئيسية
-const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+// الآيباد: التعرّف على الكلام ما يشتغل في التطبيق المثبّت على الشاشة الرئيسية (الآيفون يشتغل عادي)
+const IPAD = /iPad/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 const STANDALONE = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+// أي جهاز ثاني فشل فيه التسجيل مرة، نتذكّره ونروح للكيبورد مباشرة
+const srBroken = () => load('srBroken', false);
 
 // البديل: مايك الكيبورد. نفتح الكيبورد ونوضّح لها وين تضغط، والبحث يبدأ لحاله لما توقف عن الكلام
 let dictTimer = null;
@@ -247,7 +249,7 @@ function dictate(focusNow = true) {
 
 function listen() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR || (IOS && STANDALONE)) { dictate(); return; }
+  if (!SR || (IPAD && STANDALONE) || srBroken()) { dictate(); return; }
   if (rec) { rec.stop(); return; }
   rec = new SR();
   rec.lang = 'ar-SA';
@@ -266,6 +268,7 @@ function listen() {
     if (heard || !rec) return;
     try { rec.abort(); } catch {}
     rec = null;
+    persist('srBroken', true);
     document.getElementById('sheet').hidden = true;
     document.getElementById('sheetBackdrop').hidden = true;
     dictate(false);
