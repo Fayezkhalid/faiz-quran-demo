@@ -518,3 +518,7 @@ input[type="range"] { flex: 1; accent-color: var(--primary); height: 36px; }
 .voice-bars.on i:nth-child(3n) { animation-delay: .15s; } .voice-bars.on i:nth-child(3n+1) { animation-delay: .35s; } .voice-bars.on i:nth-child(4n) { animation-delay: .55s; animation-duration: .8s; }
 @keyframes vb { 0%, 100% { height: 8px; } 50% { height: 46px; } }
 .msg-time { color: var(--muted); font-size: .9rem; min-height: 1.5em; }
+
+/* إرشاد مايك الكيبورد */
+.dict-tip { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 12px 14px; border-radius: 18px; background: var(--soft); color: var(--primary); font-weight: 700; line-height: 1.7; animation: rise .4s var(--ease); }
+.dict-tip svg { flex: none; font-size: 28px; animation: pulse2 1.4s infinite; }
