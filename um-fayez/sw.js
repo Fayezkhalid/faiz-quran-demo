@@ -1,5 +1,5 @@
 // يخلي التطبيق يشتغل بدون إنترنت بعد أول فتح
-const VERSION = 'sakina-v3';
+const VERSION = 'sakina-v4';
 const SHELL = [
   './',
   'index.html',
