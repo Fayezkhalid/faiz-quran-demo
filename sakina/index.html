@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="emerald">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>سكينة · أذكار وتفسير ومواقيت</title>
+  <meta name="description" content="أذكار الصباح والمساء، تفسير القرآن، سبحة الاستغفار، ومواقيت الصلاة. صدقة جارية، لا تنسونا من صالح دعائكم.">
+  <meta name="theme-color" content="#f3f8f4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="سكينة">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <link id="userFont" rel="stylesheet" href="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- شاشة الترحيب: تظهر كل مرة تفتح التطبيق بدعاء مختلف -->
+  <div id="welcome" class="welcome" role="dialog" aria-label="ترحيب">
+    <div class="welcome-glow" aria-hidden="true"></div>
+    <div class="welcome-petals" id="petals" aria-hidden="true"></div>
+    <div class="welcome-inner">
+      <div class="welcome-star" aria-hidden="true">
+        <svg viewBox="0 0 100 100"><use href="#i-star8"/></svg>
+      </div>
+      <p class="welcome-salute" id="wSalute">صباح الخير</p>
+      <h1 class="welcome-name" id="wName">سكينة</h1>
+      <p class="welcome-dua" id="wDua"></p>
+      <button class="welcome-btn" id="wEnter" type="button">بسم الله</button>
+      <p class="welcome-gift" id="wGift"></p>
+    </div>
+  </div>
+
+  <div id="app">
+    <header class="topbar">
+      <button class="icon-btn" id="btnSound" type="button" aria-label="الأصوات">
+        <svg><use href="#i-speaker"/></svg>
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <div class="topbar-title" id="topTitle">سكينة</div>
+      <button class="icon-btn" id="btnQibla" type="button" aria-label="اتجاه القبلة">
+        <svg><use href="#i-compass"/></svg>
+      </button>
+    </header>
+
+    <main id="main">
+      <section class="view active" id="view-home" aria-label="الرئيسية"></section>
+      <section class="view" id="view-azkar" aria-label="الأذكار"></section>
+      <section class="view" id="view-tasbih" aria-label="السبحة"></section>
+      <section class="view" id="view-tafsir" aria-label="التفسير"></section>
+      <section class="view" id="view-settings" aria-label="الإعدادات"></section>
+    </main>
+
+    <div class="now-playing" id="nowPlaying" hidden>
+      <span class="np-dot" aria-hidden="true"></span>
+      <span id="npTitle"></span>
+      <button type="button" id="npStop" aria-label="إيقاف الصوت"><svg><use href="#i-stop"/></svg></button>
+    </div>
+
+    <nav class="tabbar" aria-label="القائمة">
+      <button class="tab active" data-view="home" type="button"><svg><use href="#i-home"/></svg><span>الرئيسية</span></button>
+      <button class="tab" data-view="azkar" type="button"><svg><use href="#i-sunmoon"/></svg><span>الأذكار</span></button>
+      <button class="tab" data-view="tasbih" type="button"><svg><use href="#i-beads"/></svg><span>السبحة</span></button>
+      <button class="tab" data-view="tafsir" type="button"><svg><use href="#i-book"/></svg><span>التفسير</span></button>
+      <button class="tab" data-view="settings" type="button"><svg><use href="#i-gear"/></svg><span>الإعدادات</span></button>
+    </nav>
+  </div>
+
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close" id="sheetClose" type="button" aria-label="إغلاق"><svg><use href="#i-close"/></svg></button>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- الأيقونات -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-star8" viewBox="0 0 100 100"><path fill="currentColor" d="M50 4l12.2 17.4L83 17l-4.4 20.8L96 50l-17.4 12.2L83 83l-20.8-4.4L50 96 37.8 78.6 17 83l4.4-20.8L4 50l17.4-12.2L17 17l20.8 4.4z"/><circle cx="50" cy="50" r="17" fill="none" stroke="var(--star-in, #fff)" stroke-width="3" opacity=".75"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></symbol>
+      <symbol id="i-sunmoon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="8.5" cy="9" r="3.2"/><path d="M8.5 2.6v1.3M8.5 14.1v1.3M2.1 9h1.3M13.6 9h.9M4 4.5l.9.9M12.1 12.6l.6.6M4 13.5l.9-.9M12.1 5.4l.9-.9"/><path d="M20.5 15.6A5.5 5.5 0 1 1 14.4 9.5a4.3 4.3 0 0 0 6.1 6.1z"/></g></symbol>
+      <symbol id="i-beads" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="4.2" r="1.7"/><circle cx="17.6" cy="6.6" r="1.7"/><circle cx="19.6" cy="12" r="1.7"/><circle cx="17.6" cy="17.4" r="1.7"/><circle cx="6.4" cy="6.6" r="1.7"/><circle cx="4.4" cy="12" r="1.7"/><circle cx="6.4" cy="17.4" r="1.7"/><path stroke-linecap="round" d="M12 18.5v3.3M10.6 21.8h2.8"/><circle cx="12" cy="18.6" r="1.4" fill="currentColor"/></g></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 6.5C10 5 7.2 4.6 4 5v13.5c3.2-.4 6 0 8 1.5 2-1.5 4.8-1.9 8-1.5V5c-3.2-.4-6 0-8 1.5z"/><path d="M12 6.5V20"/></g></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3.2"/><path stroke-linejoin="round" d="M12 2.8l1.7 2.1 2.6-.6.6 2.6 2.4 1.2-1.1 2.4 1.1 2.4-2.4 1.2-.6 2.6-2.6-.6L12 21.2l-1.7-2.1-2.6.6-.6-2.6-2.4-1.2 1.1-2.4L4.7 11.1l2.4-1.2.6-2.6 2.6.6z"/></g></symbol>
+      <symbol id="i-speaker" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></g></symbol>
+      <symbol id="i-compass" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></g></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><g fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.4"/><rect x="13.5" y="5" width="4" height="14" rx="1.4"/></g></symbol>
+      <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6"/></g></symbol>
+      <symbol id="i-paste" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V3.8A.8.8 0 0 1 9.8 3h4.4a.8.8 0 0 1 .8.8V5M8.5 11h7M8.5 15h5"/></g></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></g></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></g></symbol>
+      <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8"/><path d="M5 12v7a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-7"/></g></symbol>
+      <symbol id="i-chev-r" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></symbol>
+      <symbol id="i-chev-l" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 7H15a5 5 0 0 1 0 10H8M9 7l3-3M9 7l3 3"/></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></g></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></g></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4" y="5.5" width="16" height="15" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></g></symbol>
+      <symbol id="i-crescent" viewBox="0 0 24 24"><path fill="currentColor" d="M15.8 3.2A9 9 0 1 0 20.8 16 7.2 7.2 0 0 1 15.8 3.2z"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path fill="currentColor" d="M12 20.5s-7.5-4.6-9.2-9.4C1.6 7.7 3.8 4.5 7.1 4.5c2 0 3.5 1.1 4.9 2.9 1.4-1.8 2.9-2.9 4.9-2.9 3.3 0 5.5 3.2 4.3 6.6C19.5 15.9 12 20.5 12 20.5z"/></symbol>
+      <symbol id="i-volume" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/></symbol>
+    </defs>
+  </svg>
+
+  <script src="vendor/adhan.umd.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

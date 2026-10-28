@@ -1,5 +1,5 @@
 // يخلي التطبيق يشتغل بدون إنترنت بعد أول فتح
-const VERSION = 'sakina-v5';
+const VERSION = 'sakina-v6';
 const SHELL = [
   './',
   'index.html',
@@ -35,7 +35,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => /^sakina-v\d/.test(k) && k !== VERSION).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
       .then(() => caches.open(VERSION).then((c) => Promise.all(DATA.map((u) => c.match(u).then((hit) => hit || c.add(u).catch(() => {})))))),
   );
