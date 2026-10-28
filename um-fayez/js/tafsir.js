@@ -221,15 +221,33 @@ async function runSearch(text) {
   });
 }
 
+// الآيفون والآيباد: التعرّف على الكلام ما يشتغل في التطبيق المثبّت على الشاشة الرئيسية
+const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+const STANDALONE = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+
+// البديل: مايك الكيبورد. نفتح الكيبورد ونوضّح لها وين تضغط، والبحث يبدأ لحاله لما توقف عن الكلام
+let dictTimer = null;
+function dictate(focusNow = true) {
+  let tip = $('#dictTip');
+  if (!tip) {
+    tip = h(`<div class="dict-tip" id="dictTip">${icon('mic')}<span>اضغطي زر المايك 🎙 في الكيبورد واقرئي الآية، وبعدها يطلع التفسير لحاله</span></div>`);
+    els.q.parentElement.before(tip);
+  }
+  tip.hidden = false;
+  els.q.value = '';
+  if (focusNow) els.q.focus();
+  else toast('اضغطي على مربع الكتابة ثم زر المايك في الكيبورد', 4500);
+  els.q.oninput = () => {
+    clearTimeout(dictTimer);
+    const t = els.q.value.trim();
+    if (t.split(/\s+/).length < 2) return;
+    dictTimer = setTimeout(() => { tip.hidden = true; els.q.blur(); runSearch(t); }, 2500);
+  };
+}
+
 function listen() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    openSheet(`<h2>التسجيل بالصوت</h2>
-      <p>هذا الجهاز ما يدعم التسجيل داخل التطبيق، لكن فيه طريقة سهلة:</p>
-      <ol style="line-height:2.2"><li>اضغطي على مربع الكتابة</li><li>اضغطي زر المايك 🎙 في لوحة المفاتيح</li><li>اقرئي الآية، وبعدين اضغطي «ابحثي»</li></ol>`);
-    els.q.focus();
-    return;
-  }
+  if (!SR || (IOS && STANDALONE)) { dictate(); return; }
   if (rec) { rec.stop(); return; }
   rec = new SR();
   rec.lang = 'ar-SA';
@@ -242,7 +260,18 @@ function listen() {
     <button class="btn primary block" id="micDone" type="button">${icon('check')} انتهيت</button></div>`, { close: () => rec && rec.abort() });
   const live = body.querySelector('#liveText');
   body.querySelector('#micDone').addEventListener('click', () => rec && rec.stop());
+  // إذا ما وصل أي كلام خلال ٧ ثواني، نحوّلها لمايك الكيبورد
+  let heard = false;
+  const watchdog = setTimeout(() => {
+    if (heard || !rec) return;
+    try { rec.abort(); } catch {}
+    rec = null;
+    document.getElementById('sheet').hidden = true;
+    document.getElementById('sheetBackdrop').hidden = true;
+    dictate(false);
+  }, 7000);
   rec.onresult = (e) => {
+    heard = true;
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) finalText += e.results[i][0].transcript + ' ';
@@ -263,6 +292,7 @@ function listen() {
     else if (e.error === 'network') toast('التسجيل بالصوت يحتاج إنترنت');
   };
   rec.onend = () => {
+    clearTimeout(watchdog);
     rec = null;
     const text = (finalText || live.textContent).trim();
     if (text) {
