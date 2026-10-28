@@ -341,10 +341,15 @@ main { flex: 1; padding: 6px 16px calc(var(--nav-h) + var(--safe-b) + 24px); max
 .phrase-btn small { color: var(--muted); font-weight: 600; font-size: .75rem; }
 .tap-zone { position: relative; flex: 1; display: grid; place-items: center; margin: 6px 0; touch-action: manipulation; user-select: none; -webkit-user-select: none; cursor: pointer; min-height: 300px; }
 .misbaha { position: relative; width: min(84vw, 360px, 52vh); aspect-ratio: 1; }
-.misbaha svg { width: 100%; height: 100%; overflow: visible; }
-.beads { transition: transform .35s var(--ease); transform-origin: 50% 50%; }
-.bead { fill: url(#beadGrad); }
-.bead.lit { fill: url(#beadLit); }
+.misbaha svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.ring-rot, .ring-static { position: absolute; inset: 0; }
+.ring-rot { transition: transform .35s var(--ease); -webkit-transition: -webkit-transform .35s var(--ease); will-change: transform; }
+.bead { fill: url(#beadGrad); transition: fill .3s; }
+.bead.done { fill: url(#beadDone); }
+#tArc { transition: stroke-dashoffset .35s var(--ease); }
+.bead-now { animation: nowPulse 1.6s ease-in-out infinite; }
+@keyframes nowPulse { 50% { opacity: .35; } }
+.tleft { color: var(--accent); font-weight: 800; font-size: 1.05rem; line-height: 1.4; }
 .misbaha-center { position: absolute; inset: 20%; border-radius: 50%; display: grid; place-items: center; text-align: center; background: radial-gradient(circle at 35% 30%, var(--card), var(--soft)); box-shadow: inset 0 -6px 18px rgba(var(--shadow), .08), 0 12px 40px rgba(var(--shadow), .14); }
 .tcount { font-size: clamp(64px, 20vw, 96px); font-weight: 800; line-height: 1; color: var(--primary); font-family: 'Noto Naskh Arabic', var(--font); }
 .tcount.bump { animation: bump .2s var(--ease); }

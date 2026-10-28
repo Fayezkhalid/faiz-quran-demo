@@ -29,22 +29,33 @@ function saveStats() {
   persist('tasbih', stats);
 }
 
+// الخرز في طبقة HTML مستقلة تدور بـ CSS، لأن Safari في الآيفون ما يدوّر عناصر SVG الداخلية
 function beadsSVG() {
   let s = '';
   for (let i = 0; i < BEADS; i++) {
     const a = (i / BEADS) * Math.PI * 2 - Math.PI / 2;
-    const x = 100 + Math.cos(a) * 88, y = 100 + Math.sin(a) * 88;
-    s += `<circle class="bead" data-b="${i}" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="7.4"/>`;
+    const x = 100 + Math.cos(a) * 86, y = 100 + Math.sin(a) * 86;
+    s += `<circle class="bead" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="7.2"/>`;
   }
-  return `<svg viewBox="0 0 200 200" aria-hidden="true">
-    <defs>
-      <radialGradient id="beadGrad" cx="35%" cy="30%"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".35" stop-color="var(--primary-2)"/><stop offset="1" stop-color="var(--primary)"/></radialGradient>
-      <radialGradient id="beadLit" cx="35%" cy="30%"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#ffe7a3"/><stop offset="1" stop-color="var(--accent)"/></radialGradient>
-    </defs>
-    <circle cx="100" cy="100" r="88" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-    <g class="beads" id="beads">${s}</g>
-    <path d="M100 4 l6 10 h-12z" fill="var(--accent)"/>
-  </svg>`;
+  const grad = (id, a, b, c) => `<radialGradient id="${id}" cx="35%" cy="30%"><stop offset="0" style="stop-color:${a}"/><stop offset=".4" style="stop-color:${b}"/><stop offset="1" style="stop-color:${c}"/></radialGradient>`;
+  return `
+    <div class="ring-rot" id="beads">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          ${grad('beadGrad', '#fff', 'var(--primary-2)', 'var(--primary)')}
+          ${grad('beadDone', '#fff', '#ffe7a3', 'var(--accent)')}
+        </defs>
+        <circle cx="100" cy="100" r="86" fill="none" style="stroke:var(--line)" stroke-width="1.5"/>
+        ${s}
+      </svg>
+    </div>
+    <svg class="ring-static" viewBox="0 0 200 200" aria-hidden="true">
+      <circle cx="100" cy="100" r="98" fill="none" style="stroke:var(--soft)" stroke-width="3"/>
+      <circle id="tArc" cx="100" cy="100" r="98" fill="none" style="stroke:var(--accent)" stroke-width="3.5" stroke-linecap="round"
+        stroke-dasharray="615.75" stroke-dashoffset="615.75" transform="rotate(-90 100 100)"/>
+      <circle class="bead-now" cx="100" cy="14" r="10.5" fill="none" style="stroke:var(--accent)" stroke-width="2"/>
+      <path d="M100 -1 l6 9 h-12z" style="fill:var(--accent)"/>
+    </svg>`;
 }
 
 export function initTasbih() {
@@ -65,6 +76,7 @@ export function initTasbih() {
             <div>
               <div class="tcount num" id="tCount">٠</div>
               <div class="ttarget num" id="tTarget"></div>
+              <div class="tleft num" id="tLeft"></div>
               <div class="tphrase" id="tPhrase"></div>
             </div>
           </div>
@@ -134,13 +146,19 @@ function onTap(e) {
 function render() {
   const target = store.get('tasbihTarget');
   els.count.textContent = n(target ? count % target || (count ? target : 0) : count);
+  const inRound = target ? count % target || (count ? target : 0) : count;
   els.target.textContent = target ? `من ${n(target)}` : '';
+  const left = target ? target - inRound : 0;
+  $('#tLeft').textContent = !target ? '' : left ? `باقي ${n(left)}` : 'اكتملت ✓';
+  // القوس الخارجي يمتلئ حتى الهدف
+  $('#tArc').style.strokeDashoffset = target ? 615.75 * (1 - inRound / target) : 615.75;
   els.phrase.textContent = phrase();
   $('#tPhraseLbl').textContent = phrase();
-  // دوران الخرز: كل ضغطة تحرّك حبة
+  // دوران الخرز: كل ضغطة تحرّك حبة، والحبات المنتهية في هذه الدورة يتغير لونها للذهبي
   const step = count % BEADS;
+  const done = count && !step ? BEADS : step;
   els.beads.style.transform = `rotate(${-count * (360 / BEADS)}deg)`;
-  els.beads.querySelectorAll('.bead').forEach((b, i) => b.classList.toggle('lit', i === step));
+  els.beads.querySelectorAll('.bead').forEach((b, i) => b.classList.toggle('done', i < done));
   const today = stats.days[dayKey()] || 0;
   $('#sToday').textContent = n(today);
   $('#sRounds').textContent = n(target ? Math.floor(count / target) : Math.floor(count / 100));
