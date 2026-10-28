@@ -20,12 +20,9 @@ export const FONTS = [
 export const THEMES = [
   { id: 'rose', name: 'وردي', a: '#a8385f', b: '#f9e3ea' },
   { id: 'lavender', name: 'لافندر', a: '#6a4ca6', b: '#ece5f8' },
-  { id: 'emerald', name: 'زمرّدي', a: '#11694f', b: '#dff0e7' },
+  { id: 'emerald', name: 'نعناعي', a: '#2f6b55', b: '#e2efe7' },
   { id: 'pearl', name: 'لؤلؤي', a: '#8a6326', b: '#f4ead6' },
-  { id: 'peach', name: 'خوخي', a: '#b54e33', b: '#fbe5da' },
-  { id: 'turquoise', name: 'فيروزي', a: '#0f6c73', b: '#dcf0f0' },
   { id: 'night', name: 'ليلي', a: '#12141f', b: '#eaa2bb' },
-  { id: 'plum', name: 'توتي', a: '#1b1220', b: '#e7b2d2' },
 ];
 
 let nightNow = false;
@@ -33,7 +30,8 @@ export function setNightPhase(isNight) { nightNow = isNight; applyLook(); }
 
 export function applyLook() {
   const s = store.all();
-  const theme = s.autoNight && nightNow && !['night', 'plum'].includes(s.theme) ? 'night' : s.theme;
+  const chosen = THEMES.some((t) => t.id === s.theme) ? s.theme : 'rose';
+  const theme = s.autoNight && nightNow ? 'night' : chosen;
   document.documentElement.dataset.theme = theme;
   const f = FONTS.find((x) => x.id === s.font) || FONTS[0];
   const link = $('#userFont');
@@ -67,7 +65,7 @@ export function initSettings() {
       <div class="card-title">حجم الخط</div>
       <div class="size-ctl">
         <button type="button" class="a-small" id="sizeDown" aria-label="تصغير الخط">أ-</button>
-        <input type="range" id="size" min="16" max="30" step="1" value="${s.size}" aria-label="حجم الخط">
+        <input type="range" id="size" min="16" max="34" step="1" value="${s.size}" aria-label="حجم الخط">
         <button type="button" class="a-big" id="sizeUp" aria-label="تكبير الخط">أ+</button>
       </div>
       <div class="preview" id="sizePreview">سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ</div>
@@ -84,6 +82,7 @@ export function initSettings() {
 
     <section class="card">
       <div class="card-title">الألوان</div>
+      <p class="muted small" style="margin:-4px 2px 10px">خمسة ألوان هادئة ومريحة للعين</p>
       <div class="themes" id="themes">${THEMES.map((t) => `
         <button type="button" class="theme-opt ${s.theme === t.id ? 'active' : ''}" data-t="${t.id}"><i style="background:${t.a};--sw2:${t.b}"></i>${t.name}</button>`).join('')}</div>
       <div class="set-row"><span class="lbl">وضع ليلي تلقائي<span class="desc">ألوان هادئة للعين بعد المغرب</span></span>
@@ -113,7 +112,7 @@ export function initSettings() {
         <label class="switch"><input type="checkbox" id="clock24" ${s.clock24 ? 'checked' : ''}><span></span></label></div>
       <div class="set-row"><span class="lbl">صوت عند العدّ</span>
         <label class="switch"><input type="checkbox" id="tasbihSound" ${s.tasbihSound ? 'checked' : ''}><span></span></label></div>
-      <div class="set-row"><span class="lbl">اهتزاز عند العدّ<span class="desc">في أجهزة أندرويد</span></span>
+      <div class="set-row" ${'vibrate' in navigator ? '' : 'hidden'}><span class="lbl">اهتزاز عند العدّ</span>
         <label class="switch"><input type="checkbox" id="tasbihVibrate" ${s.tasbihVibrate ? 'checked' : ''}><span></span></label></div>
       <div class="set-row"><label for="hijriOffset">تعديل التاريخ الهجري</label>
         <select id="hijriOffset" style="width:auto">${[-2, -1, 0, 1, 2].map((d) => `<option value="${d}" ${s.hijriOffset === d ? 'selected' : ''}>${d === 0 ? 'بدون تعديل' : `${d > 0 ? '+' : '−'}${n(Math.abs(d))} يوم`}</option>`).join('')}</select></div>
@@ -139,7 +138,7 @@ export function initSettings() {
   const bindSwitch = (id) => $('#' + id).addEventListener('change', (e) => { store.set(id, e.target.checked); applyLook(); });
   ['bold', 'autoNight', 'arabicDigits', 'clock24', 'tasbihSound', 'tasbihVibrate', 'notifyPrayer', 'notifyAzkar'].forEach(bindSwitch);
   const setSize = (v) => {
-    v = Math.max(16, Math.min(30, v));
+    v = Math.max(16, Math.min(34, v));
     $('#size').value = v;
     store.set('size', v);
     applyLook();
@@ -170,6 +169,7 @@ export function initSettings() {
     notifState();
   });
   $('#calBtn').addEventListener('click', exportCalendar);
+  store.on((k, v) => { if (k === 'size') $('#size').value = v; });
   notifState();
 }
 

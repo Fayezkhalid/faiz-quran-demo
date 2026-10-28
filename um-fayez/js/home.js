@@ -5,6 +5,7 @@ import { CITY, PRAYER_NAMES, PRAYER_KEYS, hijri, HIJRI_MONTHS, WEEKDAYS, G_MONTH
 import { SALUTES, FRIDAY_DUAS, partOfDay, rand, nextDua, DAILY_AYAT } from './content.js';
 import { azkarProgress } from './azkar.js';
 import { loadQuran, ayahIndex, openAyah } from './tafsir.js';
+import { initMessages } from './messages.js';
 
 let root, els = {}, sky, raf, lastSec = -1, duaTimer;
 
@@ -90,6 +91,9 @@ export function initHome() {
       <div class="hero-hint">المسي الساعة لتغيير شكلها</div>
     </div>
 
+    <div id="installTip"></div>
+    <div id="msgBox"></div>
+
     <section class="card" aria-label="الصلاة القادمة">
       <div class="next-prayer">
         <div class="ring">
@@ -149,6 +153,8 @@ export function initHome() {
   els.dua.addEventListener('click', () => swapDua());
 
   sky = new Sky($('#sky'));
+  initMessages($('#msgBox'));
+  installTip();
   renderClock();
   refresh();
   dailyAyah();
@@ -301,6 +307,18 @@ function tick() {
     if (hh === 0 && whole === 1 && now.getMinutes() === 0) { currentPhase = null; refresh(now); }
   }
   raf = requestAnimationFrame(tick);
+}
+
+// في الآيفون: نوضّح طريقة إضافة التطبيق للشاشة الرئيسية (مرة وحدة، وتختفي بعد التثبيت)
+function installTip() {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  if (!ios || standalone) return;
+  const box = $('#installTip');
+  box.innerHTML = `<section class="card reminder"><div class="ico">${icon('share')}</div><div>
+    <b>ثبّتي التطبيق على الشاشة الرئيسية</b>
+    <p class="muted">اضغطي زر المشاركة ${icon('share')} أسفل Safari، ثم «إضافة إلى الشاشة الرئيسية». بعدها يفتح مثل أي تطبيق وتشتغل التنبيهات.</p></div></section>`;
+  box.querySelectorAll('p svg').forEach((s) => { s.style.display = 'inline'; s.style.verticalAlign = 'middle'; });
 }
 
 async function dailyAyah() {

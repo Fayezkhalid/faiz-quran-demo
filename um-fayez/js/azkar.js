@@ -1,6 +1,6 @@
 // صفحة الأذكار: تضغط على الذكر فينقص العدد، ويتحفظ التقدّم لليوم
 import { store, load, persist, dayKey } from './store.js';
-import { $, h, icon, n, esc, ripple, vibrate, click, chime, bloom, toast, shareText } from './ui.js';
+import { $, h, icon, n, esc, sizeButtons, ripple, vibrate, click, chime, bloom, toast, shareText } from './ui.js';
 import { AZKAR, BASMALA } from './azkar-data.js';
 
 let root, cat = null, list, prog;
@@ -38,7 +38,7 @@ export function initAzkar() {
       <button class="chip" type="button" data-cat="waking">الاستيقاظ</button>
     </div>
     <div class="az-progress">
-      <div class="az-progress-row"><span id="azTitle"></span><span id="azCount" class="num"></span></div>
+      <div class="az-progress-row"><span id="azTitle"></span><span class="az-right">${sizeButtons()}<span id="azCount" class="num"></span></span></div>
       <div class="bar"><i id="azBar"></i></div>
     </div>
     <div id="azList"></div>

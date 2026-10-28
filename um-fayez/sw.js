@@ -1,5 +1,5 @@
 // يخلي التطبيق يشتغل بدون إنترنت بعد أول فتح
-const VERSION = 'sakina-v1';
+const VERSION = 'sakina-v2';
 const SHELL = [
   './',
   'index.html',
@@ -21,6 +21,7 @@ const SHELL = [
   'js/sounds.js',
   'js/settings.js',
   'js/notify.js',
+  'js/messages.js',
 ];
 // ملفات كبيرة تتحمّل وقت الحاجة وتبقى محفوظة
 const DATA = ['data/quran.json', 'data/tafsir-muyassar.json'];
@@ -55,6 +56,8 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin === location.origin) {
+    // ملفات الصوت تمر مباشرة (Safari يحتاج طلبات جزئية للصوت)
+    if (url.pathname.includes('/media/') && !url.pathname.endsWith('.json')) return;
     if (url.pathname.includes('/data/')) { e.respondWith(cacheFirst(req)); return; }
     // الشبكة أولاً للتحديثات، والكاش احتياط بدون إنترنت
     e.respondWith(

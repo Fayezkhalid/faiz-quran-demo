@@ -19,6 +19,9 @@ export function n(v) {
 }
 export const pad = (x) => String(x).padStart(2, '0');
 
+// أزرار تكبير وتصغير الخط داخل صفحات القراءة
+export const sizeButtons = () => `<span class="size-quick" role="group" aria-label="حجم الخط"><button type="button" data-size="-1" aria-label="تصغير الخط">أ-</button><button type="button" data-size="1" aria-label="تكبير الخط">أ+</button></span>`;
+
 export function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }

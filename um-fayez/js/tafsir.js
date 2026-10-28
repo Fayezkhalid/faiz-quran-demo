@@ -1,6 +1,6 @@
 // تفسير القرآن: ابحثي بالكتابة أو اللصق أو بصوتك، ويطلع التفسير الميسّر
 import { store, load, persist } from './store.js';
-import { $, h, icon, n, esc, toast, openSheet, copyText, shareText } from './ui.js';
+import { $, h, icon, n, esc, sizeButtons, toast, openSheet, copyText, shareText } from './ui.js';
 
 let quranP, tafsirP, Q, T, index, vocab, cum;
 let root, els = {}, rec = null, ayahAudio = null;
@@ -133,7 +133,7 @@ export function search(query) {
 export function initTafsir() {
   root = $('#view-tafsir');
   root.innerHTML = `
-    <h2 class="page-title">تفسير القرآن</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between"><h2 class="page-title">تفسير القرآن</h2>${sizeButtons()}</div>
     <p class="page-sub">التفسير الميسّر · مجمع الملك فهد لطباعة المصحف الشريف</p>
     <div class="search-box">
       <textarea id="tq" placeholder="اكتبي أو الصقي جزءاً من الآية هنا…" aria-label="نص الآية"></textarea>
@@ -251,7 +251,14 @@ function listen() {
     live.textContent = finalText + interim;
   };
   rec.onerror = (e) => {
-    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') toast('اسمحي للتطبيق باستخدام المايك من الإعدادات', 4000);
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      rec = null;
+      openSheet(`<h2>التسجيل بالصوت</h2>
+        <p>لو ما اشتغل المايك هنا، فيه طريقة سهلة:</p>
+        <ol style="line-height:2.2"><li>اضغطي على مربع الكتابة</li><li>اضغطي زر المايك 🎙 في لوحة المفاتيح (تحت يسار)</li><li>اقرئي الآية، وبعدين اضغطي «ابحثي»</li></ol>
+        <p class="muted small">وللسماح بالمايك: الإعدادات ← Safari ← الميكروفون ← سماح</p>`);
+      return;
+    }
     else if (e.error === 'no-speech') toast('ما وصلني صوت، جرّبي مرة ثانية');
     else if (e.error === 'network') toast('التسجيل بالصوت يحتاج إنترنت');
   };
@@ -288,7 +295,7 @@ export async function openAyah(idx) {
   if (root && $('#tRecent')) renderRecent();
 
   const body = openSheet(`
-    <h2>سورة ${Q.s[s - 1][0]}</h2>
+    <h2 style="display:flex;align-items:center;gap:10px">سورة ${Q.s[s - 1][0]} ${sizeButtons()}</h2>
     <div class="ayah-text">${esc(Q.a[idx][0])} <span style="color:var(--primary)">﴿${n(a)}﴾</span></div>
     <div class="ref">سورة ${Q.s[s - 1][0]} · الآية ${n(a)} · ${Q.s[s - 1][2] === 'm' ? 'مكية' : 'مدنية'}</div>
     <div class="tool-row">

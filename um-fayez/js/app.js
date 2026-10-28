@@ -72,6 +72,17 @@ inited.home = true;
 const startView = location.hash.slice(1);
 if (titles[startView] && startView !== 'home') go(startView);
 
+// أزرار أ+ و أ- في صفحات القراءة
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-size]');
+  if (!b) return;
+  e.stopPropagation();
+  const v = Math.max(16, Math.min(34, store.get('size') + +b.dataset.size));
+  store.set('size', v);
+  applyLook();
+  toast(`حجم الخط ${n(v)}`, 1200);
+}, true);
+
 // الوضع الليلي التلقائي
 document.addEventListener('phase', (e) => setNightPhase(e.detail === 'night' || (e.detail === 'evening' && Date.now() > prayerTimes().maghrib)));
 
