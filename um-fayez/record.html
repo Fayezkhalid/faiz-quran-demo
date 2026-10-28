@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>تسجيل رسالة · سكينة</title>
+  <meta name="robots" content="noindex">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #fbf1f4; --card: #fff; --line: #efd3dd; --text: #3b1d29; --muted: #7d5664; --primary: #a8385f; --primary-2: #c9577e; --soft: #f9e3ea; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Noto Naskh Arabic', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; padding: 24px 16px 40px; }
+    main { max-width: 520px; margin: 0 auto; text-align: center; }
+    h1 { font-family: 'Aref Ruqaa', serif; color: var(--primary); font-size: 2.4rem; margin: 0; }
+    p { color: var(--muted); }
+    .rec { width: 150px; height: 150px; border-radius: 50%; border: 0; margin: 24px auto 8px; display: grid; place-items: center; color: #fff; font-size: 1.2rem; font-weight: 700; font-family: inherit; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 14px 34px rgba(168, 56, 95, .35); }
+    .rec.on { background: #c62828; animation: pulse 1.3s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .45); } 100% { box-shadow: 0 0 0 34px transparent; } }
+    .time { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 16px; margin-top: 18px; text-align: start; }
+    label { display: block; font-weight: 700; margin: 10px 0 4px; }
+    input { width: 100%; min-height: 50px; border-radius: 14px; border: 1px solid var(--line); padding: 8px 12px; font: inherit; }
+    audio { width: 100%; margin-top: 10px; }
+    .btn { display: block; width: 100%; min-height: 54px; border-radius: 16px; border: 0; margin-top: 10px; font: inherit; font-weight: 700; background: var(--soft); color: var(--primary); }
+    .btn.primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; }
+    ol { text-align: start; color: var(--text); padding-inline-start: 20px; }
+    code { background: var(--soft); padding: 2px 6px; border-radius: 6px; direction: ltr; display: inline-block; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>رسالة لأمي</h1>
+    <p>سجّل رسالتك بصوتك، وبعدين أرسل الملف لـ Claude أو ارفعه للمشروع، وتطلع لها في الرئيسية كبطاقة «رسالة من فايز».</p>
+    <button class="rec" id="rec" type="button">ابدأ التسجيل</button>
+    <div class="time" id="time">0:00</div>
+    <div class="card" id="result" hidden>
+      <audio id="preview" controls></audio>
+      <label for="title">عنوان الرسالة</label>
+      <input id="title" value="رسالة لأمي الغالية">
+      <button class="btn primary" id="save" type="button">حفظ / مشاركة الملف</button>
+      <button class="btn" id="again" type="button">إعادة التسجيل</button>
+    </div>
+    <div class="card">
+      <b>بعد الحفظ:</b>
+      <ol>
+        <li>أرسل الملف لـ Claude في المحادثة، ويضيفه لك. أو:</li>
+        <li>ارفعه في GitHub داخل مجلد <code>um-fayez/media/</code></li>
+        <li>وأضف سطره في <code>media/messages.json</code></li>
+      </ol>
+    </div>
+  </main>
+  <script>
+    const recBtn = document.getElementById('rec');
+    const timeEl = document.getElementById('time');
+    let mr, chunks = [], t0, timer, blob, ext;
+    const type = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find((t) => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+    ext = type.includes('mp4') ? 'm4a' : 'webm';
+
+    recBtn.onclick = async () => {
+      if (mr && mr.state === 'recording') { mr.stop(); return; }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        chunks = [];
+        mr = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+        mr.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+        mr.onstop = () => {
+          stream.getTracks().forEach((t) => t.stop());
+          clearInterval(timer);
+          recBtn.classList.remove('on');
+          recBtn.textContent = 'سجّل من جديد';
+          blob = new Blob(chunks, { type: mr.mimeType || type });
+          document.getElementById('preview').src = URL.createObjectURL(blob);
+          document.getElementById('result').hidden = false;
+        };
+        mr.start();
+        t0 = Date.now();
+        recBtn.classList.add('on');
+        recBtn.textContent = 'إيقاف';
+        timer = setInterval(() => {
+          const s = Math.floor((Date.now() - t0) / 1000);
+          timeEl.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+        }, 250);
+      } catch {
+        alert('اسمح للمتصفح باستخدام المايك');
+      }
+    };
+    document.getElementById('again').onclick = () => { document.getElementById('result').hidden = true; timeEl.textContent = '0:00'; recBtn.click(); };
+    document.getElementById('save').onclick = async () => {
+      const d = new Date();
+      const name = `fayez-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.${ext}`;
+      const file = new File([blob], name, { type: blob.type });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: document.getElementById('title').value }); return; } catch (e) { if (e.name === 'AbortError') return; }
+      }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(file);
+      a.download = name;
+      a.click();
+    };
+  </script>
+</body>
+</html>
