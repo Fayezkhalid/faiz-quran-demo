@@ -54,6 +54,8 @@ h1 span{color:var(--gold)}
 .status p{margin:0;color:var(--dim);font-size:14px;line-height:1.7}
 .clock{font-family:'Tajawal',sans-serif;font-weight:900;font-size:36px;line-height:1.3;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:.5px;margin:6px 0 2px;text-shadow:0 0 22px rgba(226,178,79,.35)}
 .clock small{font-size:15px;font-weight:500;color:var(--dim);margin:0 4px 0 10px;letter-spacing:0}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px 0 10px}
+.bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--ok));transition:width 1s linear}
 .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;background:rgba(226,178,79,.12);color:var(--gold);border:1px solid rgba(226,178,79,.3)}
 
 button{font-family:inherit;cursor:pointer;border:0;color:inherit}
@@ -160,6 +162,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:70}
       <span class="pill" id="pill">—</span>
       <h2 id="stTitle">…</h2>
       <div class="clock" id="clock" hidden>00:00:00</div>
+      <div class="bar" id="bar" hidden><i id="barFill"></i></div>
       <p id="stText"></p>
       <div class="row" id="stBtns"></div>
     </div>
@@ -204,7 +207,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:70}
   <h3>🗓️ الجدول <em id="tblNote"></em></h3>
   <section class="card" style="padding:8px 12px">
     <table>
-      <thead><tr><th>#</th><th>اليوم</th><th>تنبيه 12 ص</th><th>المغرب</th></tr></thead>
+      <thead><tr><th>#</th><th>اليوم</th><th>الفجر</th><th>المغرب</th></tr></thead>
       <tbody id="tbl"></tbody>
     </table>
   </section>
@@ -247,22 +250,23 @@ const todayStr = () => toStr(ksaNow());
 const hm = min => { const t=Math.round(min)%1440, h=Math.floor(t/60), m=t%60; return `${h%12||12}:${pad(m)} ${h<12?'ص':'م'}`; };   // نظام 12 ساعة
 const ksaMs = (s,min) => fromStr(s).getTime() + min*60e3;      // لحظة (بتوقيت KSA مزاح) لتاريخ ودقيقة
 
-/* ---------- sunset (NOAA/Almanac) ---------- */
-function sunsetMin(dateStr, lat, lng){
+/* ---------- sun times (NOAA/Almanac) ---------- */
+function solarMin(dateStr, lat, lng, zenith, rising){
   const rad = Math.PI/180, d = fromStr(dateStr);
   const N = Math.floor((d - Date.UTC(d.getUTCFullYear(),0,0))/864e5);
-  const lngH = lng/15, t = N + (18 - lngH)/24;
+  const lngH = lng/15, t = N + ((rising?6:18) - lngH)/24;
   const M = 0.9856*t - 3.289;
   let L = M + 1.916*Math.sin(M*rad) + 0.02*Math.sin(2*M*rad) + 282.634; L = (L%360+360)%360;
   let RA = Math.atan(0.91764*Math.tan(L*rad))/rad; RA = (RA%360+360)%360;
   RA += Math.floor(L/90)*90 - Math.floor(RA/90)*90; RA /= 15;
   const sinD = 0.39782*Math.sin(L*rad), cosD = Math.cos(Math.asin(sinD));
-  const cosH = (Math.cos(90.833*rad) - sinD*Math.sin(lat*rad)) / (cosD*Math.cos(lat*rad));
-  const H = Math.acos(cosH)/rad/15;
+  const cosH = (Math.cos(zenith*rad) - sinD*Math.sin(lat*rad)) / (cosD*Math.cos(lat*rad));
+  let H = Math.acos(cosH)/rad; if(rising) H = 360 - H; H /= 15;
   const T = H + RA - 0.06571*t - 6.622;
-  const UT = (((T - lngH)%24)+24)%24;
-  return ((UT + TZ)%24)*60;
+  return ((((T - lngH)%24)+24)%24 + TZ)%24*60;
 }
+const sunsetMin = (d,lat,lng) => solarMin(d,lat,lng,90.833,false);
+const fajrMin   = (d,lat,lng) => solarMin(d,lat,lng,108.5,true);   // الفجر بزاوية 18.5° (أم القرى)
 
 /* ---------- state ---------- */
 const KEY = 'qada-ramadan-v1';
@@ -274,8 +278,8 @@ function plan(){
   const [ , lat, lng] = CITIES[S.city] || CITIES.riyadh;
   return Array.from({length:S.count}, (_,i) => {
     const date = addDays(S.start, i);
-    const mag = sunsetMin(date, lat, lng);
-    return {i:i+1, date, mag, alert: mag + Number(S.off), night: 0, done: !!S.done[date]};
+    const mag = sunsetMin(date, lat, lng), fajr = fajrMin(date, lat, lng);
+    return {i:i+1, date, mag, fajr, alert: mag + Number(S.off), night: 0, done: !!S.done[date]};
   });
 }
 
@@ -368,25 +372,31 @@ function render(){
   document.querySelectorAll('.day').forEach(b=>b.onclick=()=>{ const p=P.find(x=>x.date===b.dataset.d); p.done?askUndo(p):askClose(p); });
 
   // table
-  $('tbl').innerHTML = P.map(p=>`<tr class="${p.done?'done':''}"><td>${p.i}</td><td>${AR_DAYS[fromStr(p.date).getUTCDay()]} ${fromStr(p.date).getUTCDate()}/${fromStr(p.date).getUTCMonth()+1}</td><td class="t">12:00 ص</td><td class="t">${hm(p.alert)}</td></tr>`).join('');
+  $('tbl').innerHTML = P.map(p=>`<tr class="${p.done?'done':''}"><td>${p.i}</td><td>${AR_DAYS[fromStr(p.date).getUTCDay()]} ${fromStr(p.date).getUTCDate()}/${fromStr(p.date).getUTCMonth()+1}</td><td class="t">${hm(p.fajr)}</td><td class="t">${hm(p.alert)}</td></tr>`).join('');
   const L=$('icsLink'); if(L) L.href=icsHref();
-  $('tblNote').textContent = `المغرب في ${CITIES[S.city][0]}`;
+  $('tblNote').textContent = `${CITIES[S.city][0]} · تذكير 12:00 ص يوميًا`;
   tick();
 }
 
 function tick(){
   const P = plan(), now = ksaNow(), today = todayStr(), nowMin = now.getUTCHours()*60 + now.getUTCMinutes() + now.getUTCSeconds()/60;
   const left = P.filter(p=>!p.done).length;
-  const clock = $('clock'), btns = $('stBtns'); let title, text, pill;
+  const clock = $('clock'), btns = $('stBtns'), bar = $('bar'); let title, text, pill;
+  const fmt = sec => { sec=Math.max(0,Math.round(sec)); return `${pad(Math.floor(sec/3600))}<small>ساعة</small>${pad(Math.floor(sec%3600/60))}<small>دقيقة</small>${pad(sec%60)}<small>ثانية</small>`; };
   const tp = P.find(p=>p.date===today);
   const next = P.find(p=>!p.done && p.date>today);
-  btns.innerHTML = '';
+  btns.innerHTML = ''; bar.hidden = true;
   if(left===0){ pill='مكتمل 🎉'; title='خلصت كل أيام القضاء'; text='تقبّل الله منك. أنت جاهز لرمضان القادم بإذن الله.'; clock.hidden=true; }
-  else if(tp && !tp.done && nowMin < tp.mag){
-    const sec = Math.max(0,Math.round((tp.mag - nowMin)*60));
-    pill = `يوم القضاء ${tp.i} من ${P.length}`; title='أنت صائم اليوم 🌙';
-    clock.hidden=false; clock.innerHTML = `${pad(Math.floor(sec/3600))}<small>ساعة</small>${pad(Math.floor(sec%3600/60))}<small>دقيقة</small>${pad(sec%60)}<small>ثانية</small>`;
-    text = `باقي على أذان المغرب (${hm(tp.mag)}). صبرك أجرك — باقي بعده ${left-1} ${left-1===1?'يوم':'أيام'}.`;
+  else if(tp && !tp.done && nowMin < tp.fajr){
+    pill = `يوم القضاء ${tp.i} من ${P.length}`; title = 'باقي على بداية الصيام 🌙';
+    clock.hidden=false; clock.innerHTML = fmt((tp.fajr - nowMin)*60);
+    text = `أذان الفجر ${hm(tp.fajr)}. تسحّر ونوِ الصيام، وإفطارك عند ${hm(tp.mag)}.`;
+  } else if(tp && !tp.done && nowMin < tp.mag){
+    pill = `يوم القضاء ${tp.i} من ${P.length}`; title = 'أنت صائم الآن 🌙';
+    clock.hidden=false; clock.innerHTML = fmt((tp.mag - nowMin)*60);
+    const pct = Math.min(100,Math.max(0,(nowMin - tp.fajr)/(tp.mag - tp.fajr)*100));
+    bar.hidden=false; $('barFill').style.width = pct.toFixed(1)+'%';
+    text = `باقي على أذان المغرب (${hm(tp.mag)}). مضى ${Math.floor(pct)}% من صيامك، وباقي بعد اليوم ${left-1} ${left-1===1?'يوم':'أيام'}.`;
   } else if(tp && !tp.done){
     pill = `يوم القضاء ${tp.i} من ${P.length}`; title='أذّن المغرب… تقبّل الله 🌅'; clock.hidden=true;
     text = `أفطرت؟ أغلق اليوم وسجّله. باقي عليك ${left} ${left===1?'يوم':'أيام'} بما فيه اليوم.`;
@@ -395,10 +405,10 @@ function tick(){
     const miss = P.filter(p=>!p.done && p.date<today);
     pill = miss.length ? 'فيه أيام فاتتك' : 'استعداد'; clock.hidden=false;
     if(next){
-      const ms = ksaMs(next.date,0) - now.getTime(), h = Math.max(0,Math.floor(ms/36e5));
+      const ms = ksaMs(next.date,next.fajr) - now.getTime(), h = Math.max(0,Math.floor(ms/36e5));
       clock.innerHTML = (h>=24?`${Math.floor(h/24)}<small>يوم</small>`:'') + `${h%24}<small>ساعة</small>${pad(Math.max(0,Math.floor(ms%36e5/6e4)))}<small>دقيقة</small>`;
       title = `الصيام القادم: ${AR_DAYS[fromStr(next.date).getUTCDay()]} ${fromStr(next.date).getUTCDate()} ${AR_MON[fromStr(next.date).getUTCMonth()]}`;
-      text = `التنبيه الأول يرن 12 منتصف الليل قبل الصيام. باقي عليك ${left} ${left===1?'يوم':'أيام'}.`;
+      text = `يبدأ عند أذان الفجر (${hm(next.fajr)}). تنبيه التسحّر يرن 12:00 ص قبله. باقي عليك ${left} ${left===1?'يوم':'أيام'}.`;
     } else { clock.hidden=true; title='سجّل ما صمته'; text='اضغط على اليوم في الأسفل لتسجيله وإغلاقه.'; }
     if(miss.length){ text += ` (${miss.length} ${miss.length===1?'يوم':'أيام'} ما سجلتها)`; }
   }
