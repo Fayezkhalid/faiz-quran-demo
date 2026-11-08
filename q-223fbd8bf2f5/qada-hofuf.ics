@@ -1,0 +1,328 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Qada Ramadan//AR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:قضاء رمضان
+X-WR-TIMEZONE:Asia/Riyadh
+BEGIN:VEVENT
+UID:qada-2026-11-09-night@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261108T210000Z
+DTEND:20261108T211500Z
+SUMMARY:🌙 بكرة صيام قضاء (1/8) — نوِ وتسحّر
+DESCRIPTION:صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌙 بكرة صيام قضاء (1/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌙 بكرة صيام قضاء (1/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-09-iftar@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261109T135900Z
+DTEND:20261109T142900Z
+SUMMARY:🌅 أغلق يوم الصيام 1/8 — باقي 7 أيام
+DESCRIPTION:تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-09
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-09
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌅 أغلق يوم الصيام 1/8 — باقي 7 أيام
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌅 أغلق يوم الصيام 1/8 — باقي 7 أيام
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-10-night@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261109T210000Z
+DTEND:20261109T211500Z
+SUMMARY:🌙 بكرة صيام قضاء (2/8) — نوِ وتسحّر
+DESCRIPTION:صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌙 بكرة صيام قضاء (2/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌙 بكرة صيام قضاء (2/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-10-iftar@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261110T135800Z
+DTEND:20261110T142800Z
+SUMMARY:🌅 أغلق يوم الصيام 2/8 — باقي 6 أيام
+DESCRIPTION:تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-10
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-10
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌅 أغلق يوم الصيام 2/8 — باقي 6 أيام
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌅 أغلق يوم الصيام 2/8 — باقي 6 أيام
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-11-night@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261110T210000Z
+DTEND:20261110T211500Z
+SUMMARY:🌙 بكرة صيام قضاء (3/8) — نوِ وتسحّر
+DESCRIPTION:صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌙 بكرة صيام قضاء (3/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌙 بكرة صيام قضاء (3/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-11-iftar@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261111T135800Z
+DTEND:20261111T142800Z
+SUMMARY:🌅 أغلق يوم الصيام 3/8 — باقي 5 أيام
+DESCRIPTION:تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-11
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-11
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌅 أغلق يوم الصيام 3/8 — باقي 5 أيام
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌅 أغلق يوم الصيام 3/8 — باقي 5 أيام
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-12-night@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261111T210000Z
+DTEND:20261111T211500Z
+SUMMARY:🌙 بكرة صيام قضاء (4/8) — نوِ وتسحّر
+DESCRIPTION:صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌙 بكرة صيام قضاء (4/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌙 بكرة صيام قضاء (4/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-12-iftar@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261112T135700Z
+DTEND:20261112T142700Z
+SUMMARY:🌅 أغلق يوم الصيام 4/8 — باقي 4 أيام
+DESCRIPTION:تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-12
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-12
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌅 أغلق يوم الصيام 4/8 — باقي 4 أيام
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌅 أغلق يوم الصيام 4/8 — باقي 4 أيام
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-13-night@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261112T210000Z
+DTEND:20261112T211500Z
+SUMMARY:🌙 بكرة صيام قضاء (5/8) — نوِ وتسحّر
+DESCRIPTION:صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌙 بكرة صيام قضاء (5/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌙 بكرة صيام قضاء (5/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-13-iftar@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261113T135700Z
+DTEND:20261113T142700Z
+SUMMARY:🌅 أغلق يوم الصيام 5/8 — باقي 3 أيام
+DESCRIPTION:تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-13
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-13
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌅 أغلق يوم الصيام 5/8 — باقي 3 أيام
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌅 أغلق يوم الصيام 5/8 — باقي 3 أيام
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-14-night@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261113T210000Z
+DTEND:20261113T211500Z
+SUMMARY:🌙 بكرة صيام قضاء (6/8) — نوِ وتسحّر
+DESCRIPTION:صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌙 بكرة صيام قضاء (6/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌙 بكرة صيام قضاء (6/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-14-iftar@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261114T135700Z
+DTEND:20261114T142700Z
+SUMMARY:🌅 أغلق يوم الصيام 6/8 — باقي 2 أيام
+DESCRIPTION:تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-14
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-14
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌅 أغلق يوم الصيام 6/8 — باقي 2 أيام
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌅 أغلق يوم الصيام 6/8 — باقي 2 أيام
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-15-night@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261114T210000Z
+DTEND:20261114T211500Z
+SUMMARY:🌙 بكرة صيام قضاء (7/8) — نوِ وتسحّر
+DESCRIPTION:صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌙 بكرة صيام قضاء (7/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌙 بكرة صيام قضاء (7/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-15-iftar@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261115T135600Z
+DTEND:20261115T142600Z
+SUMMARY:🌅 أغلق يوم الصيام 7/8 — باقي 1 يوم
+DESCRIPTION:تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-15
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-15
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌅 أغلق يوم الصيام 7/8 — باقي 1 يوم
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌅 أغلق يوم الصيام 7/8 — باقي 1 يوم
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-16-night@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261115T210000Z
+DTEND:20261115T211500Z
+SUMMARY:🌙 بكرة صيام قضاء (8/8) — نوِ وتسحّر
+DESCRIPTION:صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌙 بكرة صيام قضاء (8/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌙 بكرة صيام قضاء (8/8) — نوِ وتسحّر
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:qada-2026-11-16-iftar@qada-ramadan
+DTSTAMP:20261108T102400Z
+DTSTART:20261116T135600Z
+DTEND:20261116T142600Z
+SUMMARY:🌅 أغلق يوم الصيام 8/8 — خلصت القضاء! 🎉
+DESCRIPTION:تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.\nhttps://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-16
+URL:https://fayezkhalid.github.io/faiz-quran-demo/q-223fbd8bf2f5/?close=2026-11-16
+TRANSP:TRANSPARENT
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:🌅 أغلق يوم الصيام 8/8 — خلصت القضاء! 🎉
+TRIGGER;RELATED=START:PT0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:تذكير: 🌅 أغلق يوم الصيام 8/8 — خلصت القضاء! 🎉
+TRIGGER;RELATED=START:PT15M
+END:VALARM
+END:VEVENT
+END:VCALENDAR
