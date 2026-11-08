@@ -270,8 +270,10 @@ const fajrMin   = (d,lat,lng) => solarMin(d,lat,lng,108.5,true);   // الفجر
 
 /* ---------- state ---------- */
 const KEY = 'qada-ramadan-v1';
-const def = () => ({start: addDays(todayStr(),1), count: 8, city: 'riyadh', off: 3, done: {}, fired: {}});
+const defStart = () => ksaNow().getUTCHours() < 20 ? todayStr() : addDays(todayStr(),1);   // اليوم الحالي ما دام قبل المغرب
+const def = () => ({start: defStart(), count: 8, city: 'riyadh', off: 3, done: {}, fired: {}});
 let S; try { S = Object.assign(def(), JSON.parse(localStorage.getItem(KEY)||'{}')); } catch(e){ S = def(); }
+if(!S.v2){ S.v2=1; S.start='2026-11-09'; }   // الخطة تبدأ من فجر الاثنين 9 نوفمبر
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 
 function plan(){
