@@ -278,17 +278,26 @@ function plan(){
 }
 
 /* ---------- sound ---------- */
-let actx;
+let alarmEl;
+function makeWav(rounds){
+  const sr=22050, notes=[659.25,783.99,987.77,1318.5], len=Math.floor(sr*(1.6*(rounds-1)+2.2)), pcm=new Int16Array(len);
+  for(let r=0;r<rounds;r++) notes.forEach((f,k)=>{
+    const st=Math.floor(sr*(r*1.6+k*0.28)), n=Math.floor(sr*1.1);
+    for(let i=0;i<n&&st+i<len;i++){ const t=i/sr, env=Math.min(1,t/0.03)*Math.exp(-3.2*t);
+      pcm[st+i]+=Math.round(Math.sin(2*Math.PI*f*t)*env*13000); }
+  });
+  const b=new Uint8Array(44+len*2), v=new DataView(b.buffer), w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF');v.setUint32(4,36+len*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,len*2,true);
+  for(let i=0;i<len;i++) v.setInt16(44+i*2,pcm[i],true);
+  let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]);
+  return 'data:audio/wav;base64,'+btoa(s);
+}
+// صوت عبر عنصر audio: يشتغل على الآيفون حتى لو زر الصامت مفعّل
 function chime(times=3){
   try{
-    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
-    const notes = [659.25, 783.99, 987.77, 1318.5];
-    for(let r=0;r<times;r++) notes.forEach((f,k)=>{
-      const t0 = actx.currentTime + r*1.6 + k*0.28, o = actx.createOscillator(), g = actx.createGain();
-      o.type='sine'; o.frequency.value=f; g.gain.setValueAtTime(0,t0);
-      g.gain.linearRampToValueAtTime(.35,t0+.03); g.gain.exponentialRampToValueAtTime(.001,t0+1.1);
-      o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0+1.2);
-    });
+    if(!alarmEl || alarmEl._n!==times){ alarmEl=new Audio(makeWav(times)); alarmEl._n=times; alarmEl.preload='auto'; }
+    alarmEl.currentTime=0; const p=alarmEl.play(); if(p&&p.catch) p.catch(()=>toast('اضغط «جرّب الصوت» مرة لتفعيل الصوت، وتأكد من رفع الصوت'));
     if(navigator.vibrate) navigator.vibrate([300,150,300,150,500]);
   }catch(e){}
 }
@@ -453,7 +462,8 @@ $('icsBtn').onclick = () => {
 };
 $('testBtn').onclick = () => { chime(2); modal({icon:'🌙',title:'بكرة صيام قضاء',text:'هذا شكل التنبيه — نوِ الصيام وتسحّر.',btns:[{t:'تمام',cls:'gold'}]}); };
 $('notifBtn').onclick = async () => {
-  if(!('Notification' in window)) return toast('المتصفح ما يدعم الإشعارات — استخدم التقويم');
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if(!('Notification' in window) || (ios && navigator.standalone!==true)) return toast('إشعارات المتصفح لا تعمل على الآيفون إلا من تطبيق مثبّت. اعتمد على تنبيهات التقويم');
   const r = await Notification.requestPermission(); toast(r==='granted'?'تم تفعيل الإشعارات (تعمل والصفحة مفتوحة)':'لم يتم السماح بالإشعارات');
 };
 
