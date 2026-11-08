@@ -179,7 +179,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:70}
       <button class="btn" id="testBtn">🔊 جرّب الصوت</button>
       <button class="btn" id="notifBtn">🔔 تنبيهات المتصفح</button>
     </div>
-    <p class="note"><a href="qada-ramadan.ics" style="color:var(--gold)">إذا ما تفاعل الزر اضغط هنا لفتح ملف التقويم</a><br>ملف التقويم يضيف ١٦ حدث (حدثين لكل يوم) وكل حدث فيه تنبيه بصوت عند وقته + تنبيه ثاني يعيد التذكير بعد ١٥ دقيقة للتأكد. بعد الإضافة تظهر في تطبيق «التقويم» وتتزامن مع أي جهاز على نفس الحساب.</p>
+    <p class="note"><a id="icsLink" href="qada-riyadh.ics" style="color:var(--gold)">إذا ما تفاعل الزر اضغط هنا لفتح ملف التقويم</a><br>ملف التقويم يضيف ١٦ حدث (حدثين لكل يوم) وكل حدث فيه تنبيه بصوت عند وقته + تنبيه ثاني يعيد التذكير بعد ١٥ دقيقة للتأكد. بعد الإضافة تظهر في تطبيق «التقويم» وتتزامن مع أي جهاز على نفس الحساب.</p>
 
     <details>
       <summary>خطوات الإضافة على الآيفون</summary>
@@ -244,7 +244,7 @@ const fromStr = s => { const [y,m,d] = s.split('-').map(Number); return new Date
 const addDays = (s,n) => { const d = fromStr(s); d.setUTCDate(d.getUTCDate()+n); return toStr(d); };
 const ksaNow = () => new Date(Date.now() + TZ*3600e3);       // حقول UTC فيه = وقت السعودية
 const todayStr = () => toStr(ksaNow());
-const hm = min => `${pad(Math.floor(min/60)%24)}:${pad(Math.round(min)%60)}`;
+const hm = min => { const t=Math.round(min)%1440, h=Math.floor(t/60), m=t%60; return `${h%12||12}:${pad(m)} ${h<12?'ص':'م'}`; };   // نظام 12 ساعة
 const ksaMs = (s,min) => fromStr(s).getTime() + min*60e3;      // لحظة (بتوقيت KSA مزاح) لتاريخ ودقيقة
 
 /* ---------- sunset (NOAA/Almanac) ---------- */
@@ -368,7 +368,8 @@ function render(){
   document.querySelectorAll('.day').forEach(b=>b.onclick=()=>{ const p=P.find(x=>x.date===b.dataset.d); p.done?askUndo(p):askClose(p); });
 
   // table
-  $('tbl').innerHTML = P.map(p=>`<tr class="${p.done?'done':''}"><td>${p.i}</td><td>${AR_DAYS[fromStr(p.date).getUTCDay()]} ${fromStr(p.date).getUTCDate()}/${fromStr(p.date).getUTCMonth()+1}</td><td class="t">00:00</td><td class="t">${hm(p.alert)}</td></tr>`).join('');
+  $('tbl').innerHTML = P.map(p=>`<tr class="${p.done?'done':''}"><td>${p.i}</td><td>${AR_DAYS[fromStr(p.date).getUTCDay()]} ${fromStr(p.date).getUTCDate()}/${fromStr(p.date).getUTCMonth()+1}</td><td class="t">12:00 ص</td><td class="t">${hm(p.alert)}</td></tr>`).join('');
+  const L=$('icsLink'); if(L) L.href=icsHref();
   $('tblNote').textContent = `المغرب في ${CITIES[S.city][0]}`;
   tick();
 }
@@ -451,10 +452,11 @@ function buildICS(){
   });
   L.push('END:VCALENDAR'); return L.join('\r\n');
 }
-const isDefaultPlan = () => S.start==='2026-11-09' && S.count===8 && S.city==='riyadh' && Number(S.off)===3;
+const isDefaultPlan = () => S.start==='2026-11-09' && S.count===8 && Number(S.off)===3;
+const icsHref = () => `qada-${S.city}.ics`;
 $('icsBtn').onclick = () => {
-  // الملف الجاهز من نفس الموقع: Safari يفتح معه شاشة «إضافة الكل» للتقويم
-  if(isDefaultPlan()){ location.href = 'qada-ramadan.ics'; return; }
+  // ملف جاهز من نفس الموقع لكل مدينة: Safari يفتح معه شاشة «إضافة الكل» للتقويم
+  if(isDefaultPlan()){ location.href = icsHref(); return; }
   const url = URL.createObjectURL(new Blob([buildICS()],{type:'text/calendar;charset=utf-8'})), a = document.createElement('a');
   a.href = url; a.download = 'qada-ramadan.ics'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 4000);
