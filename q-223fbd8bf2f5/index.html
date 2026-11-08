@@ -177,7 +177,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:70}
       <button class="btn" id="testBtn">🔊 جرّب الصوت</button>
       <button class="btn" id="notifBtn">🔔 تنبيهات المتصفح</button>
     </div>
-    <p class="note">ملف التقويم يضيف ١٦ حدث (حدثين لكل يوم) وكل حدث فيه تنبيه بصوت عند وقته + تنبيه ثاني يعيد التذكير بعد ١٥ دقيقة للتأكد. بعد الإضافة تظهر في تطبيق «التقويم» وتتزامن مع أي جهاز على نفس الحساب.</p>
+    <p class="note"><a href="qada-ramadan.ics" style="color:var(--gold)">إذا ما تفاعل الزر اضغط هنا لفتح ملف التقويم</a><br>ملف التقويم يضيف ١٦ حدث (حدثين لكل يوم) وكل حدث فيه تنبيه بصوت عند وقته + تنبيه ثاني يعيد التذكير بعد ١٥ دقيقة للتأكد. بعد الإضافة تظهر في تطبيق «التقويم» وتتزامن مع أي جهاز على نفس الحساب.</p>
 
     <details>
       <summary>خطوات الإضافة على الآيفون</summary>
@@ -449,13 +449,11 @@ function buildICS(){
   });
   L.push('END:VCALENDAR'); return L.join('\r\n');
 }
+const isDefaultPlan = () => S.start==='2026-11-09' && S.count===8 && S.city==='riyadh' && Number(S.off)===3;
 $('icsBtn').onclick = () => {
-  const ics = buildICS();
-  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
-  const standalone = navigator.standalone === true;
-  if(standalone) toast('افتح الصفحة من Safari لإضافة التنبيهات (مو من أيقونة الشاشة)');
-  if(ios){ location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics); return; }
-  const url = URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'})), a = document.createElement('a');
+  // الملف الجاهز من نفس الموقع: Safari يفتح معه شاشة «إضافة الكل» للتقويم
+  if(isDefaultPlan()){ location.href = 'qada-ramadan.ics'; return; }
+  const url = URL.createObjectURL(new Blob([buildICS()],{type:'text/calendar;charset=utf-8'})), a = document.createElement('a');
   a.href = url; a.download = 'qada-ramadan.ics'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 4000);
   toast('جاري إضافة الأحداث للتقويم…');
