@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070B16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="قضاء رمضان">
+<title>قضاء رمضان</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070B16; --bg2:#0D1424; --panel:#121A2E; --panel2:#18223B; --line:#243050;
+  --gold:#E2B24F; --gold2:#B98A2E; --sand:#F1E6CC; --ink:#EEF0F6; --dim:#97A1BA;
+  --ok:#41C28F; --warn:#F0A04B; --bad:#E5645B;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  min-height:100vh; color:var(--ink); font-family:'Tajawal',system-ui,sans-serif;
+  background:
+    radial-gradient(900px 480px at 90% -8%, rgba(226,178,79,.14), transparent 60%),
+    radial-gradient(800px 500px at 0% 105%, rgba(65,194,143,.07), transparent 60%),
+    var(--bg);
+  padding:calc(env(safe-area-inset-top) + 22px) 16px calc(env(safe-area-inset-bottom) + 60px);
+  overflow-x:hidden;
+}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--sand);opacity:.3;animation:tw 4s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.1}50%{opacity:.75}}
+.wrap{position:relative;z-index:1;max-width:720px;margin:0 auto}
+
+header{text-align:center;margin-bottom:18px}
+.moon{width:64px;height:64px;margin:0 auto 6px;filter:drop-shadow(0 0 18px rgba(226,178,79,.55));animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-5px)}}
+h1{margin:0;font-weight:900;font-size:30px;letter-spacing:.2px}
+h1 span{color:var(--gold)}
+.sub{color:var(--dim);font-size:14px;margin-top:4px}
+
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:22px;padding:18px}
+.hero{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}
+.ringbox{position:relative;width:150px;height:150px}
+.ringbox svg{transform:rotate(-90deg)}
+.ringbox .bg{stroke:var(--line)}
+.ringbox .fg{stroke:url(#g);stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
+.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ringtxt b{font-size:46px;line-height:1;font-weight:900;color:var(--gold)}
+.ringtxt small{color:var(--dim);font-size:12px;margin-top:2px}
+.status h2{margin:0 0 6px;font-size:19px}
+.status p{margin:0;color:var(--dim);font-size:14px;line-height:1.7}
+.clock{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:30px;color:var(--sand);direction:ltr;text-align:right;margin:6px 0 2px}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;background:rgba(226,178,79,.12);color:var(--gold);border:1px solid rgba(226,178,79,.3)}
+
+button{font-family:inherit;cursor:pointer;border:0;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border-radius:14px;font-weight:700;font-size:15px;
+  background:var(--panel2);border:1px solid var(--line);transition:transform .15s,background .2s}
+.btn:active{transform:scale(.97)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1b1204;border-color:transparent}
+.btn.ok{background:linear-gradient(135deg,#4fd6a0,#2c9b72);color:#04170f;border-color:transparent;animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(65,194,143,.5)}70%{box-shadow:0 0 0 16px rgba(65,194,143,0)}100%{box-shadow:0 0 0 0 rgba(65,194,143,0)}}
+.btn.block{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+h3{margin:26px 4px 12px;font-size:17px;display:flex;align-items:center;gap:8px}
+h3 em{font-style:normal;color:var(--dim);font-weight:400;font-size:13px}
+
+.days{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.day{position:relative;text-align:center;padding:14px 6px 12px;border-radius:18px;background:var(--panel);border:1px solid var(--line);
+  transition:transform .2s,border-color .2s,background .3s;overflow:hidden}
+.day:active{transform:scale(.95)}
+.day .n{font-size:12px;color:var(--dim)}
+.day .d{font-size:30px;font-weight:900;line-height:1.15}
+.day .w{font-size:13px;color:var(--sand)}
+.day .m{font-size:11px;color:var(--dim)}
+.day .tag{margin-top:8px;font-size:11px;padding:2px 8px;border-radius:99px;display:inline-block;background:var(--panel2);color:var(--dim)}
+.day.today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset,0 0 26px rgba(226,178,79,.2)}
+.day.today .tag{background:rgba(226,178,79,.15);color:var(--gold)}
+.day.missed{border-color:rgba(240,160,75,.5)}
+.day.missed .tag{background:rgba(240,160,75,.14);color:var(--warn)}
+.day.done{background:linear-gradient(180deg,rgba(65,194,143,.18),rgba(65,194,143,.05));border-color:rgba(65,194,143,.55)}
+.day.done .d{color:var(--ok)}
+.day.done .tag{background:rgba(65,194,143,.18);color:var(--ok)}
+.day .chk{position:absolute;top:8px;left:8px;width:20px;height:20px;border-radius:50%;background:var(--ok);display:none;align-items:center;justify-content:center}
+.day.done .chk{display:flex;animation:pop .4s cubic-bezier(.3,1.8,.5,1)}
+@keyframes pop{from{transform:scale(0)}}
+
+.steps{display:grid;gap:10px}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step .no{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(226,178,79,.15);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px}
+.step p{margin:2px 0 0;font-size:14px;line-height:1.7;color:#c9cfe0}
+.step p b{color:var(--ink)}
+details{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::after{content:'＋';color:var(--gold)}
+details[open] summary::after{content:'－'}
+details ol{margin:10px 0 0;padding:0 20px 0 0;color:#c9cfe0;font-size:14px;line-height:1.9}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 6px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--dim);font-weight:500}
+td.t{font-family:'JetBrains Mono',monospace;direction:ltr}
+tr.done td{opacity:.5;text-decoration:line-through}
+
+.set{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+select,input{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-family:inherit;font-size:15px}
+input[type=date]{color-scheme:dark}
+.note{font-size:12px;color:var(--dim);line-height:1.7;margin-top:10px}
+
+/* modal / toast */
+.mask{position:fixed;inset:0;background:rgba(3,6,14,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.mask.on{display:flex;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.modal{width:100%;max-width:380px;text-align:center;background:var(--panel);border:1px solid var(--gold2);border-radius:26px;padding:26px 22px;box-shadow:0 20px 80px rgba(0,0,0,.6);animation:up .35s cubic-bezier(.2,1.2,.3,1)}
+@keyframes up{from{transform:translateY(30px) scale(.95);opacity:0}}
+.modal .big{font-size:50px;margin-bottom:4px}
+.modal h4{margin:0 0 8px;font-size:21px}
+.modal p{margin:0 0 18px;color:var(--dim);line-height:1.8;font-size:14px}
+.modal .row{justify-content:center;margin-top:0}
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 22px);left:50%;transform:translate(-50%,120px);background:var(--panel2);border:1px solid var(--line);padding:12px 18px;border-radius:14px;z-index:60;transition:transform .35s;font-size:14px;max-width:90%}
+.toast.on{transform:translate(-50%,0)}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:70}
+
+@media(max-width:520px){
+  .hero{grid-template-columns:1fr;text-align:center}
+  .ringbox{margin:0 auto}
+  .clock{text-align:center}
+  .days{grid-template-columns:repeat(2,1fr)}
+  .set{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<canvas id="fx"></canvas>
+
+<div class="wrap">
+  <header>
+    <svg class="moon" viewBox="0 0 64 64"><defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6D77E"/><stop offset="1" stop-color="#C8922F"/></linearGradient></defs>
+      <path d="M44 6a26 26 0 1 0 14 44A22 22 0 0 1 44 6z" fill="url(#mg)"/><path d="M50 14l1.6 3.6 3.9.4-2.9 2.6.8 3.8-3.4-2-3.4 2 .8-3.8-2.9-2.6 3.9-.4z" fill="#F6D77E"/></svg>
+    <h1>قضاء <span>رمضان</span></h1>
+    <div class="sub">أيام باقية عليك… وخطة تخلصها بإذن الله قبل الدوام</div>
+  </header>
+
+  <section class="card hero">
+    <div class="ringbox">
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6D77E"/><stop offset="1" stop-color="#41C28F"/></linearGradient></defs>
+        <circle class="bg" cx="75" cy="75" r="64" fill="none" stroke-width="12"/>
+        <circle class="fg" id="ring" cx="75" cy="75" r="64" fill="none" stroke-width="12" stroke-dasharray="402.1" stroke-dashoffset="402.1"/>
+      </svg>
+      <div class="ringtxt"><b id="remain">8</b><small>يوم متبقي</small></div>
+    </div>
+    <div class="status">
+      <span class="pill" id="pill">—</span>
+      <h2 id="stTitle">…</h2>
+      <div class="clock" id="clock" hidden>00:00:00</div>
+      <p id="stText"></p>
+      <div class="row" id="stBtns"></div>
+    </div>
+  </section>
+
+  <h3>أيام القضاء <em>اضغط على اليوم لتسجيله</em></h3>
+  <div class="days" id="days"></div>
+
+  <h3>🔔 التنبيهات <em>تنبيهان كل يوم</em></h3>
+  <section class="card">
+    <div class="steps">
+      <div class="step"><div class="no">1</div><p><b>منتصف الليل (12:00 ص)</b> — تنبيه بصوت ورسالة: «بكرة صيام قضاء، نوِ وتسحّر».</p></div>
+      <div class="step"><div class="no">2</div><p><b>بعد أذان المغرب</b> — تنبيه: «أغلق يومك» مع عدد الأيام المتبقية، ويفتح التطبيق مباشرة لتسجيل اليوم.</p></div>
+    </div>
+    <div class="row">
+      <button class="btn gold" id="icsBtn">📅 أضف التنبيهات لتقويم الآيفون</button>
+      <button class="btn" id="testBtn">🔊 جرّب الصوت</button>
+      <button class="btn" id="notifBtn">🔔 تنبيهات المتصفح</button>
+    </div>
+    <p class="note">ملف التقويم يضيف ١٦ حدث (حدثين لكل يوم) وكل حدث فيه تنبيه بصوت عند وقته + تنبيه ثاني يعيد التذكير بعد ١٥ دقيقة للتأكد. بعد الإضافة تظهر في تطبيق «التقويم» وتتزامن مع أي جهاز على نفس الحساب.</p>
+
+    <details>
+      <summary>خطوات الإضافة على الآيفون</summary>
+      <ol>
+        <li>اضغط «أضف التنبيهات لتقويم الآيفون» من Safari.</li>
+        <li>يفتح لك التقويم بقائمة الأحداث → اضغط <b>إضافة الكل</b> واختر تقويمك (يفضل iCloud).</li>
+        <li>تأكد من <b>الإعدادات ← الإشعارات ← التقويم</b> أن الإشعارات والصوت مفعلين.</li>
+        <li>وقت النوم/وضع التركيز: اسمح لتطبيق التقويم بالاستثناء حتى يرن 12 بالليل.</li>
+      </ol>
+    </details>
+    <details>
+      <summary>منبه الساعة (للتأكيد الأقوى)</summary>
+      <ol>
+        <li>افتح <b>اختصارات ← أتمتة ← جديد ← وقت اليوم</b>.</li>
+        <li>اختر 12:00 ص، يوميًا، ثم «تشغيل فوري».</li>
+        <li>أضف إجراء <b>إنشاء منبه</b> (بعد دقيقة) أو «عرض تنبيه» برسالة «بكرة صيام قضاء».</li>
+        <li>كرر بوقت المغرب برسالة «أغلق يوم الصيام» (أو اضبط منبه من تطبيق الساعة بتسمية واضحة).</li>
+      </ol>
+    </details>
+  </section>
+
+  <h3>🗓️ الجدول <em id="tblNote"></em></h3>
+  <section class="card" style="padding:8px 12px">
+    <table>
+      <thead><tr><th>#</th><th>اليوم</th><th>تنبيه 12 ص</th><th>المغرب</th></tr></thead>
+      <tbody id="tbl"></tbody>
+    </table>
+  </section>
+
+  <h3>⚙️ الإعدادات</h3>
+  <section class="card">
+    <div class="set">
+      <div><label>أول يوم صيام</label><input type="date" id="sStart"></div>
+      <div><label>عدد الأيام المتبقية عليك</label><input type="number" id="sCount" min="1" max="30"></div>
+      <div><label>المدينة (لحساب المغرب)</label><select id="sCity"></select></div>
+      <div><label>التنبيه بعد المغرب بـ (دقيقة)</label><input type="number" id="sOff" min="0" max="60"></div>
+    </div>
+    <p class="note">وقت المغرب يُحسب تلقائيًا من موقع المدينة (توقيت السعودية). قد يختلف دقيقة أو دقيقتين عن تقويم أم القرى، ولذلك أضفت هامش دقائق بعد الأذان.</p>
+    <div class="row"><button class="btn" id="resetBtn">↺ إعادة ضبط التقدم</button></div>
+  </section>
+</div>
+
+<div class="mask" id="mask"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const AR_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const AR_MON = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const TZ = 3; // السعودية UTC+3 بدون توقيت صيفي
+const CITIES = {
+  riyadh:['الرياض',24.7136,46.6753], jeddah:['جدة',21.4858,39.1925], makkah:['مكة المكرمة',21.3891,39.8579],
+  madinah:['المدينة المنورة',24.5247,39.5692], dammam:['الدمام',26.4207,50.0888], khobar:['الخبر',26.2172,50.1971],
+  hofuf:['الهفوف',25.3648,49.5878], taif:['الطائف',21.2703,40.4158], buraydah:['بريدة',26.326,43.975],
+  hail:['حائل',27.5114,41.7208], tabuk:['تبوك',28.3838,36.5662], abha:['أبها',18.2164,42.5053],
+  jazan:['جازان',16.8892,42.5511], najran:['نجران',17.4933,44.1277]
+};
+const pad = n => String(n).padStart(2,'0');
+const toStr = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+const fromStr = s => { const [y,m,d] = s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); };
+const addDays = (s,n) => { const d = fromStr(s); d.setUTCDate(d.getUTCDate()+n); return toStr(d); };
+const ksaNow = () => new Date(Date.now() + TZ*3600e3);       // حقول UTC فيه = وقت السعودية
+const todayStr = () => toStr(ksaNow());
+const hm = min => `${pad(Math.floor(min/60)%24)}:${pad(Math.round(min)%60)}`;
+const ksaMs = (s,min) => fromStr(s).getTime() + min*60e3;      // لحظة (بتوقيت KSA مزاح) لتاريخ ودقيقة
+
+/* ---------- sunset (NOAA/Almanac) ---------- */
+function sunsetMin(dateStr, lat, lng){
+  const rad = Math.PI/180, d = fromStr(dateStr);
+  const N = Math.floor((d - Date.UTC(d.getUTCFullYear(),0,0))/864e5);
+  const lngH = lng/15, t = N + (18 - lngH)/24;
+  const M = 0.9856*t - 3.289;
+  let L = M + 1.916*Math.sin(M*rad) + 0.02*Math.sin(2*M*rad) + 282.634; L = (L%360+360)%360;
+  let RA = Math.atan(0.91764*Math.tan(L*rad))/rad; RA = (RA%360+360)%360;
+  RA += Math.floor(L/90)*90 - Math.floor(RA/90)*90; RA /= 15;
+  const sinD = 0.39782*Math.sin(L*rad), cosD = Math.cos(Math.asin(sinD));
+  const cosH = (Math.cos(90.833*rad) - sinD*Math.sin(lat*rad)) / (cosD*Math.cos(lat*rad));
+  const H = Math.acos(cosH)/rad/15;
+  const T = H + RA - 0.06571*t - 6.622;
+  const UT = (((T - lngH)%24)+24)%24;
+  return ((UT + TZ)%24)*60;
+}
+
+/* ---------- state ---------- */
+const KEY = 'qada-ramadan-v1';
+const def = () => ({start: addDays(todayStr(),1), count: 8, city: 'riyadh', off: 3, done: {}, fired: {}});
+let S; try { S = Object.assign(def(), JSON.parse(localStorage.getItem(KEY)||'{}')); } catch(e){ S = def(); }
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+
+function plan(){
+  const [ , lat, lng] = CITIES[S.city] || CITIES.riyadh;
+  return Array.from({length:S.count}, (_,i) => {
+    const date = addDays(S.start, i);
+    const mag = sunsetMin(date, lat, lng);
+    return {i:i+1, date, mag, alert: mag + Number(S.off), night: 0, done: !!S.done[date]};
+  });
+}
+
+/* ---------- sound ---------- */
+let actx;
+function chime(times=3){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const notes = [659.25, 783.99, 987.77, 1318.5];
+    for(let r=0;r<times;r++) notes.forEach((f,k)=>{
+      const t0 = actx.currentTime + r*1.6 + k*0.28, o = actx.createOscillator(), g = actx.createGain();
+      o.type='sine'; o.frequency.value=f; g.gain.setValueAtTime(0,t0);
+      g.gain.linearRampToValueAtTime(.35,t0+.03); g.gain.exponentialRampToValueAtTime(.001,t0+1.1);
+      o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0+1.2);
+    });
+    if(navigator.vibrate) navigator.vibrate([300,150,300,150,500]);
+  }catch(e){}
+}
+
+/* ---------- fx ---------- */
+const cv = $('fx'), cx = cv.getContext('2d'); let parts=[];
+function fit(){ cv.width = innerWidth; cv.height = innerHeight; } fit(); addEventListener('resize',fit);
+function confetti(n=140){
+  const cols=['#F6D77E','#E2B24F','#41C28F','#EEF0F6','#7FD6FF'];
+  for(let i=0;i<n;i++) parts.push({x:innerWidth/2,y:innerHeight*.45,vx:(Math.random()-.5)*14,vy:-Math.random()*13-3,s:4+Math.random()*6,c:cols[i%5],r:Math.random()*6,vr:(Math.random()-.5)*.4,l:1});
+  if(parts.length===n) requestAnimationFrame(loop);
+}
+function loop(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.l-=.008;cx.save();cx.globalAlpha=Math.max(p.l,0);cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);cx.restore();});
+  parts = parts.filter(p=>p.l>0 && p.y<innerHeight+20);
+  if(parts.length) requestAnimationFrame(loop); else cx.clearRect(0,0,cv.width,cv.height);
+}
+let tt; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('on'),2600); }
+
+/* ---------- modal ---------- */
+function modal({icon,title,text,btns}){
+  $('modal').innerHTML = `<div class="big">${icon}</div><h4>${title}</h4><p>${text}</p><div class="row" id="mb"></div>`;
+  btns.forEach(b=>{ const e=document.createElement('button'); e.className='btn '+(b.cls||''); e.textContent=b.t; e.onclick=()=>{close(); b.f&&b.f();}; $('mb').appendChild(e); });
+  $('mask').classList.add('on');
+}
+const close = () => $('mask').classList.remove('on');
+$('mask').addEventListener('click', e => { if(e.target.id==='mask') close(); });
+
+/* ---------- actions ---------- */
+function setDone(date, v){
+  if(v) S.done[date]=true; else delete S.done[date];
+  save(); render();
+  if(v){
+    confetti();
+    const left = S.count - Object.keys(S.done).filter(d=>plan().some(p=>p.date===d)).length;
+    if(left===0){ chime(2); setTimeout(()=>{ confetti(260); modal({icon:'🎉',title:'ما شاء الله… خلصت القضاء!',text:'تقبّل الله صيامك وغفر لك. أنجزت كل الأيام قبل رمضان القادم.',btns:[{t:'الحمد لله',cls:'gold'}]}); },500); }
+    else toast(`تقبّل الله ✨ باقي ${left} ${left===1?'يوم':left===2?'يومين':left<=10?'أيام':'يومًا'}`);
+  }
+}
+function askClose(p){
+  modal({icon:'🌅',title:`أغلق يوم القضاء رقم ${p.i}؟`,
+    text:`${AR_DAYS[fromStr(p.date).getUTCDay()]} ${fromStr(p.date).getUTCDate()} ${AR_MON[fromStr(p.date).getUTCMonth()]} — هل أتممت الصيام وأفطرت؟`,
+    btns:[{t:'نعم، أتممته ✓',cls:'ok',f:()=>setDone(p.date,true)},{t:'لاحقًا'}]});
+}
+function askUndo(p){
+  modal({icon:'↩️',title:'إلغاء التسجيل؟',text:`سيرجع اليوم رقم ${p.i} إلى «لم يُصَم».`,
+    btns:[{t:'إلغاء التسجيل',f:()=>setDone(p.date,false)},{t:'تراجع',cls:'gold'}]});
+}
+
+/* ---------- render ---------- */
+function render(){
+  const P = plan(), today = todayStr();
+  const doneN = P.filter(p=>p.done).length, left = P.length - doneN;
+  $('remain').textContent = left;
+  $('ring').style.strokeDashoffset = 402.1 * (1 - doneN/P.length);
+
+  // grid
+  $('days').innerHTML = P.map(p=>{
+    const d = fromStr(p.date);
+    const cls = p.done?'done':p.date===today?'today':p.date<today?'missed':'';
+    const tag = p.done?'تم الصيام ✓':p.date===today?'اليوم':p.date<today?'سجّله':'قادم';
+    return `<button class="day ${cls}" data-d="${p.date}"><span class="chk"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6.5l2.6 2.6L10 3.5" fill="none" stroke="#04170f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <div class="n">اليوم ${p.i}</div><div class="d">${d.getUTCDate()}</div><div class="w">${AR_DAYS[d.getUTCDay()]}</div><div class="m">${AR_MON[d.getUTCMonth()]}</div><span class="tag">${tag}</span></button>`;
+  }).join('');
+  document.querySelectorAll('.day').forEach(b=>b.onclick=()=>{ const p=P.find(x=>x.date===b.dataset.d); p.done?askUndo(p):askClose(p); });
+
+  // table
+  $('tbl').innerHTML = P.map(p=>`<tr class="${p.done?'done':''}"><td>${p.i}</td><td>${AR_DAYS[fromStr(p.date).getUTCDay()]} ${fromStr(p.date).getUTCDate()}/${fromStr(p.date).getUTCMonth()+1}</td><td class="t">00:00</td><td class="t">${hm(p.alert)}</td></tr>`).join('');
+  $('tblNote').textContent = `المغرب في ${CITIES[S.city][0]}`;
+  tick();
+}
+
+function tick(){
+  const P = plan(), now = ksaNow(), today = todayStr(), nowMin = now.getUTCHours()*60 + now.getUTCMinutes() + now.getUTCSeconds()/60;
+  const left = P.filter(p=>!p.done).length;
+  const clock = $('clock'), btns = $('stBtns'); let title, text, pill;
+  const tp = P.find(p=>p.date===today);
+  const next = P.find(p=>!p.done && p.date>today);
+  btns.innerHTML = '';
+  if(left===0){ pill='مكتمل 🎉'; title='خلصت كل أيام القضاء'; text='تقبّل الله منك. أنت جاهز لرمضان القادم بإذن الله.'; clock.hidden=true; }
+  else if(tp && !tp.done && nowMin < tp.mag){
+    const sec = Math.max(0,Math.round((tp.mag - nowMin)*60));
+    pill = `يوم القضاء ${tp.i} من ${P.length}`; title='أنت صائم اليوم 🌙';
+    clock.hidden=false; clock.textContent = `${pad(Math.floor(sec/3600))}:${pad(Math.floor(sec%3600/60))}:${pad(sec%60)}`;
+    text = `باقي على أذان المغرب (${hm(tp.mag)}). صبرك أجرك — باقي بعده ${left-1} ${left-1===1?'يوم':'أيام'}.`;
+  } else if(tp && !tp.done){
+    pill = `يوم القضاء ${tp.i} من ${P.length}`; title='أذّن المغرب… تقبّل الله 🌅'; clock.hidden=true;
+    text = `أفطرت؟ أغلق اليوم وسجّله. باقي عليك ${left} ${left===1?'يوم':'أيام'} بما فيه اليوم.`;
+    const b = document.createElement('button'); b.className='btn ok block'; b.textContent='أغلق يوم الصيام ✓'; b.onclick=()=>askClose(tp); btns.appendChild(b);
+  } else {
+    const miss = P.filter(p=>!p.done && p.date<today);
+    pill = miss.length ? 'فيه أيام فاتتك' : 'استعداد'; clock.hidden=false;
+    if(next){
+      const ms = ksaMs(next.date,0) - now.getTime(), h = Math.max(0,Math.floor(ms/36e5));
+      clock.textContent = `${Math.floor(h/24)}d ${pad(h%24)}h ${pad(Math.max(0,Math.floor(ms%36e5/6e4)))}m`;
+      title = `الصيام القادم: ${AR_DAYS[fromStr(next.date).getUTCDay()]} ${fromStr(next.date).getUTCDate()} ${AR_MON[fromStr(next.date).getUTCMonth()]}`;
+      text = `التنبيه الأول يرن 12 منتصف الليل قبل الصيام. باقي عليك ${left} ${left===1?'يوم':'أيام'}.`;
+    } else { clock.hidden=true; title='سجّل ما صمته'; text='اضغط على اليوم في الأسفل لتسجيله وإغلاقه.'; }
+    if(miss.length){ text += ` (${miss.length} ${miss.length===1?'يوم':'أيام'} ما سجلتها)`; }
+  }
+  $('pill').textContent = pill; $('stTitle').textContent = title; $('stText').textContent = text;
+  checkAlerts(P, now);
+}
+
+/* ---------- in-app alerts (تعمل والتطبيق مفتوح) ---------- */
+function checkAlerts(P, now){
+  const t = now.getTime();
+  P.forEach(p=>{
+    if(p.done) return;
+    const ev = [
+      {k:p.date+'n', at:ksaMs(p.date,0),
+        icon:'🌙', title:'بكرة صيام قضاء', text:`اليوم ${p.i} من ${P.length} — نوِ الصيام وتسحّر، وبالتوفيق.`, cls:'gold', btn:'نويت ✓'},
+      {k:p.date+'m', at:ksaMs(p.date,p.alert),
+        icon:'🌅', title:'أغلق يوم الصيام', text:`تقبّل الله صيامك! باقي عليك ${P.filter(x=>!x.done).length-1} من ${P.length}.`, cls:'ok', btn:'أغلق اليوم ✓'}
+    ];
+    ev.forEach(e=>{
+      if(t>=e.at && t<e.at+10*60e3 && !S.fired[e.k]){
+        S.fired[e.k]=1; save(); chime(3);
+        try{ if('Notification' in window && Notification.permission==='granted') new Notification(e.title,{body:e.text}); }catch(_){}
+        modal({icon:e.icon,title:e.title,text:e.text,btns:[{t:e.btn,cls:e.cls,f:()=>{ if(e.k.endsWith('m')) setDone(p.date,true); }},{t:'لاحقًا'}]});
+      }
+    });
+  });
+}
+
+/* ---------- ICS ---------- */
+function esc(s){ return s.replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n'); }
+function utc(ms){ const d=new Date(ms - TZ*3600e3); return `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`; }
+function buildICS(){
+  const P = plan(), L = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Qada Ramadan//AR','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:قضاء رمضان','X-WR-TIMEZONE:Asia/Riyadh'];
+  const base = /^https?:/.test(location.protocol) ? location.origin + location.pathname : '';
+  const stamp = utc(Date.now() + TZ*3600e3);
+  const alarm = (txt, afterMin) => ['BEGIN:VALARM','ACTION:DISPLAY',`DESCRIPTION:${esc(txt)}`,`TRIGGER;RELATED=START:${afterMin?'PT'+afterMin+'M':'PT0S'}`,'END:VALARM'];
+  P.forEach(p=>{
+    const rem = P.length - p.i;
+    const nT = `🌙 بكرة صيام قضاء (${p.i}/${P.length}) — نوِ وتسحّر`;
+    const mT = `🌅 أغلق يوم الصيام ${p.i}/${P.length} — ${rem===0?'خلصت القضاء! 🎉':'باقي '+rem+(rem===1?' يوم':' أيام')}`;
+    const s0 = ksaMs(p.date,0), s1 = ksaMs(p.date,p.alert);
+    L.push('BEGIN:VEVENT',`UID:qada-${p.date}-night@qada-ramadan`,`DTSTAMP:${stamp}`,`DTSTART:${utc(s0)}`,`DTEND:${utc(s0+15*60e3)}`,
+      `SUMMARY:${esc(nT)}`,`DESCRIPTION:${esc('صيام قضاء من رمضان. انوِ الصيام من الليل وتسحّر. تقبّل الله.'+(base?'\n'+base:''))}`,
+      ...(base?[`URL:${base}`]:[]),'TRANSP:TRANSPARENT',
+      ...alarm(nT,0),...alarm('تذكير: '+nT,15),'END:VEVENT');
+    const link = base ? `${base}?close=${p.date}` : '';
+    L.push('BEGIN:VEVENT',`UID:qada-${p.date}-iftar@qada-ramadan`,`DTSTAMP:${stamp}`,`DTSTART:${utc(s1)}`,`DTEND:${utc(s1+30*60e3)}`,
+      `SUMMARY:${esc(mT)}`,`DESCRIPTION:${esc('تقبّل الله صيامك. سجّل إتمام اليوم في التطبيق.'+(link?'\n'+link:''))}`,
+      ...(link?[`URL:${link}`]:[]),'TRANSP:TRANSPARENT',
+      ...alarm(mT,0),...alarm('تذكير: '+mT,15),'END:VEVENT');
+  });
+  L.push('END:VCALENDAR'); return L.join('\r\n');
+}
+$('icsBtn').onclick = () => {
+  const ics = buildICS();
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  const standalone = navigator.standalone === true;
+  if(standalone) toast('افتح الصفحة من Safari لإضافة التنبيهات (مو من أيقونة الشاشة)');
+  if(ios){ location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics); return; }
+  const url = URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'})), a = document.createElement('a');
+  a.href = url; a.download = 'qada-ramadan.ics'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  toast('جاري إضافة الأحداث للتقويم…');
+};
+$('testBtn').onclick = () => { chime(2); modal({icon:'🌙',title:'بكرة صيام قضاء',text:'هذا شكل التنبيه — نوِ الصيام وتسحّر.',btns:[{t:'تمام',cls:'gold'}]}); };
+$('notifBtn').onclick = async () => {
+  if(!('Notification' in window)) return toast('المتصفح ما يدعم الإشعارات — استخدم التقويم');
+  const r = await Notification.requestPermission(); toast(r==='granted'?'تم تفعيل الإشعارات (تعمل والصفحة مفتوحة)':'لم يتم السماح بالإشعارات');
+};
+
+/* ---------- settings ---------- */
+$('sCity').innerHTML = Object.entries(CITIES).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('');
+function loadSet(){ $('sStart').value=S.start; $('sCount').value=S.count; $('sCity').value=S.city; $('sOff').value=S.off; }
+$('sStart').onchange = e => { if(e.target.value){ S.start=e.target.value; save(); render(); } };
+$('sCount').onchange = e => { S.count=Math.min(30,Math.max(1,+e.target.value||8)); e.target.value=S.count; save(); render(); };
+$('sCity').onchange  = e => { S.city=e.target.value; save(); render(); };
+$('sOff').onchange   = e => { S.off=Math.min(60,Math.max(0,+e.target.value||0)); e.target.value=S.off; save(); render(); };
+$('resetBtn').onclick = () => modal({icon:'⚠️',title:'إعادة ضبط التقدم؟',text:'سيتم مسح الأيام المسجلة والعودة للإعدادات الافتراضية.',
+  btns:[{t:'نعم، امسح',f:()=>{ S=def(); save(); loadSet(); render(); }},{t:'تراجع',cls:'gold'}]});
+
+/* ---------- boot ---------- */
+(function stars(){ const s=$('stars'); for(let i=0;i<46;i++){ const e=document.createElement('i'); e.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*4}s;transform:scale(${.6+Math.random()*1.2})`; s.appendChild(e);} })();
+loadSet(); render(); setInterval(tick, 1000);
+const q = new URLSearchParams(location.search).get('close');
+if(q){ const p = plan().find(x=>x.date===q); history.replaceState(null,'',location.pathname); if(p && !p.done) setTimeout(()=>askClose(p),400); }
+</script>
+</body>
+</html>
