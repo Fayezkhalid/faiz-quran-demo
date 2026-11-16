@@ -18,6 +18,7 @@
   --gold:#E2B24F; --gold2:#B98A2E; --sand:#F1E6CC; --ink:#EEF0F6; --dim:#97A1BA;
   --ok:#41C28F; --warn:#F0A04B; --bad:#E5645B;
 }
+[hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 body{
@@ -170,6 +171,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:70}
 
   <h3>أيام القضاء <em>اضغط على اليوم لتسجيله</em></h3>
   <div class="days" id="days"></div>
+  <div class="row" id="rsRow" hidden><button class="btn" id="rsBtn">↻ أعد جدولة الأيام الفائتة</button></div>
 
   <h3>🔔 التنبيهات <em>تنبيهان كل يوم</em></h3>
   <section class="card">
@@ -271,15 +273,20 @@ const fajrMin   = (d,lat,lng) => solarMin(d,lat,lng,108.5,true);   // الفجر
 /* ---------- state ---------- */
 const KEY = 'qada-ramadan-v1';
 const defStart = () => ksaNow().getUTCHours() < 20 ? todayStr() : addDays(todayStr(),1);   // اليوم الحالي ما دام قبل المغرب
-const def = () => ({start: defStart(), count: 8, city: 'riyadh', off: 3, done: {}, fired: {}});
+const def = () => ({start: defStart(), count: 8, city: 'riyadh', off: 3, done: {}, fired: {}, dates: null});
 let S; try { S = Object.assign(def(), JSON.parse(localStorage.getItem(KEY)||'{}')); } catch(e){ S = def(); }
 if(!S.v2){ S.v2=1; S.start='2026-11-09'; }   // الخطة تبدأ من فجر الاثنين 9 نوفمبر
+// إعادة الجدولة: صام 9 و10 و11، وفاتته 12-15، وصائم اليوم 16؛ الباقي 17-20
+const DEFAULT_DATES = ['2026-11-09','2026-11-10','2026-11-11','2026-11-16','2026-11-17','2026-11-18','2026-11-19','2026-11-20'];
+if(!S.v3){ S.v3=1; ['2026-11-12','2026-11-13','2026-11-14','2026-11-15'].forEach(d=>delete S.done[d]);
+  ['2026-11-09','2026-11-10','2026-11-11'].forEach(d=>S.done[d]=true);
+  S.dates=DEFAULT_DATES.slice(); S.count=S.dates.length; S.start=S.dates[0]; }
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 
 function plan(){
   const [ , lat, lng] = CITIES[S.city] || CITIES.riyadh;
-  return Array.from({length:S.count}, (_,i) => {
-    const date = addDays(S.start, i);
+  const dates = (S.dates && S.dates.length) ? S.dates : Array.from({length:S.count}, (_,i) => addDays(S.start, i));
+  return dates.map((date,i) => {
     const mag = sunsetMin(date, lat, lng), fajr = fajrMin(date, lat, lng);
     return {i:i+1, date, mag, fajr, alert: mag + Number(S.off), night: 0, done: !!S.done[date]};
   });
@@ -341,7 +348,7 @@ function setDone(date, v){
   save(); render();
   if(v){
     confetti();
-    const left = S.count - Object.keys(S.done).filter(d=>plan().some(p=>p.date===d)).length;
+    const left = plan().filter(p=>!p.done).length;
     if(left===0){ chime(2); setTimeout(()=>{ confetti(260); modal({icon:'🎉',title:'ما شاء الله… خلصت القضاء!',text:'تقبّل الله صيامك وغفر لك. أنجزت كل الأيام قبل رمضان القادم.',btns:[{t:'الحمد لله',cls:'gold'}]}); },500); }
     else toast(`تقبّل الله ✨ باقي ${left} ${left===1?'يوم':left===2?'يومين':left<=10?'أيام':'يومًا'}`);
   }
@@ -356,6 +363,14 @@ function askUndo(p){
     btns:[{t:'إلغاء التسجيل',f:()=>setDone(p.date,false)},{t:'تراجع',cls:'gold'}]});
 }
 
+function reschedule(){
+  const P = plan(), today = todayStr();
+  const keep = P.filter(p=>p.done || p.date>=today).map(p=>p.date), missed = P.length - keep.length;
+  let last = keep.reduce((a,b)=>a>b?a:b, addDays(today,-1)); if(last < addDays(today,-1)) last = addDays(today,-1);
+  for(let i=0;i<missed;i++){ last = addDays(last,1); keep.push(last); }
+  S.dates = keep.sort(); S.count = keep.length; S.start = S.dates[0]; save(); loadSet(); render();
+  toast(`تمت إعادة الجدولة — آخر يوم ${fromStr(S.dates[S.dates.length-1]).getUTCDate()} ${AR_MON[fromStr(S.dates[S.dates.length-1]).getUTCMonth()]}`);
+}
 /* ---------- render ---------- */
 function render(){
   const P = plan(), today = todayStr();
@@ -373,6 +388,8 @@ function render(){
   }).join('');
   document.querySelectorAll('.day').forEach(b=>b.onclick=()=>{ const p=P.find(x=>x.date===b.dataset.d); p.done?askUndo(p):askClose(p); });
 
+  const missedN = P.filter(p=>!p.done && p.date<today).length;
+  $('rsRow').hidden = !missedN; $('rsBtn').textContent = `↻ أعد جدولة ${missedN} ${missedN===1?'يوم فائت':'أيام فائتة'} بعد آخر يوم`;
   // table
   $('tbl').innerHTML = P.map(p=>`<tr class="${p.done?'done':''}"><td>${p.i}</td><td>${AR_DAYS[fromStr(p.date).getUTCDay()]} ${fromStr(p.date).getUTCDate()}/${fromStr(p.date).getUTCMonth()+1}</td><td class="t">${hm(p.fajr)}</td><td class="t">${hm(p.alert)}</td></tr>`).join('');
   const L=$('icsLink'); if(L) L.href=icsHref();
@@ -464,7 +481,7 @@ function buildICS(){
   });
   L.push('END:VCALENDAR'); return L.join('\r\n');
 }
-const isDefaultPlan = () => S.start==='2026-11-09' && S.count===8 && Number(S.off)===3;
+const isDefaultPlan = () => JSON.stringify(S.dates)===JSON.stringify(DEFAULT_DATES) && Number(S.off)===3;
 const icsHref = () => `qada-${S.city}.ics`;
 $('icsBtn').onclick = () => {
   // ملف جاهز من نفس الموقع لكل مدينة: Safari يفتح معه شاشة «إضافة الكل» للتقويم
@@ -483,9 +500,9 @@ $('notifBtn').onclick = async () => {
 
 /* ---------- settings ---------- */
 $('sCity').innerHTML = Object.entries(CITIES).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('');
-function loadSet(){ $('sStart').value=S.start; $('sCount').value=S.count; $('sCity').value=S.city; $('sOff').value=S.off; }
-$('sStart').onchange = e => { if(e.target.value){ S.start=e.target.value; save(); render(); } };
-$('sCount').onchange = e => { S.count=Math.min(30,Math.max(1,+e.target.value||8)); e.target.value=S.count; save(); render(); };
+function loadSet(){ $('sStart').value=S.dates&&S.dates.length?S.dates[0]:S.start; $('sCount').value=S.count; $('sCity').value=S.city; $('sOff').value=S.off; }
+$('sStart').onchange = e => { if(e.target.value){ S.dates=null; S.start=e.target.value; save(); render(); } };
+$('sCount').onchange = e => { S.dates=null; S.count=Math.min(30,Math.max(1,+e.target.value||8)); e.target.value=S.count; save(); render(); };
 $('sCity').onchange  = e => { S.city=e.target.value; save(); render(); };
 $('sOff').onchange   = e => { S.off=Math.min(60,Math.max(0,+e.target.value||0)); e.target.value=S.off; save(); render(); };
 $('resetBtn').onclick = () => modal({icon:'⚠️',title:'إعادة ضبط التقدم؟',text:'سيتم مسح الأيام المسجلة والعودة للإعدادات الافتراضية.',
@@ -493,6 +510,7 @@ $('resetBtn').onclick = () => modal({icon:'⚠️',title:'إعادة ضبط ال
 
 /* ---------- boot ---------- */
 (function stars(){ const s=$('stars'); for(let i=0;i<46;i++){ const e=document.createElement('i'); e.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*4}s;transform:scale(${.6+Math.random()*1.2})`; s.appendChild(e);} })();
+$('rsBtn').onclick = () => modal({icon:'↻',title:'إعادة جدولة الأيام الفائتة؟',text:'الأيام اللي فاتتك تنحذف من مكانها وتنضاف بعد آخر يوم في خطتك. بعدها حمّل ملف التقويم من جديد.',btns:[{t:'أعد الجدولة',cls:'gold',f:reschedule},{t:'تراجع'}]});
 loadSet(); render(); setInterval(tick, 1000);
 const q = new URLSearchParams(location.search).get('close');
 if(q){ const p = plan().find(x=>x.date===q); history.replaceState(null,'',location.pathname); if(p && !p.done) setTimeout(()=>askClose(p),400); }
