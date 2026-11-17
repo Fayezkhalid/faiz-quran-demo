@@ -7,31 +7,21 @@
 
 ## التشغيل لايف (ويندوز، مرة وحدة)
 
-1. ثبّت Node.js:
-   ```
-   winget install OpenJS.NodeJS.LTS
-   ```
-2. افتح PowerShell داخل مجلد `fayez-home-hq\bridge` وشغّل:
-   ```
-   npm install
-   copy .env.example .env
-   notepad .env
-   ```
-3. عبّ ملف `.env`:
-   - **الطابعة:** من شاشة الـ A2L: الإعدادات ← الشبكة. خذ **IP** و**Access Code**، والرقم التسلسلي (Serial) من الإعدادات ← الجهاز أو من Bambu Studio.
-     - إذا ما اتصلت: فعّل **LAN Only** و**Developer Mode** من إعدادات الطابعة (التحديثات الجديدة تمنع البرامج الخارجية بدونها).
-   - **الواتساب (CallMeBot، مجاني):**
-     1. افتح https://www.callmebot.com/blog/free-api-whatsapp-messages/ واحفظ رقم CallMeBot المكتوب هناك في جوالك (الرقم يتغير أحياناً، فخذه من الموقع).
-     2. أرسل له على الواتساب: `I allow callmebot to send me messages`
-     3. يرد عليك بـ **apikey**. حطه في `CALLMEBOT_APIKEY`، ورقمك في `CALLMEBOT_PHONE` (مثل 9665XXXXXXXX).
-   - **الماجستير:** `MASTERS_REMINDER_TIME=20:00` وقت التذكير اليومي.
-4. شغّل:
-   ```
-   npm start
-   ```
-   وافتح **http://localhost:8787**. فوق بيطلع لك **LIVE** باللون الأخضر.
+### قبل تبدأ جهّز:
+1. **بيانات الطابعة** من شاشة الـ A2L: الإعدادات ← الشبكة: **IP** و**Access Code**. والرقم التسلسلي من Bambu Studio ← الجهاز.
+2. **مفتاح الواتساب (CallMeBot، مجاني):** افتح https://www.callmebot.com/blog/free-api-whatsapp-messages/ واحفظ رقمهم في جوالك، وأرسل له على الواتساب `I allow callmebot to send me messages`، ويرد عليك بـ **apikey**.
 
-تجربة بدون الطابعة: `npm run demo` (طابعة وهمية تطبع كل 3 دقائق).
+### بعدها افتح PowerShell والصق:
+```
+cd $env:TEMP
+Invoke-WebRequest https://raw.githubusercontent.com/Fayezkhalid/faiz-quran-demo/claude/nifty-fermi-l36c2l/fayez-home-hq/setup.ps1 -OutFile fayez-setup.ps1 -UseBasicParsing
+powershell -ExecutionPolicy Bypass -File .\fayez-setup.ps1
+```
+السكربت يثبت Node.js، ينزل البرنامج في `C:\Users\<اسمك>\fayez-home-hq`، يسألك عن البيانات (تنكتب عندك بس)، ويخليه يشتغل تلقائياً مع ويندوز، ويفتح **http://localhost:8787**.
+
+- إذا الطابعة ما اتصلت: فعّل **LAN Only** و**Developer Mode** من إعدادات الطابعة، وشغّل السكربت مرة ثانية.
+- السجل: `fayez-home-hq\hq.log`.
+- للتجربة بدون طابعة: داخل مجلد `bridge` شغّل `npm run demo`.
 
 ## وش اللي صار لايف
 
