@@ -1,0 +1,5 @@
+sip-password.txt
+state/
+*.mp3
+*.wav
+__pycache__/
