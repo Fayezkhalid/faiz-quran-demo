@@ -96,6 +96,12 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 .inp:focus-within{border-color:var(--gold)}
 .mic{width:34px;height:34px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2a1800;display:grid;place-items:center;flex:none}
 .mic svg{width:16px;height:16px}
+.micbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#1b1f2b;color:var(--ink);display:grid;place-items:center;flex:none}
+.micbtn svg{width:17px;height:17px}
+.micbtn[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#fff;animation:rec 1.2s infinite}
+@keyframes rec{50%{box-shadow:0 0 0 7px #ff4f6a33}}
+.lang{min-width:30px;height:30px;border-radius:15px;border:1px solid var(--line);background:none;color:var(--mute);font:700 .68rem var(--mono);flex:none;padding:0 6px}
+.micbtn:focus-visible,.lang:focus-visible,.mic:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .floors{top:50%;right:max(10px,env(safe-area-inset-right,0px));transform:translateY(-50%);display:grid;gap:5px;z-index:6}
 .floors button{font:600 .66rem var(--ui);min-width:62px;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:var(--glass);color:var(--mute);backdrop-filter:blur(8px);text-align:center}
 .floors button[aria-pressed="true"]{color:#2a1800;background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:transparent}
@@ -104,7 +110,25 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 #liveBadge{cursor:default}
 @media (max-width:520px){.floors button{min-width:52px;font-size:.6rem;padding:5px 6px}}
 #loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--mute);font-size:.8rem;z-index:1}
-@media (max-width:520px){.node{width:44px}.node span{font-size:.44rem}.card{top:150px}}
+@media (max-width:640px){
+  .top{gap:6px;padding-block:8px 0}
+  .brand b{font-size:.98rem}.brand small{font-size:.54rem;letter-spacing:1px}
+  .btn{padding:5px 10px;font-size:.68rem}
+  #counts{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-2px}
+  #counts .pill{flex:none;padding:3px 8px;font-size:.62rem}
+  .pipe{padding:5px 8px;border-radius:12px}
+  .node{width:40px;gap:2px}.node .ic{width:24px;height:24px}.node .ic svg{width:12px;height:12px}.node span{font-size:.4rem;letter-spacing:.3px}
+  .floors{position:static;transform:none;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;max-width:620px;width:100%;justify-self:center}
+  .floors button{flex:none;min-width:0;padding:6px 10px}
+  .floors .zm{flex:none}.floors .zm button{width:34px}
+  .card{top:auto;bottom:calc(var(--dockH,180px) + 6px);left:8px;right:8px;width:auto;max-height:46vh;overflow-y:auto;padding:12px}
+  .feed{max-height:11vh;font-size:.72rem}
+  .dock{padding-block:14px calc(8px + env(safe-area-inset-bottom,0px));gap:6px}
+  .chipq{font-size:.66rem;padding:5px 9px}
+  .tag .nm{font-size:.54rem;padding:2px 6px}
+  .tag .say{font-size:.62rem;max-width:150px}
+  .inp{padding:3px 4px 3px 10px;gap:5px}.inp input{font-size:16px}
+}
 @media (prefers-reduced-motion:reduce){.node.cur .ic{animation:none}}
 </style>
 
@@ -130,6 +154,8 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
     <div class="quick" id="quick"></div>
     <form id="form">
       <div class="inp"><input id="q" placeholder="اكتب للمدير العام… أو @ لأي وكيل" autocomplete="off" aria-label="رسالة للمدير العام">
+        <button type="button" class="lang" id="langBtn" aria-label="لغة الميكروفون">ع</button>
+        <button type="button" class="micbtn" id="micBtn" aria-label="تكلم" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
         <button class="mic" aria-label="إرسال"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
     </form>
   </div>
@@ -919,6 +945,26 @@ Object.assign(SC,{
   },
 });
 
+/* ---------------- voice input (Web Speech API) ---------------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,recLang='ar-SA',recFinal=false;
+try{recLang=localStorage.getItem('fayez-hq-lang')||'ar-SA';}catch(e){}
+function paintLang(){$('langBtn').textContent=recLang.startsWith('ar')?'ع':'EN';$('langBtn').title=recLang.startsWith('ar')?'الميكروفون: عربي (اضغط للإنجليزي)':'Mic: English (tap for Arabic)';}
+$('langBtn').onclick=()=>{recLang=recLang.startsWith('ar')?'en-US':'ar-SA';try{localStorage.setItem('fayez-hq-lang',recLang);}catch(e){}paintLang();};
+function setMic(on){$('micBtn').setAttribute('aria-pressed',String(on));$('q').placeholder=on?(recLang.startsWith('ar')?'أسمعك… تكلم':'Listening…'):'اكتب للمدير العام… أو @ لأي وكيل';}
+$('micBtn').onclick=()=>{
+  if(rec){rec.stop();return;}
+  if(!SR){feed('المدير العام','المتصفح هذا ما يدعم التحويل من صوت لنص. استخدم Chrome أو Edge على الكمبيوتر، أو Safari على الآيفون.');return;}
+  if(!window.isSecureContext){feed('المدير العام','الميكروفون يحتاج رابط آمن (https أو localhost). من الجوال افتح البيت عن طريق رابط Tailscale.');return;}
+  try{rec=new SR();}catch(e){feed('المدير العام','ما قدرت أشغّل الميكروفون هنا.');return;}
+  rec.lang=recLang;rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;recFinal=false;
+  rec.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++){t+=e.results[i][0].transcript;if(e.results[i].isFinal)recFinal=true;}$('q').value=t;};
+  rec.onerror=e=>{const m={'not-allowed':'اسمح للصفحة تستخدم الميكروفون من إعدادات المتصفح وجرب مرة ثانية.','service-not-allowed':'الميكروفون ممنوع هنا. من الآيفون تأكد إن الإملاء (Dictation) مفعّل.','no-speech':'ما سمعت شي، جرب مرة ثانية.','audio-capture':'ما لقيت ميكروفون في الجهاز.','network':'التحويل من صوت لنص يحتاج إنترنت.'}[e.error];if(m)feed('المدير العام',m);};
+  rec.onend=()=>{setMic(false);rec=null;const v=$('q').value.trim();if(recFinal&&v){ask(v);$('q').value='';}};
+  try{rec.start();setMic(true);}catch(e){rec=null;setMic(false);}
+};
+paintLang();
+
 /* ---------------- day / night ---------------- */
 let day=false;
 function applyDay(){
@@ -944,6 +990,9 @@ let homeDist=40,framed=false;const HOME_DIR=new THREE.Vector3(.38,.3,1).normaliz
 function frame(){
   const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);if(composer){composer.setSize(w,h);}
   camera.aspect=w/h;
+  const dockEl=document.querySelector('.dock'),fl=$('floors');
+  if(w<=640&&fl.parentNode!==dockEl)dockEl.insertBefore(fl,$('quick'));else if(w>640&&fl.parentNode===dockEl)$('app').appendChild(fl);
+  document.documentElement.style.setProperty('--dockH',(h-dockEl.getBoundingClientRect().top)+'px');
   const top=document.querySelector('.top').getBoundingClientRect().bottom, bot=h-document.querySelector('.feed').getBoundingClientRect().top+10;
   const free=Math.max(h*.35,h-top-bot);camera.setViewOffset(w,h,0,(bot-top)/2,w,h);camera.updateProjectionMatrix();
   const vf=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));const needH=(19.5)/2/vf*(h/free), needW=(w<600?20.5:23)/2/(vf*camera.aspect);
