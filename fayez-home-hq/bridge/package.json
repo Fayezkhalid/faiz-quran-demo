@@ -1,0 +1,15 @@
+{
+  "name": "fayez-home-hq-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local bridge: Bambu Lab printer (LAN MQTT) + WhatsApp (CallMeBot) + home finance ledger -> Fayez Home HQ page",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node server.js --demo-printer"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "mqtt": "5.10.1"
+  }
+}

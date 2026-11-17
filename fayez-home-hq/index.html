@@ -92,6 +92,13 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 .inp:focus-within{border-color:var(--gold)}
 .mic{width:34px;height:34px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2a1800;display:grid;place-items:center;flex:none}
 .mic svg{width:16px;height:16px}
+.floors{top:50%;right:max(10px,env(safe-area-inset-right,0px));transform:translateY(-50%);display:grid;gap:5px;z-index:6}
+.floors button{font:600 .66rem var(--ui);min-width:62px;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:var(--glass);color:var(--mute);backdrop-filter:blur(8px);text-align:center}
+.floors button[aria-pressed="true"]{color:#2a1800;background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:transparent}
+.floors button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.floors .zm{display:flex;gap:5px}.floors .zm button{min-width:0;flex:1;font:700 .9rem var(--mono);padding:4px 0}
+#liveBadge{cursor:default}
+@media (max-width:520px){.floors button{min-width:52px;font-size:.6rem;padding:5px 6px}}
 #loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--mute);font-size:.8rem;z-index:1}
 @media (max-width:520px){.node{width:44px}.node span{font-size:.44rem}.card{top:150px}}
 @media (prefers-reduced-motion:reduce){.node.cur .ic{animation:none}}
@@ -102,7 +109,8 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 8 AGENTS</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS</small></div>
+      <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
     </div>
@@ -111,6 +119,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
   </div>
 
   <div class="card" id="card" hidden></div>
+  <nav class="ui floors" id="floors" aria-label="الطوابق"></nav>
 
   <div class="ui dock">
     <div class="feed" id="feed" aria-live="polite"></div>
@@ -135,8 +144,8 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 /* =====================================================================
    بيت فايز HQ
    Event API (for the real bridge later):
-     tower.emit({type:'print', part:21})      Bambu A1 print request
-     tower.emit({type:'stuck'})                A1 camera detected a failure
+     tower.emit({type:'print', part:21})      Bambu A2L print request
+     tower.emit({type:'stuck'})                A2L camera detected a failure
      tower.emit({type:'bill', name:'الكهرباء', amount:420})
      tower.emit({type:'maintenance', item:'المكيف'})
      tower.emit({type:'trip', place:'العلا'})
@@ -161,7 +170,9 @@ scene.background=NIGHT_BG.clone();
 scene.fog=new THREE.Fog('#07080d',60,120);
 const camera=new THREE.PerspectiveCamera(30,1,0.1,300);
 const controls=new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true; controls.dampingFactor=.08; controls.enablePan=false;
+controls.enableDamping=true; controls.dampingFactor=.08; controls.enablePan=true; controls.screenSpacePanning=true; controls.panSpeed=1;
+controls.mouseButtons={LEFT:THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.PAN};
+controls.touches={ONE:THREE.TOUCH.PAN,TWO:THREE.TOUCH.DOLLY_ROTATE};
 controls.minPolarAngle=Math.PI*.22; controls.maxPolarAngle=Math.PI*.54;
 controls.minAzimuthAngle=-Math.PI*.42; controls.maxAzimuthAngle=Math.PI*.42;
 controls.rotateSpeed=.6; controls.zoomSpeed=.8;
@@ -206,7 +217,8 @@ const neon=glowMat('#ffc657');
 const neonSoft=glowMat('#ff9f2e');
 
 const ROOMS=[
-  {id:'lobby', f:0,x0:-8,x1:8, en:'WHATSAPP · LOBBY', ar:'الاستقبال والواتساب', rug:'#14593a', lamp:'#ffd9a0'},
+  {id:'lobby', f:0,x0:-8,x1:0, en:'WHATSAPP', ar:'الاستقبال والواتساب', rug:'#14593a', lamp:'#ffd9a0'},
+  {id:'study', f:0,x0:0, x1:8, en:"MASTER'S", ar:'الماجستير', rug:'#1d5a7a', lamp:'#ffe9c4'},
   {id:'home',  f:1,x0:-8,x1:0, en:'HOME', ar:'إدارة البيت', rug:'#9c4421', lamp:'#ffcf8a'},
   {id:'family',f:1,x0:0, x1:8, en:'FAMILY · TRAVEL', ar:'العائلة والسفر', rug:'#5d2f91', lamp:'#ffd9b0'},
   {id:'print', f:2,x0:-8,x1:0, en:'PRINT LAB', ar:'غرفة الطباعة', rug:'#163f9e', lamp:'#ffe2b0'},
@@ -274,7 +286,7 @@ for(let f=0;f<=NF;f++){
   box(X1-X0+.3,.045,.045,neon,0,y+.11,ZF+.07);
   box(X1-X0+.3,.03,.03,neonSoft,0,y-.09,ZF+.07);
 }
-[[1],[2],[3]].forEach(([f])=>{ // center partitions with corridor gap
+[[0],[1],[2],[3]].forEach(([f])=>{ // center partitions with corridor gap
   const y=fy(f);
   box(.16,FH-.2,(CORR-.6)-ZB,M('#20170f'),0,y+FH/2,(ZB+CORR-.6)/2);
   box(.04,FH-.2,.04,neon,0,y+FH/2,CORR-.6);
@@ -318,6 +330,16 @@ function shelf(x,y,z,w=1.6){const g=new THREE.Group();g.position.set(x,y,z);scen
 // TV / screen content
 const tvs={};
 const HOME={budget:9000,spent:5420,filament:0,bills:[['الكهرباء',420],['الإنترنت',299],['المدارس',1800]],inbox:3,prints:0,trip:'العلا',designs:2,tasks:['صيانة المكيف ٢٠ نوفمبر','تغيير فلتر الموية']};
+const MS={
+  data:{program:'الماجستير',start:new Date().toISOString().slice(0,10),pacePerWeek:2,courses:Array.from({length:7},(_,i)=>({name:`المادة ${i+1}`,hours:2,done:false,link:''})),exam:{type:'MCQ',hours:2,date:null}},
+  state(){const c=this.data.courses,done=c.filter(x=>x.done).length,ni=c.findIndex(x=>!x.done);const weeks=Math.max(0,(Date.now()-new Date(this.data.start).getTime())/6048e5);
+    const expected=Math.min(c.length,Math.floor(weeks*this.data.pacePerWeek)+this.data.pacePerWeek);
+    return {done,total:c.length,remaining:c.length-done,hoursLeft:c.filter(x=>!x.done).reduce((a,x)=>a+x.hours,0),nextIndex:ni,next:c[ni<0?c.length-1:ni],behind:Math.max(0,expected-this.data.pacePerWeek-done)};},
+  summary(){const m=this.state();if(m.done>=m.total)return `خلصت ${m.total} مواد كلها 🎉 باقي اختبار الاختيارات المتعددة (ساعتين). أراجع معك قبله؟`;
+    return `خلصت ${m.done} من ${m.total}. باقي ${m.remaining} مواد (${m.hoursLeft} ساعة). الجاية: ${m.next.name}.${m.behind>0?` متأخر ${m.behind} عن الخطة.`:' ماشي على الخطة ✓'} وبعد المادة السابعة اختبار MCQ ساعتين.`;},
+};
+try{const sv=JSON.parse(localStorage.getItem('fayez-hq-masters')||'null');if(sv&&sv.courses)MS.data=sv;}catch(e){}
+function saveMS(){try{localStorage.setItem('fayez-hq-masters',JSON.stringify(MS.data));}catch(e){}}
 const drawTV={
   daily:(g,w,h)=>{bgTV(g,w,h,'#0d1a2e');title(g,w,'DAILY UPDATE','التحديث اليومي');
     const kp=[['المصروف',`${HOME.spent.toLocaleString('en')} ﷼`],['طباعات',HOME.prints],['إيميلات',HOME.inbox]];
@@ -329,7 +351,7 @@ const drawTV={
     const bars=[.4,.65,.5,.8,.55,.7,p];bars.forEach((b,i)=>{g.fillStyle=i===bars.length-1?'#ffd27a':'#2fc4b2';g.fillRect(40+i*((w-80)/7),h-30-b*140,(w-80)/7-14,b*140);});},
   mail:(g,w,h)=>{bgTV(g,w,h,'#0b1736');title(g,w,'INBOX',`الوارد · ${HOME.inbox}`);
     for(let i=0;i<4;i++){const y=118+i*62;g.fillStyle=i<HOME.inbox?'#ffffff16':'#ffffff08';g.fillRect(40,y,w-80,50);g.fillStyle=i<HOME.inbox?'#46b4ff':'#3a4466';g.beginPath();g.arc(70,y+25,10,0,TAU);g.fill();g.fillStyle='#ffffff40';g.fillRect(96,y+14,(w-200)*(.5+((i*37)%40)/100),10);g.fillRect(96,y+30,(w-260)*.4,8);}},
-  slicer:(g,w,h)=>{bgTV(g,w,h,'#0e1424');title(g,w,'BAMBU STUDIO','A1 · PLA');
+  slicer:(g,w,h)=>{bgTV(g,w,h,'#0e1424');title(g,w,'BAMBU STUDIO',(printer.live&&printer.live.name)?String(printer.live.name).slice(0,22):'A2L Combo · PLA');
     g.strokeStyle='#2b3550';g.lineWidth=1;for(let x=40;x<w-40;x+=24){g.beginPath();g.moveTo(x,120);g.lineTo(x,h-24);g.stroke();}for(let y=120;y<h-24;y+=24){g.beginPath();g.moveTo(40,y);g.lineTo(w-40,y);g.stroke();}
     const p=printer.progress||0;g.fillStyle='#46b4ff';for(let i=0;i<6;i++){const bx=70+(i%3)*120,by=150+Math.floor(i/3)*110;g.globalAlpha=.35;g.fillRect(bx,by,80,80);g.globalAlpha=1;g.fillRect(bx,by+80-80*p,80,80*p);}
     g.fillStyle='#ffd27a';g.font='700 30px "JetBrains Mono"';g.textAlign='left';g.fillText(`${Math.round(p*100)}%`,w-140,h-40);},
@@ -342,6 +364,13 @@ const drawTV={
   family:(g,w,h)=>{bgTV(g,w,h,'#1a0d33');title(g,w,'FAMILY · TRAVEL','العائلة');
     g.strokeStyle='#b48cff';g.lineWidth=3;g.beginPath();g.arc(150,240,90,0,TAU);g.stroke();g.beginPath();g.ellipse(150,240,40,90,0,0,TAU);g.stroke();g.beginPath();g.moveTo(60,240);g.lineTo(240,240);g.stroke();
     g.textAlign='right';g.fillStyle='#efe6ff';g.font='600 30px "Readex Pro"';g.fillText(`رحلة: ${HOME.trip}`,w-40,200);g.font='500 24px "Readex Pro"';g.fillStyle='#b8a8d8';g.fillText('عطلة نهاية الأسبوع',w-40,244);},
+  masters:(g,w,h)=>{bgTV(g,w,h,'#0b2433');const m=MS.state();title(g,w,"MASTER'S",`${m.done}/${m.total} مواد`);
+    const bw=(w-80-6*10)/7;MS.data.courses.forEach((c,i)=>{const x=w-40-(i+1)*bw-i*10;g.fillStyle=c.done?'#3fe08c':i===m.nextIndex?'#ffc657':'#ffffff18';g.fillRect(x,112,bw,64);
+      g.fillStyle=c.done||i===m.nextIndex?'#0b1f17':'#9fb3c8';g.font='700 30px "JetBrains Mono"';g.textAlign='center';g.fillText(c.done?'✓':String(i+1),x+bw/2,156);});
+    g.textAlign='right';g.fillStyle='#e9f4ff';g.font='600 28px "Readex Pro"';g.fillText(m.done>=m.total?'خلصت المواد! باقي الاختبار':`الجاية: ${m.next.name} · ساعتين`,w-40,228);
+    g.font='500 24px "Readex Pro"';g.fillStyle='#9fc3dd';g.fillText(`باقي ${m.remaining} مواد (${m.hoursLeft} ساعة) · المطلوب ${MS.data.pacePerWeek} بالأسبوع`,w-40,272);
+    g.fillStyle=m.behind>0?'#ff8a8a':'#7fe0b0';g.fillText(m.behind>0?`متأخر ${m.behind} مادة عن الخطة`:'ماشي على الخطة ✓',w-40,312);
+    g.fillStyle='#ffd27a';g.font='600 22px "Readex Pro"';g.fillText('بعد المادة السابعة: اختبار اختيارات متعددة · ساعتين',w-40,352);},
   whatsapp:(g,w,h)=>{bgTV(g,w,h,'#0b1f17');title(g,w,'WHATSAPP','آخر الرسائل');
     const msgs=(HOME.wa||['هلا أبو خالد، البيت تمام 👌']).slice(-3);msgs.forEach((m,i)=>{const y=120+i*76;g.fillStyle='#1f5c3f';const tw=Math.min(w-120,g.measureText(m).width+80);g.fillRect(w-40-Math.max(260,tw),y,Math.max(260,tw),58);g.fillStyle='#e8fff1';g.font='500 26px "Readex Pro"';g.textAlign='right';g.fillText(m,w-60,y+38);});},
 };
@@ -360,50 +389,70 @@ function desk(x,y,z){box(1.7,.07,.78,deskMat,x,y+.78,z);box(.06,.75,.7,deskDark,
   sph(.035,glowMat('#ffd27a'),0,.2,-.2,lt,8);
   const mug=cyl(.05,.045,.12,M('#f2eee6'),x+.55,y+.88,z+.15);return lt;}
 
-/* ---------------- Bambu Lab A1 ---------------- */
-const printer={progress:0,state:'idle'};
-(function buildA1(){
-  const room=roomById.print, base=new THREE.Group();base.position.set(-2.4,fy(room.f)+.1,-1.75);scene.add(base);printer.g=base;
-  box(1.2,.7,.75,deskDark,0,.35,0,base); // table
-  const P=new THREE.Group();P.position.y=.7;base.add(P);printer.root=P;
-  const white=M('#e9e9ea',{roughness:.45}), grey=M('#3b3f47',{metalness:.4,roughness:.4}), dark=M('#15171c',{roughness:.5});
-  box(.8,.1,.62,white,0,.05,0,P);                       // base
-  box(.72,.05,.04,grey,0,.12,-.24,P);box(.72,.05,.04,grey,0,.12,.24,P); // Y rails
-  printer.bed=new THREE.Group();P.add(printer.bed);printer.bed.position.y=.16;
-  box(.58,.025,.58,dark,0,0,0,printer.bed);             // textured PEI plate
-  const plate=box(.56,.004,.56,M('#2a2d33',{roughness:.9}),0,.015,0,printer.bed);
-  printer.part=box(.16,.001,.16,M('#2b7cff',{emissive:'#2b7cff',emissiveIntensity:.15}),0,.02,0,printer.bed);
-  box(.09,.95,.11,white,-.36,.55,-.05,P);              // Z column (left)
-  box(.05,.92,.03,grey,-.33,.55,.02,P);
-  printer.xg=new THREE.Group();P.add(printer.xg);printer.xg.position.y=.55;
-  box(.72,.05,.06,white,.0,0,0,printer.xg);              // X gantry arm
-  printer.head=new THREE.Group();printer.xg.add(printer.head);printer.head.position.set(0,-.02,.05);
-  box(.13,.17,.1,white,0,0,0,printer.head);box(.12,.07,.012,dark,0,.03,.051,printer.head);
-  printer.nozzle=sph(.012,glowMat('#ff9f2e'),0,-.095,0,printer.head,8);
-  printer.led=sph(.018,glowMat('#3fe08c'),.04,.06,.058,printer.head,8);
-  printer.ledGlow=glow('#3fe08c',.25,.04,.06,.07,printer.head,.9);
-  // AMS lite (4 spools) on top-right
-  const ams=new THREE.Group();ams.position.set(.18,1.08,-.05);P.add(ams);
-  box(.5,.03,.24,grey,0,0,0,ams);cyl(.012,.012,.48,grey,0,-.25,0,ams).position.set(.0,-.24,0);
-  ['#ff4f6a','#ffd27a','#2b7cff','#f2f2f2'].forEach((c,i)=>{const s=cyl(.07,.07,.08,M(c,{roughness:.6}),-.18+i*.12,.08,0,ams);s.rotation.x=Math.PI/2;cyl(.025,.025,.085,dark,-.18+i*.12,.08,0,ams).rotation.x=Math.PI/2;});
-  // PTFE tube (curve)
-  const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(.18,1.05,-.05),new THREE.Vector3(.1,1.0,.15),new THREE.Vector3(0,.75,.1)]);
-  printer.tube=new THREE.Mesh(new THREE.TubeGeometry(curve,20,.008,6),M('#f4f4f4',{transparent:true,opacity:.7}));P.add(printer.tube);
-  // spool rack + filament boxes beside
-  [-.5,.5].forEach((dx,i)=>box(.22,.16,.22,M(i?'#1b5fd1':'#1fa36a'),dx+(dx<0?-.18:.18),.08,.25,base));
-  printer.clickTarget=base;
+/* ---------------- Bambu Lab A2L Combo ---------------- */
+const printer={progress:0,state:'idle',live:null};
+(function buildA2L(){
+  const room=roomById.print, base=new THREE.Group();base.position.set(-2.25,fy(room.f)+.1,-1.75);scene.add(base);printer.g=base;
+  box(2.1,.66,.95,deskDark,0,.33,0,base);box(2.14,.05,.99,deskMat,0,.68,0,base); // workbench
+  const P=new THREE.Group();P.position.set(-.3,.7,0);base.add(P);printer.root=P;
+  const white=M('#ececee',{roughness:.42}), grey=M('#3b3f47',{metalness:.45,roughness:.4}), dark=M('#15171c',{roughness:.5}), alu=M('#9aa0aa',{metalness:.8,roughness:.3});
+  // base: wide low body with front screen
+  box(1.06,.13,.84,white,0,.065,0,P);
+  box(1.0,.012,.02,glowMat('#2b7cff'),0,.03,.425,P);
+  const scr=box(.16,.1,.012,M('#0b0d12',{emissive:'#1b4fbf',emissiveIntensity:.6}),.36,.08,.426,P);
+  box(.98,.05,.05,alu,0,.155,-.32,P);box(.98,.05,.05,alu,0,.155,.32,P);        // Y linear rails
+  printer.bed=new THREE.Group();P.add(printer.bed);printer.bed.position.y=.2;
+  box(.78,.03,.76,dark,0,0,0,printer.bed);                                   // 330x320 heated bed
+  box(.75,.006,.73,M('#2a2c31',{roughness:.95}),0,.018,0,printer.bed);        // textured PEI
+  printer.part=box(.2,.001,.2,M('#2b7cff',{emissive:'#2b7cff',emissiveIntensity:.15}),0,.022,0,printer.bed);
+  // left Z tower + motor
+  box(.11,1.22,.13,white,-.5,.72,-.04,P);box(.06,1.18,.04,alu,-.465,.72,.04,P);box(.14,.12,.16,grey,-.5,1.38,-.04,P);
+  // X gantry
+  printer.xg=new THREE.Group();P.add(printer.xg);printer.xg.position.y=.72;
+  box(.98,.06,.07,white,.0,0,0,printer.xg);box(.94,.02,.02,alu,0,-.035,.04,printer.xg);
+  printer.head=new THREE.Group();printer.xg.add(printer.head);printer.head.position.set(0,-.03,.07);
+  box(.16,.2,.12,white,0,0,0,printer.head);box(.14,.08,.012,dark,0,.04,.061,printer.head);
+  box(.05,.05,.04,grey,0,-.11,0,printer.head);
+  printer.nozzle=sph(.014,glowMat('#ff9f2e'),0,-.145,0,printer.head,8);
+  printer.led=sph(.02,glowMat('#3fe08c'),.05,.07,.064,printer.head,8);
+  printer.ledGlow=glow('#3fe08c',.28,.05,.07,.08,printer.head,.9);
+  printer.headLight=new THREE.PointLight('#cfe3ff',.0,1.2,2);printer.headLight.position.set(0,-.18,.05);printer.head.add(printer.headLight);
+  // camera on top of the Z tower
+  box(.06,.05,.05,dark,-.5,1.47,.05,P);sph(.012,glowMat('#ff4f6a'),-.5,1.47,.078,P,6);
+  // AMS lite (Combo): free-standing unit to the right, 4 spools on a 4-arm hub
+  const ams=new THREE.Group();ams.position.set(.78,.7,-.05);base.add(ams);printer.ams=ams;
+  cyl(.22,.26,.06,white,0,.03,0,ams,28);cyl(.035,.04,.62,grey,0,.34,0,ams,12);
+  const hub=new THREE.Group();hub.position.y=.68;ams.add(hub);printer.amsHub=hub;cyl(.09,.09,.08,white,0,0,0,hub,20);
+  printer.spools=[];
+  ['#ff4f6a','#ffd27a','#2b7cff','#f2f2f2'].forEach((c,i)=>{
+    const a=i*Math.PI/2+Math.PI/4, arm=new THREE.Group();arm.rotation.y=a;hub.add(arm);
+    box(.2,.025,.04,white,.1,0,0,arm);
+    const sp=new THREE.Group();sp.position.set(.2,.03,0);sp.rotation.z=.55;arm.add(sp);
+    const ring=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.07,26),M(c,{roughness:.55}));ring.rotation.z=Math.PI/2;sp.add(ring);
+    const core=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.075,16),dark);core.rotation.z=Math.PI/2;sp.add(core);
+    [-.04,.04].forEach(dx=>{const fl=new THREE.Mesh(new THREE.CylinderGeometry(.125,.125,.008,26),M('#1d1f27'));fl.rotation.z=Math.PI/2;fl.position.x=dx;sp.add(fl);});
+    printer.spools.push(ring);
+  });
+  // PTFE tubes AMS -> hub -> toolhead
+  const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(.78,1.38,-.05),new THREE.Vector3(.55,1.6,.05),new THREE.Vector3(.0,1.55,.1),new THREE.Vector3(-.3,1.45,.07)]);
+  printer.tube=new THREE.Mesh(new THREE.TubeGeometry(curve,30,.009,6),M('#f4f4f4',{transparent:true,opacity:.75}));base.add(printer.tube);
+  // spare filament boxes under the bench
+  [[-.7,'#1b5fd1'],[-.38,'#1fa36a'],[-.06,'#d0d0d0']].forEach(([x,c])=>box(.27,.2,.27,M(c),x,.1,.25,base));
 })();
+function setPrinterLed(c){printer.led.material.color.set(c);printer.ledGlow.material.color.set(c);}
+function setPrintProgress(k){printer.progress=k;printer.part.scale.y=1+k*150;printer.part.position.y=.022+k*.075;printer.xg.position.y=.26+k*.16;}
 async function runPrint(n){
-  printer.state='printing';printer.part.material.color.set(['#2b7cff','#ff4f6a','#ffd27a','#3fe08c'][n%4]);
-  printer.led.material.color.set('#46b4ff');printer.ledGlow.material.color.set('#46b4ff');
+  printer.state='printing';printer.part.material.color.set(['#2b7cff','#ff4f6a','#ffd27a','#3fe08c'][n%4]);setPrinterLed('#46b4ff');
   const dur=reduced?.5:9;
-  await tween(dur,k=>{printer.progress=k;printer.part.scale.y=1+k*130;printer.part.position.y=.02+k*.065;printer.xg.position.y=.18+k*.13+.0;if(Math.floor(k*60)%4===0)updateTV('slicer');updatePrinterCard();});
-  printer.state='done';printer.led.material.color.set('#3fe08c');printer.ledGlow.material.color.set('#3fe08c');updateTV('slicer');updatePrinterCard();
+  await tween(dur,k=>{setPrintProgress(k);if(Math.floor(k*60)%4===0)updateTV('slicer');updatePrinterCard();});
+  printer.state='done';setPrinterLed('#3fe08c');updateTV('slicer');updatePrinterCard();
 }
 function printerTick(t){
-  if(printer.state==='printing'){printer.head.position.x=Math.sin(t*7.3)*.2;printer.bed.position.z=Math.sin(t*5.1)*.12;printer.nozzle.material.color.set('#ff6a00');}
-  else{printer.head.position.x+=(0-printer.head.position.x)*.05;printer.bed.position.z+=(0-printer.bed.position.z)*.05;if(printer.state!=='printing'&&printer.xg.position.y<.5&&printer.state!=='stuck')printer.xg.position.y+=(.55-printer.xg.position.y)*.03;}
-  if(printer.state==='stuck'){const on=Math.floor(t*4)%2;printer.led.material.color.set(on?'#ff4f6a':'#300');printer.ledGlow.material.color.set(on?'#ff4f6a':'#000');}
+  const on=printer.state==='printing';
+  printer.headLight.intensity=on?.9:0;
+  if(on){printer.head.position.x=Math.sin(t*7.3)*.3;printer.bed.position.z=Math.sin(t*5.1)*.16;printer.nozzle.material.color.set('#ff6a00');printer.amsHub.rotation.y+=.004;printer.spools.forEach((s,i)=>{if(i===printer.activeSpool)s.rotation.x+=.05;});}
+  else{printer.head.position.x+=(0-printer.head.position.x)*.05;printer.bed.position.z+=(0-printer.bed.position.z)*.05;if(printer.state!=='stuck'&&printer.xg.position.y<.7)printer.xg.position.y+=(.72-printer.xg.position.y)*.03;}
+  if(printer.state==='stuck'){const b=Math.floor(t*4)%2;setPrinterLed(b?'#ff4f6a':'#300');}
 }
 
 /* ---------------- room dressing ---------------- */
@@ -441,11 +490,16 @@ tv('family',3.4,fy(1)+1.95,ZB+.05);desk(3.4,fy(1)+.1,-1.1);chair(3.4,fy(1)+.1,-1
 const globe=sph(.28,M('#2e6fd6',{roughness:.5,emissive:'#0a2050'}),6.4,fy(1)+1.25,-1.6,scene,24);cyl(.02,.02,.4,metal,6.4,fy(1)+.92,-1.6);box(.5,.7,.5,deskDark,6.4,fy(1)+.45,-1.6);
 const suit=box(.5,.62,.25,M('#c8692a'),1.2,fy(1)+.42,-2.7);box(.2,.06,.04,black,1.2,fy(1)+.76,-2.7);
 // lobby
-tv('whatsapp',-1,fy(0)+1.95,ZB+.05,3,1.6);
+tv('whatsapp',-2.1,fy(0)+1.95,ZB+.05,2.4,1.35);
 box(2.4,.95,.8,M('#2b1d12',{roughness:.4}),-4.8,fy(0)+.58,-1.0);box(2.5,.06,.9,M('#e9dcc4',{roughness:.3}),-4.8,fy(0)+1.08,-1.0);
 box(2.4,.03,.03,glowMat('#25d366'),-4.8,fy(0)+.2,-.59);chair(-4.8,fy(0)+.1,-1.95,0);
-const sofa=new THREE.Group();sofa.position.set(3.6,fy(0)+.1,-2.5);scene.add(sofa);const sm=M('#3d2b55',{roughness:.9});box(2.4,.4,.9,sm,0,.3,0,sofa);box(2.4,.55,.25,sm,0,.75,-.35,sofa);box(.25,.6,.9,sm,-1.2,.45,0,sofa);box(.25,.6,.9,sm,1.2,.45,0,sofa);
-box(1.2,.3,.6,deskMat,3.6,fy(0)+.25,-1.3);plant(-7.3,fy(0)+.1,-2.9,1.3);plant(6.9,fy(0)+.1,-2.9,1.2);
+// study room (MASTER'S): desk, bookshelf, progress board, graduation cap, book stacks
+tv('masters',3.2,fy(0)+1.95,ZB+.05,2.6,1.45);desk(3.2,fy(0)+.1,-1.1);chair(3.2,fy(0)+.1,-1.95,0);
+shelf(6.5,fy(0)+.1,-3.25,1.5);
+(function cap(){const g=new THREE.Group();g.position.set(6.5,fy(0)+1.72,-3.2);scene.add(g);cyl(.13,.15,.1,M('#111'),0,0,0,g,16);box(.42,.025,.42,M('#111'),0,.06,0,g).rotation.y=Math.PI/4;const t=cyl(.008,.008,.2,glowMat('#ffc657'),.16,-.03,.1,g,6);sph(.025,glowMat('#ffc657'),.16,-.13,.1,g,8);})();
+[[2.55,'#7b2d26'],[2.55,'#1f4e79'],[2.55,'#2f6b3a']].forEach(([x,c],i)=>box(.34,.06,.24,M(c),x,fy(0)+.85+i*.065,-.95).rotation.y=i*.2);
+box(.5,.6,.5,deskDark,1.1,fy(0)+.4,-2.7);sph(.09,glowMat('#ffe9c4'),1.1,fy(0)+1.0,-2.7,scene,10);glow('#ffe9c4',1.1,1.1,fy(0)+1.0,-2.7,scene,.5);
+plant(-7.3,fy(0)+.1,-2.9,1.3);plant(7.4,fy(0)+.1,-1.6,1.1);
 box(.16,.32,.02,glowMat('#25d366'),-4.2,fy(0)+1.3,-1.1).rotation.x=-.3; // phone on reception desk
 
 /* ---------------- agents ---------------- */
@@ -496,10 +550,11 @@ const AGENTS={
   ceo:  {name:'المدير العام', en:'MANAGER', room:'ceo', x:-3.2, look:{thobe:1,shirt:'#f6f4ef',bisht:1,ghutra:'red',beard:1}, role:'Claude · يوزع المهام ويعتمد القرارات', keys:['المدير العام','المدير','مدير عام']},
   fin:  {name:'المدير المالي', en:'FINANCE', room:'finance', x:-4.6, look:{thobe:1,shirt:'#f3f1ea',ghutra:'white',beard:1}, role:'ميزانية البيت والفواتير وتكلفة الطباعة', keys:['المالي','المالية','الفلوس','الميزانية']},
   mail: {name:'مدير الإيميلات', en:'EMAILS', room:'mail', x:3.4, look:{shirt:'#2f6fe0',hair:'#1a120c',headset:1,hood:1}, role:'يقرأ الإيميلات ويفرز المهم ويرد', keys:['الايميلات','الإيميلات','الايميل','البريد']},
-  prt:  {name:'مدير الطابعات', en:'PRINT MGR', room:'print', x:-5.6, look:{shirt:'#ff7a2e',cap:'#1d1f27',hood:1}, role:'يدير Bambu Lab A1 ويراقب الكاميرا', keys:['الطابعات','الطابعة','الطباعة','الطابعه']},
+  prt:  {name:'مدير الطابعات', en:'PRINT MGR', room:'print', x:-5.6, look:{shirt:'#ff7a2e',cap:'#1d1f27',hood:1}, role:'يدير Bambu Lab A2L Combo ويراقب الكاميرا', keys:['الطابعات','الطابعة','الطباعة','الطابعه']},
   des:  {name:'المصمم', en:'DESIGN', room:'design', x:3.2, look:{shirt:'#e0457f',hair:'#2a1a10',glasses:1}, role:'يجهز ملفات STL من MakerWorld وتصاميمك', keys:['المصمم','التصميم','تصميم']},
   home: {name:'مدير البيت', en:'HOME', room:'home', x:-4.6, look:{thobe:1,shirt:'#e9e4d8',ghutra:'red'}, role:'الصيانة والمواعيد وطلبات البيت', keys:['مدير البيت','البيت','الصيانة']},
   fam:  {name:'منسق العائلة', en:'FAMILY', room:'family', x:3.4, look:{shirt:'#2fb36e',hair:'#120c08',beard:1}, role:'السفر والمدارس ومواعيد العيال', keys:['العائلة','العايلة','منسق','السفر','الرحلة']},
+  adv:  {name:'المرشد الأكاديمي', en:'ADVISOR', room:'study', x:3.2, look:{thobe:1,shirt:'#f1efe8',ghutra:'white',glasses:1,beard:1}, role:'يتابع الماجستير: ٧ مواد، تذكير واتساب، ملخصات، والاختبار', keys:['المرشد الاكاديمي','المرشد','مرشد','الماجستير','ماجستير']},
   wa:   {name:'وكيل الواتساب', en:'WHATSAPP', room:'lobby', x:-4.8, look:{shirt:'#1fa35a',hair:'#1a120c'}, role:'يرسل لك التنبيهات على الواتساب', keys:['الواتساب','واتساب','الوتساب']},
 };
 const SEAT_Z=-1.95;
@@ -602,7 +657,7 @@ function setPipe(steps){pipeSteps=steps;$('pipe').classList.remove('idle');
   $('pipe').innerHTML=steps.map((s,i)=>(i?`<div class="link" data-i="${i}"><i></i></div>`:'')+`<div class="node" data-i="${i}"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[s[0]]}</svg></div><span>${s[1]}</span></div>`).join('');}
 function stepPipe(n){$('pipe').querySelectorAll('.node').forEach(el=>{const i=+el.dataset.i;el.classList.toggle('on',i<=n);el.classList.toggle('cur',i===n);});$('pipe').querySelectorAll('.link').forEach(el=>el.classList.toggle('on',+el.dataset.i<=n));}
 function idlePipe(){$('pipe').classList.add('idle');$('pipe').querySelectorAll('.cur').forEach(e=>e.classList.remove('cur'));}
-setPipe([['A1','A1'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);idlePipe();
+setPipe([['A1','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);idlePipe();
 function feed(who,text,cls=''){const m=document.createElement('div');m.className='msg '+cls;if(who){const b=document.createElement('b');b.textContent=who+': ';m.append(b);}m.append(text);const f=$('feed');f.append(m);while(f.children.length>40)f.firstChild.remove();f.scrollTop=f.scrollHeight;}
 const sys=t=>feed('',t,'sys');
 
@@ -618,34 +673,44 @@ function openAgent(id,refresh){
   bindCard();
 }
 function openPrinter(){cardFor='printer';Object.values(AGENTS).forEach(x=>x.el.classList.remove('sel'));const c=$('card');c.hidden=false;c.style.setProperty('--c','var(--busy)');
-  c.innerHTML=`<button class="x" aria-label="إغلاق">✕</button><h3><i></i>Bambu Lab A1</h3><div class="sub">256 × 256 × 256 mm · 500 mm/s · AMS lite</div>
-  <div class="spec"><div><b id="pP">0%</b><span>PROGRESS</span></div><div><b id="pN">220°</b><span>NOZZLE</span></div><div><b id="pB">65°</b><span>BED</span></div></div>
+  c.innerHTML=`<button class="x" aria-label="إغلاق">✕</button><h3><i></i>Bambu Lab A2L Combo</h3><div class="sub">330 × 320 × 325 mm · AMS lite · ${LIVE.printer?'LIVE':'DEMO'}</div>
+  <div class="spec"><div><b id="pP">0%</b><span>PROGRESS</span></div><div><b id="pN">—</b><span>NOZZLE</span></div><div><b id="pB">—</b><span>BED</span></div></div>
   <div class="bar"><i id="pBar"></i></div><div class="sub" id="pS">IDLE</div>
-  <div class="acts"><button class="btn gold" data-ask="اطبع لي القطعة رقم 21">اطبع قطعة</button><button class="btn" data-ask="الطابعة علقت">محاكاة عطل</button></div>`;
+  <div class="acts">${LIVE.printer?'<button class="btn" data-ask="وقف الطباعة مؤقتاً">إيقاف مؤقت</button><button class="btn gold" data-ask="كمل الطباعة">كمل</button>':'<button class="btn gold" data-ask="اطبع لي القطعة رقم 21">اطبع قطعة</button><button class="btn" data-ask="الطابعة علقت">محاكاة عطل</button>'}</div>`;
   bindCard();updatePrinterCard();}
-function updatePrinterCard(){if(cardFor!=='printer')return;const p=Math.round(printer.progress*100);const e=id=>document.getElementById(id);if(!e('pP'))return;
-  e('pP').textContent=p+'%';e('pBar').style.width=p+'%';e('pN').textContent=printer.state==='printing'?'220°':'28°';e('pB').textContent=printer.state==='printing'?'65°':'26°';
-  e('pS').textContent={idle:'IDLE · READY',printing:`PRINTING · LAYER ${Math.round(p*1.6)}/160`,done:'FINISHED · REMOVE PART',stuck:'PAUSED · SPAGHETTI DETECTED'}[printer.state];}
+function updatePrinterCard(){if(cardFor!=='printer')return;const e=id=>document.getElementById(id);if(!e('pP'))return;
+  const L=printer.live, p=Math.round(printer.progress*100), on=printer.state==='printing';
+  e('pP').textContent=p+'%';e('pBar').style.width=p+'%';
+  e('pN').textContent=L&&L.nozzle!=null?Math.round(L.nozzle)+'°':on?'220°':'28°';
+  e('pB').textContent=L&&L.bed!=null?Math.round(L.bed)+'°':on?'65°':'26°';
+  const lay=L&&L.total?`LAYER ${L.layer}/${L.total}`:`LAYER ${Math.round(p*1.6)}/160`, rem=L&&L.remaining?` · ${L.remaining} MIN LEFT`:'';
+  e('pS').textContent={idle:'IDLE · READY',printing:`PRINTING · ${lay}${rem}`,done:'FINISHED · REMOVE PART',stuck:'PAUSED · '+(L&&L.error?'ERROR '+L.error:'SPAGHETTI DETECTED'),paused:'PAUSED'}[printer.state]||printer.state;}
 function bindCard(){const c=$('card');c.querySelector('.x').onclick=closeCard;c.querySelectorAll('[data-ask]').forEach(b=>b.onclick=()=>ask(b.dataset.ask));}
 function closeCard(){cardFor=null;$('card').hidden=true;Object.values(AGENTS).forEach(x=>x.el.classList.remove('sel'));}
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-const QUICK_FOR={prt:['اطبع قطعة','اطبع لي القطعة رقم 21'],fin:['فاتورة جديدة','وصلت فاتورة الكهرباء 420'],mail:['إيميل جديد','وصلت فاتورة الكهرباء 420'],home:['صيانة','المكيف يحتاج صيانة'],fam:['رحلة','خطط لنا رحلة العلا'],des:['تصميم','صمم لي حامل جوال'],ceo:['أبديت','عطني التقرير اليومي'],wa:['اختبار','عطني التقرير اليومي']};
+const QUICK_FOR={prt:['اطبع قطعة','اطبع لي القطعة رقم 21'],fin:['فاتورة جديدة','وصلت فاتورة الكهرباء 420'],mail:['إيميل جديد','وصلت فاتورة الكهرباء 420'],home:['صيانة','المكيف يحتاج صيانة'],fam:['رحلة','خطط لنا رحلة العلا'],des:['تصميم','صمم لي حامل جوال'],ceo:['أبديت','عطني التقرير اليومي'],adv:['كم باقي؟','المرشد الأكاديمي كم باقي لي؟'],wa:['اختبار','عطني التقرير اليومي']};
 
 /* ---------------- scenarios ---------------- */
-async function whatsapp(text){HOME.wa=(HOME.wa||[]).concat(text);updateTV('whatsapp');await say('wa',`أرسلت لك: ${text}`,1500);sys(`whatsapp.send → "${text}"`);}
+async function whatsapp(text,alreadySent){
+  HOME.wa=(HOME.wa||[]).concat(text);updateTV('whatsapp');
+  if(LIVE.on&&!alreadySent){try{const r=await api('api/whatsapp',{text});alreadySent=r.ok;}catch(e){sys('whatsapp error: '+e.message);}}
+  if(LIVE.on&&alreadySent){await say('wa',`أرسلت لك على الواتساب: ${text}`,1500);}
+  else if(LIVE.on){await say('wa','ما قدرت أرسل الواتساب، تأكد من إعدادات CallMeBot',1800);}
+  else{await say('wa',`(تجريبي) أرسلت لك: ${text}`,1500);sys('demo: whatsapp not sent');}
+}
 const SC={
   async print(n){
-    setPipe([['A1','A1'],['A1','PRINT MGR'],['FIN','FINANCE'],['MGR','MANAGER'],['A1','PRINTING'],['WA','WHATSAPP']]);
+    setPipe([['A1','A2L'],['A1','PRINT MGR'],['FIN','FINANCE'],['MGR','MANAGER'],['A1','PRINTING'],['WA','WHATSAPP']]);
     stepPipe(0);sys(`a1.request part=#${n}`);stepPipe(1);setStatus('prt','busy');await say('prt',`طلب طباعة القطعة رقم ${n} من MakerWorld`);
     stepPipe(2);await visit('prt','fin');await say('prt','كم تكلفة الفلامنت؟');await say('fin','١٤ غرام PLA، تقريباً ٠٫٤ ريال. موافق ✓');HOME.spent+=1;updateTV('finance');
     stepPipe(3);await visit('prt','ceo');await say('ceo','اعتمدت. ابدأ وبلّغ أبو خالد إذا خلصت');
-    stepPipe(4);await go('prt',2,-2.4,-.75);await face(AGENTS.prt,Math.PI);await say('prt','بدأت الطباعة على A1',900);AGENTS.prt.mode='stand';
+    stepPipe(4);await go('prt',2,-2.55,-.6);await face(AGENTS.prt,Math.PI);await say('prt','بدأت الطباعة على A2L',900);AGENTS.prt.mode='stand';
     await runPrint(n);HOME.prints++;updateTV('daily');await say('prt',`خلصت القطعة ${n} ✓`,1000);
     stepPipe(5);await go('prt',0,-3.6,-.2);await face(AGENTS.prt,Math.PI);setStatus('wa','busy');await whatsapp(`القطعة ${n} جاهزة على الطابعة`);setStatus('wa','done');
     AGENTS.prt.last=`طبعت القطعة رقم ${n}.`;await goHome('prt');printer.state='idle';idlePipe();
   },
   async stuck(){
-    setPipe([['CAM','A1 CAMERA'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);
+    setPipe([['CAM','A2L CAMERA'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);
     printer.state='stuck';updatePrinterCard();stepPipe(0);sys('a1.camera → spaghetti detected · pause');
     stepPipe(1);setStatus('prt','err');await say('prt','الكاميرا شافت الطباعة خربت! وقفتها');
     stepPipe(2);await visit('prt','ceo');setStatus('prt','err');await say('ceo','بلّغ أبو خالد فوراً');
@@ -655,7 +720,7 @@ const SC={
   async bill(name,amount){
     setPipe([['MAIL','EMAILS'],['FIN','FINANCE'],['MGR','MANAGER'],['WA','WHATSAPP']]);
     stepPipe(0);HOME.inbox++;updateTV('mail');setStatus('mail','busy');await say('mail',`وصلت فاتورة ${name}: ${amount} ريال`);
-    stepPipe(1);await visit('mail','fin');await say('fin',`سجلتها. باقي من ميزانية الشهر ${(HOME.budget-HOME.spent-amount).toLocaleString('en')} ريال`);HOME.spent+=amount;HOME.bills.push([name,amount]);updateTV('finance');setStatus('fin','done');
+    stepPipe(1);await visit('mail','fin');await recordBill(name,amount);await say('fin',`سجلتها. باقي من ميزانية الشهر ${(HOME.budget-HOME.spent).toLocaleString('en')} ريال`);setStatus('fin','done');
     stepPipe(2);await visit('mail','ceo');await say('ceo','ادفعها قبل الموعد وذكّر أبو خالد');
     stepPipe(3);await goHome('mail');HOME.inbox=Math.max(0,HOME.inbox-1);updateTV('mail');setStatus('wa','busy');await whatsapp(`تذكير: فاتورة ${name} ${amount} ريال`);setStatus('wa','done');
     AGENTS.mail.last=`فرزت فاتورة ${name}.`;AGENTS.fin.last=`سجلت فاتورة ${name} ${amount} ريال.`;idlePipe();
@@ -664,7 +729,7 @@ const SC={
     setPipe([['HOME','HOME'],['CAL','BOOKING'],['FIN','FINANCE'],['WA','WHATSAPP']]);
     stepPipe(0);setStatus('home','busy');await say('home',`${item} يحتاج صيانة. أدور أقرب موعد`);
     stepPipe(1);await sleep(800);HOME.tasks.unshift(`صيانة ${item} الخميس ٤ العصر`);updateTV('home');await say('home','حجزت الخميس الساعة ٤ العصر');
-    stepPipe(2);await visit('home','fin');await say('fin','التكلفة المتوقعة ٢٥٠ ريال. ضمن الميزانية ✓');HOME.spent+=250;updateTV('finance');setStatus('fin','idle');
+    stepPipe(2);await visit('home','fin');await say('fin','التكلفة المتوقعة ٢٥٠ ريال. ضمن الميزانية ✓');if(!LIVE.on){HOME.spent+=250;updateTV('finance');}setStatus('fin','idle');
     stepPipe(3);await goHome('home');setStatus('wa','busy');await whatsapp(`موعد صيانة ${item}: الخميس ٤ العصر`);setStatus('wa','done');
     AGENTS.home.last=`حجزت صيانة ${item}.`;idlePipe();
   },
@@ -691,7 +756,7 @@ const SC={
     await go('ceo',4,3.4,-2.1);await face(AGENTS.ceo,0);
     stepPipe(1);await say('fin',`المصروف ${HOME.spent.toLocaleString('en')} من ${HOME.budget.toLocaleString('en')} ريال`,1300);
     stepPipe(2);await say('mail',`${HOME.inbox} إيميلات تحتاج رد`,1100);
-    stepPipe(3);await say('prt',`${HOME.prints} طباعات اليوم`,1100);
+    stepPipe(3);await say('prt',`${HOME.prints} طباعات اليوم`,1100);await say('ceo','الماجستير: '+MS.summary(),1800);
     stepPipe(4);await go('ceo',0,-3.6,-.2);await face(AGENTS.ceo,Math.PI);setStatus('wa','busy');await whatsapp('التحديث اليومي: كل شيء تمام ✓');setStatus('wa','done');
     await Promise.all(['fin','mail','prt','home','fam','ceo'].map(id=>goHome(id,'idle')));idlePipe();
   },
@@ -708,10 +773,22 @@ function ask(text){
     enqueue(async()=>{await say(who.id,`${who.last} (حالتي: ${STATUS[who.status][0]})`,2200);});return;}
   const num=+(t.match(/\d+/)||[0])[0];
   let job=null;
+  if(/ماجستير|مرشد|ماده|مادة|المواد|اختبار|دراس/.test(t)&&!/فاتور|طباع|اطبع/.test(t)){
+    const n=+(t.match(/\d+/)||[0])[0];
+    if(/خلصت|انهيت|خلصنا|تم/.test(t))job=()=>SC.msDone(n?n-1:-1);
+    else if(/لخص|ملخص|تلخيص|اشرح/.test(t))job=()=>SC.msSummary(n?n-1:-1);
+    else if(/ذكرني|تذكير|ذكر/.test(t))job=()=>SC.msRemind();
+    else if(/رابط|لينك|موقع/.test(t))job=()=>say('adv','ارسل لي رابط المنصة وأسماء المواد في محادثة Claude، وأنا أحفظها هنا وأربط كل مادة برابطها',2600);
+    else job=()=>SC.msStatus();
+    feed('المدير العام','حوّلتها للمرشد الأكاديمي.');enqueue(job);return;}
+  if(/(وقف|ايقاف|اوقف|بوز).*(طباع|طابع)/.test(t)||/(طباع|طابع).*(وقف|ايقاف)/.test(t)){job=()=>printerCmd('pause');}
+  else if(/(كمل|استانف|شغل).*(طباع|طابع)/.test(t)){job=()=>printerCmd('resume');}
+  else if(/(اختبر|جرب).*(واتس|وتس)/.test(t)){job=async()=>{setStatus('wa','busy');await whatsapp('رسالة تجريبية من بيت فايز HQ ✓');setStatus('wa','done');};}
+  if(job){feed('المدير العام','تمام.');enqueue(job);return;}
   if(/علق|عطل|خرب|سباقيتي/.test(t))job=()=>SC.stuck();
   else if(/فاتور|كهرب|انترنت|سداد/.test(t)){const nm=/انترنت/.test(t)?'الإنترنت':/موي|مياه/.test(t)?'المياه':'الكهرباء';job=()=>SC.bill(nm,num||420);}
   else if(/صمم|تصميم|stl|ستل/.test(t)){const it=(text.replace(/.*(صمم لي|تصميم)\s*/,'')||'قطعة').slice(0,24);job=()=>SC.design(it);}
-  else if(/اطبع|طباعه|طبع/.test(t))job=()=>SC.print(num||Math.floor(Math.random()*30)+1);
+  else if(/اطبع|طباعه|طبع/.test(t))job=LIVE.printer?()=>say('prt','ابدأ الطباعة من Bambu Studio أو Bambu Handy، وأنا أتابعها لحظة بلحظة وأبلغك على الواتساب',2800):()=>SC.print(num||Math.floor(Math.random()*30)+1);
   else if(/صيانه|مكيف|سباك|كهربائي|تصليح/.test(t)){const it=/مكيف/.test(t)?'المكيف':/سباك|موي/.test(t)?'السباكة':'البيت';job=()=>SC.maintenance(it);}
   else if(/رحله|سفر|سافر|عطله/.test(t)){const m=text.match(/رحلة\s+(\S+)/)||text.match(/الى\s+(\S+)/)||text.match(/إلى\s+(\S+)/);job=()=>SC.trip(m?m[1]:'العلا');}
   else if(/تقرير|ابديت|أبديت|ملخص|تحديث/.test(t))job=()=>SC.report();
@@ -721,13 +798,98 @@ function ask(text){
   enqueue(job);
 }
 $('form').addEventListener('submit',e=>{e.preventDefault();const v=$('q').value.trim();if(v){ask(v);$('q').value='';}});
-const QUICK=[['اطبع قطعة','اطبع لي القطعة رقم 21'],['فاتورة الكهرباء','وصلت فاتورة الكهرباء 420'],['صيانة المكيف','المكيف يحتاج صيانة'],['رحلة العلا','خطط لنا رحلة العلا'],['تصميم','صمم لي حامل جوال'],['الطابعة علقت','الطابعة علقت'],['@المالي وش صار؟','المدير المالي وش صار؟']];
+const QUICK=[['الماجستير: كم باقي؟','المرشد الأكاديمي كم باقي لي؟'],['خلصت مادة','خلصت المادة'],['اختبر الواتساب','اختبر الواتساب'],['اطبع قطعة','اطبع لي القطعة رقم 21'],['فاتورة الكهرباء','وصلت فاتورة الكهرباء 420'],['صيانة المكيف','المكيف يحتاج صيانة'],['رحلة العلا','خطط لنا رحلة العلا'],['تصميم','صمم لي حامل جوال'],['الطابعة علقت','الطابعة علقت'],['@المالي وش صار؟','المدير المالي وش صار؟']];
 $('quick').innerHTML=QUICK.map(([l,q])=>`<button class="chipq" data-q="${q}">${l}</button>`).join('');
 $('quick').querySelectorAll('button').forEach(b=>b.onclick=()=>ask(b.dataset.q));
 $('updBtn').onclick=()=>ask('أبديت');
 
 /* public event API */
 window.tower={emit(e){const m={print:()=>SC.print(e.part||1),stuck:()=>SC.stuck(),bill:()=>SC.bill(e.name||'فاتورة',e.amount||0),maintenance:()=>SC.maintenance(e.item||'البيت'),trip:()=>SC.trip(e.place||'رحلة'),design:()=>SC.design(e.item||'قطعة'),report:()=>SC.report()}[e.type];if(m){sys(`event ${e.type}`);enqueue(m);}},agents:AGENTS,home:HOME};
+
+/* ---------------- live bridge ---------------- */
+const LIVE={on:false,printer:false,whatsapp:false};
+async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  const txt=await r.text();let j;try{j=JSON.parse(txt);}catch(e){throw new Error(r.ok?'bad response':String(r.status));}if(!r.ok)throw new Error(j.error||r.status);return j;}
+function setLiveBadge(connected){const b=$('liveBadge');
+  if(!LIVE.on){b.style.setProperty('--c','var(--mute)');b.lastChild.textContent='تجريبي';b.title='الصفحة شغالة محاكاة. شغّل الجسر على الكمبيوتر عشان تصير لايف';return;}
+  b.style.setProperty('--c',connected===false?'var(--bad)':'var(--ok)');b.lastChild.textContent=connected===false?'انقطع':'LIVE';
+  b.title=`الطابعة: ${LIVE.printer?'متصلة':'غير مضبوطة'} · الواتساب: ${LIVE.whatsapp?'مضبوط':'غير مضبوط'}`;}
+async function recordBill(name,amount){
+  if(LIVE.on){try{applyFinance(await api('api/finance',{name,amount}));return;}catch(e){sys('finance error: '+e.message);}}
+  HOME.spent+=amount;HOME.bills.push([name,amount]);updateTV('finance');updateTV('daily');}
+function applyFinance(f){if(!f)return;HOME.budget=f.budget;HOME.spent=f.spent;HOME.bills=(f.bills||[]).map(b=>[b.name,b.amount]);updateTV('finance');updateTV('daily');}
+const STATE_MAP={RUNNING:'printing',PREPARE:'printing',SLICING:'printing',FINISH:'done',FAILED:'stuck',IDLE:'idle'};
+let lastSlicerDraw=0;
+function applyPrinter(d){
+  printer.live=d;let st=STATE_MAP[d.state]||'idle';if(d.state==='PAUSE')st=d.error?'stuck':'paused';
+  printer.state=st;printer.activeSpool=d.tray!=null?+d.tray%4:0;
+  if(d.pct!=null)setPrintProgress(Math.max(0,Math.min(1,d.pct/100)));
+  setPrinterLed({printing:'#46b4ff',done:'#3fe08c',idle:'#3fe08c',paused:'#ffc657',stuck:'#ff4f6a'}[st]);
+  const a=AGENTS.prt;if(a.atHome!==false&&a.status!=='err'){const want=st==='printing'?'busy':st==='stuck'?'err':a.status==='busy'?'idle':a.status;if(want!==a.status)setStatus('prt',want);}
+  const now=performance.now();if(now-lastSlicerDraw>1500){lastSlicerDraw=now;updateTV('slicer');}
+  updatePrinterCard();}
+async function printerCmd(cmd){
+  if(!LIVE.printer){await say('prt','الطابعة مو مربوطة. شغّل الجسر على الكمبيوتر وحط بيانات الطابعة',2200);return;}
+  setStatus('prt','busy');try{await api('api/printer',{cmd});await say('prt',cmd==='pause'?'وقفت الطباعة مؤقتاً':'كملت الطباعة',1400);}catch(e){await say('prt','ما ضبط الأمر: '+e.message,2000);}}
+function onLiveEvent(ev){
+  sys(`live ${ev.type}${ev.name?' · '+ev.name:''}`);
+  if(ev.type==='print_start')enqueue(()=>SC.liveStart(ev.name||'قطعة'));
+  else if(ev.type==='print_done')enqueue(()=>SC.liveDone(ev.name||'القطعة',ev.whatsapp));
+  else if(ev.type==='print_failed')enqueue(()=>SC.liveFail(ev));
+}
+async function tryLive(){
+  if(!/^https?:$/.test(location.protocol))return;
+  let st;try{st=await api('api/state');}catch(e){return;}
+  if(!st||!st.bridge)return;
+  LIVE.on=true;LIVE.printer=!!st.config.printer;LIVE.whatsapp=!!st.config.whatsapp;
+  applyFinance(st.finance);applyMasters(st.masters);if(st.printer&&st.printer.state)applyPrinter(st.printer);setLiveBadge(true);
+  const es=new EventSource('events');
+  es.addEventListener('printer',e=>applyPrinter(JSON.parse(e.data)));
+  es.addEventListener('finance',e=>applyFinance(JSON.parse(e.data)));
+  es.addEventListener('masters',e=>applyMasters(JSON.parse(e.data)));
+  es.addEventListener('event',e=>onLiveEvent(JSON.parse(e.data)));
+  es.onerror=()=>setLiveBadge(false);es.onopen=()=>setLiveBadge(true);
+  feed('المدير العام',`البيت صار لايف ✓ الطابعة: ${LIVE.printer?'متصلة':'غير مضبوطة'} · الواتساب: ${LIVE.whatsapp?'جاهز':'غير مضبوط'}`);
+}
+function applyMasters(m){if(m&&m.courses){MS.data=m;saveMS();updateTV('masters');}}
+async function msAction(body){if(LIVE.on){try{applyMasters(await api('api/masters',body));return true;}catch(e){sys('masters error: '+e.message);}}return false;}
+Object.assign(SC,{
+  async msStatus(){setPipe([['DES','ADVISOR'],['MGR','MANAGER']]);stepPipe(0);setStatus('adv','busy');await say('adv',MS.summary(),3200);setStatus('adv','done');AGENTS.adv.last=MS.summary();idlePipe();},
+  async msDone(i){
+    setPipe([['DES','ADVISOR'],['MGR','MANAGER'],['WA','WHATSAPP']]);stepPipe(0);setStatus('adv','busy');
+    const c=MS.data.courses;if(i<0||i>=c.length)i=c.findIndex(x=>!x.done);if(i<0){await say('adv','كل المواد مخلصة ✓ باقي الاختبار',1800);setStatus('adv','done');idlePipe();return;}
+    if(!(await msAction({action:'done',index:i}))){c[i].done=true;c[i].doneAt=new Date().toISOString();saveMS();updateTV('masters');}
+    const m=MS.state();await say('adv',`مبروك! سجلت ${c[i].name} ✓ خلصت ${m.done} من ${m.total}`,1800);
+    stepPipe(1);await visit('adv','ceo');await say('ceo','ممتاز، كمل عليه وذكّره بالجاية');
+    stepPipe(2);await go('adv',0,-3.6,-.2);await face(AGENTS.adv,Math.PI);setStatus('wa','busy');
+    await whatsapp(m.done>=m.total?'🎓 خلصت المواد السبع! باقي اختبار MCQ ساعتين':`📚 خلصت ${c[i].name}. باقي ${m.remaining} مواد. الجاية: ${m.next.name}`);setStatus('wa','done');
+    AGENTS.adv.last=MS.summary();await goHome('adv');idlePipe();},
+  async msRemind(){
+    setPipe([['DES','ADVISOR'],['WA','WHATSAPP']]);stepPipe(0);setStatus('adv','busy');await say('adv','أرسل لك تذكير الماجستير الحين',1200);
+    stepPipe(1);await go('adv',0,-3.6,-.2);await face(AGENTS.adv,Math.PI);setStatus('wa','busy');await whatsapp('📚 تذكير الماجستير: '+MS.summary());setStatus('wa','done');await goHome('adv');idlePipe();},
+  async msSummary(i){setStatus('adv','busy');const c=MS.data.courses;if(i<0||i>=c.length)i=Math.max(0,c.findIndex(x=>!x.done));
+    await say('adv',`عشان ألخص ${c[i].name}: ارسل محتوى الدرس أو رابطه أو صوّر الشرائح في محادثة Claude، وأرجع لك بملخص بسيط وأسئلة اختيار من متعدد للمراجعة`,3600);setStatus('adv','idle');},
+
+  async liveStart(name){
+    setPipe([['A1','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['A1','PRINTING']]);stepPipe(0);
+    stepPipe(1);setStatus('prt','busy');await say('prt',`بدأت طباعة ${name} على A2L`);
+    stepPipe(2);await visit('prt','ceo');await say('ceo','تمام، تابعها وبلّغ أبو خالد إذا خلصت');
+    stepPipe(3);await go('prt',2,-2.55,-.6);await face(AGENTS.prt,Math.PI);AGENTS.prt.mode='stand';AGENTS.prt.last=`أتابع طباعة ${name}.`;idlePipe();
+  },
+  async liveDone(name,sent){
+    setPipe([['A1','A2L'],['A1','PRINT MGR'],['WA','WHATSAPP']]);stepPipe(0);HOME.prints++;updateTV('daily');
+    stepPipe(1);setStatus('prt','busy');await say('prt',`خلصت ${name} ✓`,1200);
+    stepPipe(2);await go('prt',0,-3.6,-.2);await face(AGENTS.prt,Math.PI);setStatus('wa','busy');await whatsapp(`خلصت طباعة ${name} على A2L`,sent!==false);setStatus('wa','done');
+    AGENTS.prt.last=`طبعت ${name}.`;await goHome('prt');idlePipe();
+  },
+  async liveFail(ev){
+    setPipe([['CAM','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);stepPipe(0);
+    stepPipe(1);setStatus('prt','err');await say('prt',`الطابعة وقفت${ev.error?' · خطأ '+ev.error:''}`);
+    stepPipe(2);await visit('prt','ceo');setStatus('prt','err');await say('ceo','بلّغ أبو خالد فوراً');
+    stepPipe(3);await go('prt',0,-3.6,-.2);setStatus('prt','err');await face(AGENTS.prt,Math.PI);setStatus('wa','busy');await whatsapp(`الطابعة A2L وقفت: ${ev.name||''}`,ev.whatsapp!==false);setStatus('wa','err');
+    AGENTS.prt.last='الطابعة وقفت وبلغتك.';await goHome('prt','err');idlePipe();
+  },
+});
 
 /* ---------------- day / night ---------------- */
 let day=false;
@@ -750,6 +912,7 @@ renderer.domElement.addEventListener('pointerup',e=>{if(!downAt||Math.hypot(e.cl
 
 /* ---------------- resize / loop ---------------- */
 const TARGET=new THREE.Vector3(.8,8.4,0);
+let homeDist=40,framed=false;const HOME_DIR=new THREE.Vector3(.38,.3,1).normalize();
 function frame(){
   const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);if(composer){composer.setSize(w,h);}
   camera.aspect=w/h;
@@ -758,16 +921,26 @@ function frame(){
   const vf=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));const needH=(19.5)/2/vf*(h/free), needW=(w<600?20.5:23)/2/(vf*camera.aspect);
   const dist=Math.max(needH,needW)*1.02+4;
   const dir=new THREE.Vector3(.38,.3,1).normalize();
-  controls.target.copy(TARGET);camera.position.copy(TARGET).addScaledVector(dir,dist);controls.minDistance=dist*.35;controls.maxDistance=dist*1.3;controls.update();
+  homeDist=dist;controls.minDistance=4.5;controls.maxDistance=dist*1.3;
+  if(!framed){framed=true;controls.target.copy(TARGET);camera.position.copy(TARGET).addScaledVector(dir,dist);controls.update();}
 }
 addEventListener('resize',frame);frame();
+function flyTo(tgt,dist,dir){const st=controls.target.clone(),sp=camera.position.clone();const d=(dir||sp.clone().sub(st)).clone().normalize();const ep=tgt.clone().addScaledVector(d,dist);
+  return tween(.9,k=>{const e=ease(k);controls.target.lerpVectors(st,tgt,e);camera.position.lerpVectors(sp,ep,e);});}
+const FLOORS=[['الكل',null],['الإدارة',4],['المالية',3],['الطباعة',2],['البيت',1],['الاستقبال',0]];
+$('floors').innerHTML=FLOORS.map(([n,f])=>`<button data-f="${f===null?'':f}" aria-pressed="${f===null}">${n}</button>`).join('')+'<div class="zm"><button data-z="in" aria-label="تقريب">+</button><button data-z="out" aria-label="تبعيد">−</button></div>';
+$('floors').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{$('floors').querySelectorAll('[data-f]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  if(b.dataset.f==='')flyTo(TARGET.clone(),homeDist,HOME_DIR);else flyTo(new THREE.Vector3(.8,fy(+b.dataset.f)+1.6,0),Math.max(10,homeDist*.36));});
+$('floors').querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{const d=camera.position.distanceTo(controls.target);flyTo(controls.target.clone(),Math.min(controls.maxDistance,Math.max(controls.minDistance,d*(b.dataset.z==='in'?.75:1.33))));});
+const clampV=new THREE.Vector3();
+function clampTarget(){const T=controls.target;clampV.set(Math.min(10,Math.max(-8.5,T.x))-T.x,Math.min(17.5,Math.max(.6,T.y))-T.y,Math.min(3,Math.max(-3,T.z))-T.z);if(clampV.lengthSq()>0){T.add(clampV);camera.position.add(clampV);}}
 const clock=new THREE.Clock(),v3=new THREE.Vector3();
 function loop(){
   const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
   for(let i=tweens.length-1;i>=0;i--){const tw=tweens[i];tw.t+=dt;const k=Math.min(1,tw.t/tw.sec);tw.fn(k);if(k>=1){tweens.splice(i,1);tw.r();}}
   for(const a of Object.values(AGENTS))animateAgent(a,dt,t);
   printerTick(t);holo.rotation.y+=dt*.8;holo.rotation.x+=dt*.3;globe.rotation.y+=dt*.3;
-  controls.update();
+  controls.update();clampTarget();
   composer?composer.render():renderer.render(scene,camera);
   const w=stage.clientWidth,h=stage.clientHeight;
   for(const a of Object.values(AGENTS)){
@@ -776,8 +949,9 @@ function loop(){
   }
   requestAnimationFrame(loop);
 }
-applyDay();renderCounts();
+applyDay();renderCounts();setLiveBadge();tryLive();
 feed('المدير العام','هلا أبو خالد 👋 الفريق في البيت جاهز. اكتب لي أي أمر، أو اضغط على أي وكيل أو على الطابعة.');
+sys(matchMedia('(pointer: coarse)').matches?'إصبع واحد: تحريك · إصبعين: زوم وتدوير':'سحب: تدوير · كليك يمين: تحريك · العجلة: زوم');
 document.fonts&&document.fonts.ready.then(()=>{signTexes.forEach(redraw);Object.values(tvs).forEach(redraw);});
 loop();
 </script>
