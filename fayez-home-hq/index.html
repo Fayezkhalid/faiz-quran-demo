@@ -436,7 +436,7 @@ const printer={progress:0,state:'idle',live:null};
   cyl(.22,.26,.06,white,0,.03,0,ams,28);cyl(.035,.04,.62,grey,0,.34,0,ams,12);
   const hub=new THREE.Group();hub.position.y=.68;ams.add(hub);printer.amsHub=hub;cyl(.09,.09,.08,white,0,0,0,hub,20);
   printer.spools=[];
-  ['#ff4f6a','#ffd27a','#2b7cff','#f2f2f2'].forEach((c,i)=>{
+  ['#1a1a1a','#f2f2f2','#ff7a1a','#ffd23a'].forEach((c,i)=>{
     const a=i*Math.PI/2+Math.PI/4, arm=new THREE.Group();arm.rotation.y=a;hub.add(arm);
     box(.2,.025,.04,white,.1,0,0,arm);
     const sp=new THREE.Group();sp.position.set(.2,.03,0);sp.rotation.z=.55;arm.add(sp);
