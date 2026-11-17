@@ -124,7 +124,7 @@ async function whatsapp(text) {
 }
 
 /* ---------------- printer ---------------- */
-const printer = { connected: false, state: null, pct: 0, layer: 0, total: 0, nozzle: null, bed: null, remaining: null, name: '', error: 0, tray: null };
+const printer = { connected: false, state: null, pct: 0, layer: 0, total: 0, nozzle: null, bed: null, remaining: null, name: '', error: 0, tray: null, trays: [null, null, null, null] };
 let lastState = null;
 function onPrinterState() {
   push('printer', printer);
@@ -155,6 +155,16 @@ function mergeReport(p) {
   if (p.subtask_name != null) printer.name = String(p.subtask_name).replace(/\.(gcode\.)?3mf$/i, '');
   if (p.print_error != null) printer.error = +p.print_error;
   if (p.ams && p.ams.tray_now != null) printer.tray = +p.ams.tray_now;
+  // AMS lite slot colours/materials: print.ams.ams[0].tray[i] = { id, tray_color: 'RRGGBBAA', tray_type, remain }
+  const unit = p.ams && Array.isArray(p.ams.ams) ? p.ams.ams[0] : null;
+  if (unit && Array.isArray(unit.tray)) for (const t of unit.tray) {
+    const i = +t.id; if (!(i >= 0 && i < 4)) continue;
+    const cur = printer.trays[i] || {};
+    if (typeof t.tray_color === 'string' && /^[0-9a-f]{6}/i.test(t.tray_color)) { cur.color = '#' + t.tray_color.slice(0, 6); cur.empty = false; }
+    if (typeof t.tray_type === 'string') { cur.type = t.tray_type; if (!t.tray_type) cur.empty = true; }
+    if (t.remain != null && +t.remain >= 0) cur.remain = +t.remain;
+    printer.trays[i] = cur;
+  }
   onPrinterState();
 }
 let mqttClient = null;
@@ -190,7 +200,9 @@ function demoPrinter() {
   printer.connected = true;
   let t = null;
   const set = p => mergeReport(p);
-  set({ gcode_state: 'IDLE', mc_percent: 0, nozzle_temper: 27, bed_temper: 26 });
+  set({ gcode_state: 'IDLE', mc_percent: 0, nozzle_temper: 27, bed_temper: 26, ams: { tray_now: '0', ams: [{ id: '0', tray: [
+    { id: '0', tray_color: '161616FF', tray_type: 'PLA', remain: 80 }, { id: '1', tray_color: 'F2F2F2FF', tray_type: 'PLA', remain: 55 },
+    { id: '2', tray_color: 'FF6A13FF', tray_type: 'PLA', remain: 30 }, { id: '3', tray_color: 'FEC600FF', tray_type: 'PETG', remain: 90 }] }] } });
   function run() {
     const total = 120;
     set({ gcode_state: 'RUNNING', mc_percent: 0, layer_num: 0, total_layer_num: total, subtask_name: 'حامل جوال.3mf', nozzle_temper: 220, bed_temper: 65, mc_remaining_time: 2 });

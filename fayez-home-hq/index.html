@@ -19,8 +19,8 @@
 }
 html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui)}
 body{overflow:hidden}
-#app{position:relative;height:100%;direction:rtl}
-#stage{position:absolute;inset:0}
+#app{position:relative;height:100%;direction:rtl;overflow:hidden}
+#stage{position:absolute;inset:0;overflow:hidden}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
 .ui{position:absolute;z-index:5;pointer-events:none}
 .ui>*{pointer-events:auto}
@@ -71,6 +71,10 @@ button{font-family:var(--ui);cursor:pointer}
 .spec div{background:#0c0e15;border:1px solid var(--line);border-radius:10px;padding:6px 8px}
 .spec b{display:block;font:700 .82rem var(--mono);color:var(--gold);font-variant-numeric:tabular-nums}
 .spec span{font:500 .55rem var(--mono);color:var(--mute);letter-spacing:.6px}
+.trays{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;direction:ltr}
+.tray{display:flex;align-items:center;gap:5px;font:500 .62rem var(--mono);color:var(--mute);background:#0c0e15;border:1px solid var(--line);border-radius:8px;padding:5px 6px;white-space:nowrap;overflow:hidden}
+.tray i{width:12px;height:12px;border-radius:50%;flex:none;border:1px solid #fff4}
+.tray.on{border-color:var(--busy);color:var(--ink)}
 .bar{height:6px;border-radius:3px;background:#0c0e15;overflow:hidden;direction:ltr}
 .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .3s}
 .hist{display:grid;gap:4px;font-size:.72rem;color:var(--mute);max-height:120px;overflow:auto}
@@ -435,7 +439,7 @@ const printer={progress:0,state:'idle',live:null};
   const ams=new THREE.Group();ams.position.set(.78,.7,-.05);base.add(ams);printer.ams=ams;
   cyl(.22,.26,.06,white,0,.03,0,ams,28);cyl(.035,.04,.62,grey,0,.34,0,ams,12);
   const hub=new THREE.Group();hub.position.y=.68;ams.add(hub);printer.amsHub=hub;cyl(.09,.09,.08,white,0,0,0,hub,20);
-  printer.spools=[];
+  printer.spools=[];printer.spoolGroups=[];
   ['#1a1a1a','#f2f2f2','#ff7a1a','#ffd23a'].forEach((c,i)=>{
     const a=i*Math.PI/2+Math.PI/4, arm=new THREE.Group();arm.rotation.y=a;hub.add(arm);
     box(.2,.025,.04,white,.1,0,0,arm);
@@ -443,7 +447,7 @@ const printer={progress:0,state:'idle',live:null};
     const ring=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.07,26),M(c,{roughness:.55}));ring.rotation.z=Math.PI/2;sp.add(ring);
     const core=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.075,16),dark);core.rotation.z=Math.PI/2;sp.add(core);
     [-.04,.04].forEach(dx=>{const fl=new THREE.Mesh(new THREE.CylinderGeometry(.125,.125,.008,26),M('#1d1f27'));fl.rotation.z=Math.PI/2;fl.position.x=dx;sp.add(fl);});
-    printer.spools.push(ring);
+    printer.spools.push(ring);printer.spoolGroups.push(sp);
   });
   // PTFE tubes AMS -> hub -> toolhead
   const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(.78,1.38,-.05),new THREE.Vector3(.55,1.6,.05),new THREE.Vector3(.0,1.55,.1),new THREE.Vector3(-.3,1.45,.07)]);
@@ -688,6 +692,7 @@ function openPrinter(){cardFor='printer';Object.values(AGENTS).forEach(x=>x.el.c
   c.innerHTML=`<button class="x" aria-label="إغلاق">✕</button><h3><i></i>Bambu Lab A2L Combo</h3><div class="sub">330 × 320 × 325 mm · AMS lite · ${LIVE.printer?'LIVE':'DEMO'}</div>
   <div class="spec"><div><b id="pP">0%</b><span>PROGRESS</span></div><div><b id="pN">—</b><span>NOZZLE</span></div><div><b id="pB">—</b><span>BED</span></div></div>
   <div class="bar"><i id="pBar"></i></div><div class="sub" id="pS">IDLE</div>
+  <div class="trays" id="pT"></div>
   <div class="acts">${LIVE.printer?'<button class="btn" data-ask="وقف الطباعة مؤقتاً">إيقاف مؤقت</button><button class="btn gold" data-ask="كمل الطباعة">كمل</button>':'<button class="btn gold" data-ask="اطبع لي القطعة رقم 21">اطبع قطعة</button><button class="btn" data-ask="الطابعة علقت">محاكاة عطل</button>'}</div>`;
   bindCard();updatePrinterCard();}
 function updatePrinterCard(){if(cardFor!=='printer')return;const e=id=>document.getElementById(id);if(!e('pP'))return;
@@ -696,6 +701,8 @@ function updatePrinterCard(){if(cardFor!=='printer')return;const e=id=>document.
   e('pN').textContent=L&&L.nozzle!=null?Math.round(L.nozzle)+'°':on?'220°':'28°';
   e('pB').textContent=L&&L.bed!=null?Math.round(L.bed)+'°':on?'65°':'26°';
   const lay=L&&L.total?`LAYER ${L.layer}/${L.total}`:`LAYER ${Math.round(p*1.6)}/160`, rem=L&&L.remaining?` · ${L.remaining} MIN LEFT`:'';
+  const tr=(L&&L.trays)||printer.spools.map(s=>({color:'#'+s.material.color.getHexString(),type:'PLA'}));
+  e('pT').innerHTML=tr.map((t,i)=>`<span class="tray${printer.activeSpool===i&&printer.state==='printing'?' on':''}"><i style="background:${t&&!t.empty?t.color:'transparent'}"></i>${t&&!t.empty?(t.type||'—'):'فاضي'}${t&&t.remain>=0?` ${t.remain}%`:''}</span>`).join('');
   e('pS').textContent={idle:'IDLE · READY',printing:`PRINTING · ${lay}${rem}`,done:'FINISHED · REMOVE PART',stuck:'PAUSED · '+(L&&L.error?'ERROR '+L.error:'SPAGHETTI DETECTED'),paused:'PAUSED'}[printer.state]||printer.state;}
 function bindCard(){const c=$('card');c.querySelector('.x').onclick=closeCard;c.querySelectorAll('[data-ask]').forEach(b=>b.onclick=()=>ask(b.dataset.ask));}
 function closeCard(){cardFor=null;$('card').hidden=true;Object.values(AGENTS).forEach(x=>x.el.classList.remove('sel'));}
@@ -835,6 +842,8 @@ let lastSlicerDraw=0;
 function applyPrinter(d){
   printer.live=d;let st=STATE_MAP[d.state]||'idle';if(d.state==='PAUSE')st=d.error?'stuck':'paused';
   printer.state=st;printer.activeSpool=d.tray!=null?+d.tray%4:0;
+  if(Array.isArray(d.trays))d.trays.forEach((t,i)=>{if(!printer.spools[i]||!t)return;const g=printer.spoolGroups[i];
+    if(t.empty){g.visible=false;}else{g.visible=true;if(t.color)printer.spools[i].material.color.set(t.color);}});
   if(d.pct!=null)setPrintProgress(Math.max(0,Math.min(1,d.pct/100)));
   setPrinterLed({printing:'#46b4ff',done:'#3fe08c',idle:'#3fe08c',paused:'#ffc657',stuck:'#ff4f6a'}[st]);
   const a=AGENTS.prt;if(a.atHome!==false&&a.status!=='err'){const want=st==='printing'?'busy':st==='stuck'?'err':a.status==='busy'?'idle':a.status;if(want!==a.status)setStatus('prt',want);}
@@ -964,7 +973,7 @@ function loop(){
   const w=stage.clientWidth,h=stage.clientHeight;
   for(const a of Object.values(AGENTS)){
     v3.copy(a.g.position);v3.y+=a.mode==='sit'||a.mode==='type'||a.mode==='sleep'?2.0:2.3;v3.project(camera);
-    a.el.hidden=v3.z>1;a.el.style.transform=`translate(${(v3.x+1)/2*w}px,${(1-v3.y)/2*h}px) translate(-50%,-100%)`;
+    a.el.hidden=v3.z>1||Math.abs(v3.x)>1.15||Math.abs(v3.y)>1.15;a.el.style.transform=`translate(${(v3.x+1)/2*w}px,${(1-v3.y)/2*h}px) translate(-50%,-100%)`;
   }
   requestAnimationFrame(loop);
 }
