@@ -233,11 +233,13 @@ function glow(color,size,x,y,z,parent=scene,op=.8){const s=new THREE.Sprite(new 
 const FH=3.4, X0=-8, X1=8, ZB=-3.5, ZF=3.5, CORR=2.45, EX=9.75, EDOOR=8.55, NF=5;
 const fy=f=>f*FH;
 const woodTex=canvasTex(512,512,(g,w,h)=>{
-  const rows=10, ph=h/rows;
-  for(let r=0;r<rows;r++){let x=-(r%2)*90;while(x<w){const len=140+Math.random()*120;const l=22+Math.random()*10;g.fillStyle=`hsl(28,${38+Math.random()*10}%,${l}%)`;g.fillRect(x,r*ph,len-2,ph-2);
-    g.strokeStyle='rgba(0,0,0,.18)';for(let k=0;k<5;k++){g.beginPath();const yy=r*ph+Math.random()*ph;g.moveTo(x,yy);g.bezierCurveTo(x+len*.3,yy+3,x+len*.6,yy-3,x+len,yy);g.stroke();}x+=len;}}
+  const rows=6, ph=h/rows; g.fillStyle='hsl(28,40%,24%)';g.fillRect(0,0,w,h);
+  for(let r=0;r<rows;r++){let x=-(r%2)*120;while(x<w){const len=200+Math.random()*120,l=23+Math.random()*4;
+    const gr=g.createLinearGradient(0,r*ph,0,(r+1)*ph);gr.addColorStop(0,`hsl(28,40%,${l+1.5}%)`);gr.addColorStop(1,`hsl(28,40%,${l-1}%)`);
+    g.fillStyle=gr;g.fillRect(x+1,r*ph+1,len-2,ph-2);x+=len;}}
+  g.filter='blur(2px)';g.drawImage(g.canvas,0,0);g.filter='none';
 });
-woodTex.wrapS=woodTex.wrapT=THREE.RepeatWrapping; woodTex.repeat.set(3,1.4);
+woodTex.wrapS=woodTex.wrapT=THREE.RepeatWrapping; woodTex.repeat.set(2,1);woodTex.anisotropy=renderer.capabilities.getMaxAnisotropy();woodTex.minFilter=THREE.LinearMipmapLinearFilter;
 const wallTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#2a1f19';g.fillRect(0,0,w,h);for(let i=0;i<1400;i++){g.fillStyle=`rgba(${Math.random()<.5?0:255},${Math.random()<.5?0:200},120,${Math.random()*.035})`;g.fillRect(Math.random()*w,Math.random()*h,2,2);} });
 wallTex.wrapS=wallTex.wrapT=THREE.RepeatWrapping; wallTex.repeat.set(4,1);
 const floorMat=M('#ffffff',{map:woodTex,roughness:.55});
@@ -291,9 +293,9 @@ function pendant(x,y,z,color,room){
 ROOMS.forEach(r=>{
   const y=fy(r.f), w=r.x1-r.x0, cx=(r.x0+r.x1)/2;
   // floor + rug
-  const fl=new THREE.Mesh(new THREE.PlaneGeometry(w,ZF-ZB),floorMat);fl.rotation.x=-Math.PI/2;fl.position.set(cx,y+.101,0);scene.add(fl);
+  const fl=new THREE.Mesh(new THREE.PlaneGeometry(w,ZF-ZB),floorMat);fl.rotation.x=-Math.PI/2;fl.position.set(cx,y+.125,0);scene.add(fl);
   const rugMat=M(r.rug,{roughness:.95,emissive:r.rug,emissiveIntensity:.18});
-  const rug=new THREE.Mesh(new THREE.PlaneGeometry(w-2.2,3.6),rugMat);rug.rotation.x=-Math.PI/2;rug.position.set(cx,y+.11,-1.2);scene.add(rug);
+  const rug=new THREE.Mesh(new THREE.PlaneGeometry(w-2.2,3.6),rugMat);rug.rotation.x=-Math.PI/2;rug.position.set(cx,y+.14,-1.2);scene.add(rug);
   // back wall + sign + window
   const wall=new THREE.Mesh(new THREE.PlaneGeometry(w,FH-.2),wallMat);wall.position.set(cx,y+FH/2,ZB);scene.add(wall);
   const st=signTex(r);signTexes.push(st);
@@ -553,7 +555,7 @@ function makeAgent(o){
   const root=new THREE.Group(), body=new THREE.Group();root.add(body);
   const skin=M(o.skin||SKIN,{roughness:.6});
   // shadow
-  const sh=new THREE.Mesh(new THREE.CircleGeometry(.36,24),new THREE.MeshBasicMaterial({color:'#000',transparent:true,opacity:.35,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=.02;root.add(sh);
+  const sh=new THREE.Mesh(new THREE.CircleGeometry(.36,24),new THREE.MeshBasicMaterial({color:'#000',transparent:true,opacity:.35,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=.065;root.add(sh);
   const legs=[],arms=[];
   const pants=M(o.pants||'#22252e'), shoe=M('#141414');
   [-.11,.11].forEach(x=>{const p=new THREE.Group();p.position.set(x,.58,0);body.add(p);cyl(.075,.07,.5,o.thobe?M(o.shirt):pants,0,-.25,0,p,12);box(.13,.08,.22,shoe,0,-.53,.04,p);legs.push(p);});
@@ -952,17 +954,21 @@ try{recLang=localStorage.getItem('fayez-hq-lang')||'ar-SA';}catch(e){}
 function paintLang(){$('langBtn').textContent=recLang.startsWith('ar')?'ع':'EN';$('langBtn').title=recLang.startsWith('ar')?'الميكروفون: عربي (اضغط للإنجليزي)':'Mic: English (tap for Arabic)';}
 $('langBtn').onclick=()=>{recLang=recLang.startsWith('ar')?'en-US':'ar-SA';try{localStorage.setItem('fayez-hq-lang',recLang);}catch(e){}paintLang();};
 function setMic(on){$('micBtn').setAttribute('aria-pressed',String(on));$('q').placeholder=on?(recLang.startsWith('ar')?'أسمعك… تكلم':'Listening…'):'اكتب للمدير العام… أو @ لأي وكيل';}
+let recTimer=null;
+function micReset(){clearTimeout(recTimer);if(rec){try{rec.onend=null;rec.onresult=null;rec.onerror=null;rec.abort();}catch(e){}}rec=null;setMic(false);}
 $('micBtn').onclick=()=>{
-  if(rec){rec.stop();return;}
-  if(!SR){feed('المدير العام','المتصفح هذا ما يدعم التحويل من صوت لنص. استخدم Chrome أو Edge على الكمبيوتر، أو Safari على الآيفون.');return;}
+  if(rec){const v=$('q').value.trim(),fin=recFinal;micReset();if(fin&&v){ask(v);$('q').value='';}return;}  // second tap always stops
+  if(!SR){feed('المدير العام','المتصفح هذا ما يدعم التحويل من صوت لنص. استخدم Chrome أو Edge على الكمبيوتر، أو Safari على الآيفون. وتقدر تستخدم مايك الكيبورد.');return;}
+  if(!LIVE.on&&window.self!==window.top){feed('المدير العام','الميكروفون يشتغل في نسخة البيت (localhost أو رابط Tailscale). هنا استخدم مايك الكيبورد.');return;}
   if(!window.isSecureContext){feed('المدير العام','الميكروفون يحتاج رابط آمن (https أو localhost). من الجوال افتح البيت عن طريق رابط Tailscale.');return;}
-  try{rec=new SR();}catch(e){feed('المدير العام','ما قدرت أشغّل الميكروفون هنا.');return;}
+  try{rec=new SR();}catch(e){rec=null;feed('المدير العام','ما قدرت أشغّل الميكروفون هنا.');return;}
   rec.lang=recLang;rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;recFinal=false;
   rec.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++){t+=e.results[i][0].transcript;if(e.results[i].isFinal)recFinal=true;}$('q').value=t;};
-  rec.onerror=e=>{const m={'not-allowed':'اسمح للصفحة تستخدم الميكروفون من إعدادات المتصفح وجرب مرة ثانية.','service-not-allowed':'الميكروفون ممنوع هنا. من الآيفون تأكد إن الإملاء (Dictation) مفعّل.','no-speech':'ما سمعت شي، جرب مرة ثانية.','audio-capture':'ما لقيت ميكروفون في الجهاز.','network':'التحويل من صوت لنص يحتاج إنترنت.'}[e.error];if(m)feed('المدير العام',m);};
-  rec.onend=()=>{setMic(false);rec=null;const v=$('q').value.trim();if(recFinal&&v){ask(v);$('q').value='';}};
-  try{rec.start();setMic(true);}catch(e){rec=null;setMic(false);}
+  rec.onerror=e=>{const m={'not-allowed':'اسمح للصفحة تستخدم الميكروفون من إعدادات المتصفح وجرب مرة ثانية.','service-not-allowed':'الميكروفون ممنوع هنا. من الآيفون تأكد إن الإملاء (Dictation) مفعّل.','no-speech':'ما سمعت شي، جرب مرة ثانية.','audio-capture':'ما لقيت ميكروفون في الجهاز.','network':'التحويل من صوت لنص يحتاج إنترنت.'}[e.error];if(m)feed('المدير العام',m);micReset();};
+  rec.onend=()=>{const v=$('q').value.trim(),fin=recFinal;micReset();if(fin&&v){ask(v);$('q').value='';}};
+  try{rec.start();setMic(true);recTimer=setTimeout(micReset,15000);}catch(e){micReset();}  // hard stop after 15s
 };
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&rec)micReset();});
 paintLang();
 
 /* ---------------- day / night ---------------- */
