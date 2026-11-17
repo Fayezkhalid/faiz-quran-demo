@@ -330,16 +330,26 @@ function shelf(x,y,z,w=1.6){const g=new THREE.Group();g.position.set(x,y,z);scen
 // TV / screen content
 const tvs={};
 const HOME={budget:9000,spent:5420,filament:0,bills:[['الكهرباء',420],['الإنترنت',299],['المدارس',1800]],inbox:3,prints:0,trip:'العلا',designs:2,tasks:['صيانة المكيف ٢٠ نوفمبر','تغيير فلتر الموية']};
+const MBA_MODULES=[['Strategic Planning','التخطيط الاستراتيجي',7],['Strategic Human Resource Management','إدارة الموارد البشرية',7],['Finance for Strategic Managers','الإدارة المالية',7],['Strategic Marketing','التسويق الاستراتيجي',7],['Personal Development for Leadership','التطوير الشخصي للقيادة',7],['Organizational Behaviour','السلوك التنظيمي',7],['Continuous Improvement','التحسين المستمر',7],['Research for Strategic Managers','البحث للمديرين الاستراتيجيين',8]];
 const MS={
-  data:{program:'الماجستير',start:new Date().toISOString().slice(0,10),pacePerWeek:2,courses:Array.from({length:7},(_,i)=>({name:`المادة ${i+1}`,hours:2,done:false,link:''})),exam:{type:'MCQ',hours:2,date:null}},
-  state(){const c=this.data.courses,done=c.filter(x=>x.done).length,ni=c.findIndex(x=>!x.done);const weeks=Math.max(0,(Date.now()-new Date(this.data.start).getTime())/6048e5);
-    const expected=Math.min(c.length,Math.floor(weeks*this.data.pacePerWeek)+this.data.pacePerWeek);
-    return {done,total:c.length,remaining:c.length-done,hoursLeft:c.filter(x=>!x.done).reduce((a,x)=>a+x.hours,0),nextIndex:ni,next:c[ni<0?c.length-1:ni],behind:Math.max(0,expected-this.data.pacePerWeek-done)};},
-  summary(){const m=this.state();if(m.done>=m.total)return `خلصت ${m.total} مواد كلها 🎉 باقي اختبار الاختيارات المتعددة (ساعتين). أراجع معك قبله؟`;
-    return `خلصت ${m.done} من ${m.total}. باقي ${m.remaining} مواد (${m.hoursLeft} ساعة). الجاية: ${m.next.name}.${m.behind>0?` متأخر ${m.behind} عن الخطة.`:' ماشي على الخطة ✓'} وبعد المادة السابعة اختبار MCQ ساعتين.`;},
+  data:{program:'MBA Standard – Intake 26',school:'IBA London',start:new Date().toISOString().slice(0,10),pacePerWeek:2,lectureHours:2,baseline:1,
+    modules:MBA_MODULES.map(([en,ar,n],i)=>({en,ar,lectures:n,done:i===0?1:0,exam:false,assignment:false}))},
+  cur(){const m=this.data.modules;let i=m.findIndex(x=>x.done<x.lectures||!x.exam);return i<0?m.length:i;},
+  state(){const m=this.data.modules,ci=this.cur(),total=m.reduce((a,x)=>a+x.lectures,0),done=m.reduce((a,x)=>a+x.done,0);
+    const weeks=Math.max(0,(Date.now()-new Date(this.data.start).getTime())/6048e5),expected=Math.floor(weeks*this.data.pacePerWeek);
+    const mod=m[Math.min(ci,m.length-1)];
+    return {ci,mod,finished:ci>=m.length,modsDone:m.filter(x=>x.done>=x.lectures&&x.exam).length,nMods:m.length,total,done,remaining:total-done,hoursLeft:(total-done)*this.data.lectureHours,
+      behind:Math.max(0,expected-(done-(this.data.baseline||0))),examDue:mod.done>=mod.lectures&&!mod.exam,nextLec:mod.done+1};},
+  summary(){const s=this.state();if(s.finished)return 'خلصت المحاور الثمانية كلها 🎓 مبروك يا أبو خالد!';
+    const m=s.mod;const head=`المحور ${s.ci+1} من ${s.nMods}: ${m.ar}.`;
+    const now=s.examDue?` خلصت محاضراته السبع ✓ الجاي: الاختبار النهائي (60 سؤال اختيار من متعدد، ساعتين).`:` خلصت ${m.done} من ${m.lectures} محاضرات. الجاية: Lech ${s.nextLec}.`;
+    return `${head}${now} الإجمالي: ${s.done} من ${s.total} محاضرة، باقي ${s.remaining} (~${s.hoursLeft} ساعة).${s.behind>0?` متأخر ${s.behind} عن الخطة.`:''}`;},
+  lectureDone(){const s=this.state();if(s.finished)return null;const m=s.mod;if(m.done<m.lectures){m.done++;return {kind:'lecture',m,n:m.done};}return {kind:'examDue',m};},
+  examDone(){const s=this.state();if(s.finished)return null;const m=s.mod;m.exam=true;return {kind:'exam',m};},
+  assignmentDone(){const m=this.data.modules.find(x=>!x.assignment);if(!m)return null;m.assignment=true;return {kind:'assignment',m};},
 };
-try{const sv=JSON.parse(localStorage.getItem('fayez-hq-masters')||'null');if(sv&&sv.courses)MS.data=sv;}catch(e){}
-function saveMS(){try{localStorage.setItem('fayez-hq-masters',JSON.stringify(MS.data));}catch(e){}}
+try{const sv=JSON.parse(localStorage.getItem('fayez-hq-mba')||'null');if(sv&&sv.modules)MS.data=sv;}catch(e){}
+function saveMS(){try{localStorage.setItem('fayez-hq-mba',JSON.stringify(MS.data));}catch(e){}}
 const drawTV={
   daily:(g,w,h)=>{bgTV(g,w,h,'#0d1a2e');title(g,w,'DAILY UPDATE','التحديث اليومي');
     const kp=[['المصروف',`${HOME.spent.toLocaleString('en')} ﷼`],['طباعات',HOME.prints],['إيميلات',HOME.inbox]];
@@ -364,13 +374,15 @@ const drawTV={
   family:(g,w,h)=>{bgTV(g,w,h,'#1a0d33');title(g,w,'FAMILY · TRAVEL','العائلة');
     g.strokeStyle='#b48cff';g.lineWidth=3;g.beginPath();g.arc(150,240,90,0,TAU);g.stroke();g.beginPath();g.ellipse(150,240,40,90,0,0,TAU);g.stroke();g.beginPath();g.moveTo(60,240);g.lineTo(240,240);g.stroke();
     g.textAlign='right';g.fillStyle='#efe6ff';g.font='600 30px "Readex Pro"';g.fillText(`رحلة: ${HOME.trip}`,w-40,200);g.font='500 24px "Readex Pro"';g.fillStyle='#b8a8d8';g.fillText('عطلة نهاية الأسبوع',w-40,244);},
-  masters:(g,w,h)=>{bgTV(g,w,h,'#0b2433');const m=MS.state();title(g,w,"MASTER'S",`${m.done}/${m.total} مواد`);
-    const bw=(w-80-6*10)/7;MS.data.courses.forEach((c,i)=>{const x=w-40-(i+1)*bw-i*10;g.fillStyle=c.done?'#3fe08c':i===m.nextIndex?'#ffc657':'#ffffff18';g.fillRect(x,112,bw,64);
-      g.fillStyle=c.done||i===m.nextIndex?'#0b1f17':'#9fb3c8';g.font='700 30px "JetBrains Mono"';g.textAlign='center';g.fillText(c.done?'✓':String(i+1),x+bw/2,156);});
-    g.textAlign='right';g.fillStyle='#e9f4ff';g.font='600 28px "Readex Pro"';g.fillText(m.done>=m.total?'خلصت المواد! باقي الاختبار':`الجاية: ${m.next.name} · ساعتين`,w-40,228);
-    g.font='500 24px "Readex Pro"';g.fillStyle='#9fc3dd';g.fillText(`باقي ${m.remaining} مواد (${m.hoursLeft} ساعة) · المطلوب ${MS.data.pacePerWeek} بالأسبوع`,w-40,272);
-    g.fillStyle=m.behind>0?'#ff8a8a':'#7fe0b0';g.fillText(m.behind>0?`متأخر ${m.behind} مادة عن الخطة`:'ماشي على الخطة ✓',w-40,312);
-    g.fillStyle='#ffd27a';g.font='600 22px "Readex Pro"';g.fillText('بعد المادة السابعة: اختبار اختيارات متعددة · ساعتين',w-40,352);},
+  masters:(g,w,h)=>{bgTV(g,w,h,'#0b2433');const st=MS.state(),m=st.mod;title(g,w,'MBA · IBA LONDON',`المحور ${Math.min(st.ci+1,st.nMods)}/${st.nMods}`);
+    g.textAlign='right';g.fillStyle='#e9f4ff';g.font='600 27px "Readex Pro"';g.fillText(m.ar,w-40,122);
+    const n=m.lectures,bw=(w-80-(n-1)*8)/n;for(let i=0;i<n;i++){const x=w-40-(i+1)*bw-i*8,dn=i<m.done,nx=i===m.done;g.fillStyle=dn?'#3fe08c':nx?'#ffc657':'#ffffff18';g.fillRect(x,140,bw,52);
+      g.fillStyle=dn||nx?'#0b1f17':'#9fb3c8';g.font='700 24px "JetBrains Mono"';g.textAlign='center';g.fillText(dn?'✓':'L'+(i+1),x+bw/2,175);}
+    g.textAlign='right';g.font='600 22px "Readex Pro"';g.fillStyle=m.exam?'#3fe08c':st.examDue?'#ffc657':'#7f93a8';g.fillText(`${m.exam?'✓':'◻'} الاختبار النهائي MCQ · 60 سؤال · ساعتين`,w-40,226);
+    g.fillStyle=m.assignment?'#3fe08c':'#7f93a8';g.fillText(`${m.assignment?'✓':'◻'} الواجب المنزلي · 15 يوم`,w-40,258);
+    const pct=st.done/st.total;g.fillStyle='#ffffff14';g.fillRect(40,290,w-80,16);g.fillStyle='#46b4ff';g.fillRect(w-40-(w-80)*pct,290,(w-80)*pct,16);
+    g.fillStyle='#9fc3dd';g.font='500 21px "Readex Pro"';g.fillText(`${st.done}/${st.total} محاضرة · باقي ~${st.hoursLeft} ساعة`,w-40,340);
+    g.fillStyle=st.behind>0?'#ff8a8a':'#7fe0b0';g.textAlign='left';g.fillText(st.behind>0?`متأخر ${st.behind}`:'على الخطة ✓',40,340);},
   whatsapp:(g,w,h)=>{bgTV(g,w,h,'#0b1f17');title(g,w,'WHATSAPP','آخر الرسائل');
     const msgs=(HOME.wa||['هلا أبو خالد، البيت تمام 👌']).slice(-3);msgs.forEach((m,i)=>{const y=120+i*76;g.fillStyle='#1f5c3f';const tw=Math.min(w-120,g.measureText(m).width+80);g.fillRect(w-40-Math.max(260,tw),y,Math.max(260,tw),58);g.fillStyle='#e8fff1';g.font='500 26px "Readex Pro"';g.textAlign='right';g.fillText(m,w-60,y+38);});},
 };
@@ -554,7 +566,7 @@ const AGENTS={
   des:  {name:'المصمم', en:'DESIGN', room:'design', x:3.2, look:{shirt:'#e0457f',hair:'#2a1a10',glasses:1}, role:'يجهز ملفات STL من MakerWorld وتصاميمك', keys:['المصمم','التصميم','تصميم']},
   home: {name:'مدير البيت', en:'HOME', room:'home', x:-4.6, look:{thobe:1,shirt:'#e9e4d8',ghutra:'red'}, role:'الصيانة والمواعيد وطلبات البيت', keys:['مدير البيت','البيت','الصيانة']},
   fam:  {name:'منسق العائلة', en:'FAMILY', room:'family', x:3.4, look:{shirt:'#2fb36e',hair:'#120c08',beard:1}, role:'السفر والمدارس ومواعيد العيال', keys:['العائلة','العايلة','منسق','السفر','الرحلة']},
-  adv:  {name:'المرشد الأكاديمي', en:'ADVISOR', room:'study', x:3.2, look:{thobe:1,shirt:'#f1efe8',ghutra:'white',glasses:1,beard:1}, role:'يتابع الماجستير: ٧ مواد، تذكير واتساب، ملخصات، والاختبار', keys:['المرشد الاكاديمي','المرشد','مرشد','الماجستير','ماجستير']},
+  adv:  {name:'المرشد الأكاديمي', en:'ADVISOR', room:'study', x:3.2, look:{thobe:1,shirt:'#f1efe8',ghutra:'white',glasses:1,beard:1}, role:'MBA – IBA London: ٨ محاور × ٧ محاضرات، الاختبارات والواجبات، وتذكير واتساب يومي', keys:['المرشد الاكاديمي','المرشد','مرشد','الماجستير','ماجستير']},
   wa:   {name:'وكيل الواتساب', en:'WHATSAPP', room:'lobby', x:-4.8, look:{shirt:'#1fa35a',hair:'#1a120c'}, role:'يرسل لك التنبيهات على الواتساب', keys:['الواتساب','واتساب','الوتساب']},
 };
 const SEAT_Z=-1.95;
@@ -773,12 +785,12 @@ function ask(text){
     enqueue(async()=>{await say(who.id,`${who.last} (حالتي: ${STATUS[who.status][0]})`,2200);});return;}
   const num=+(t.match(/\d+/)||[0])[0];
   let job=null;
-  if(/ماجستير|مرشد|ماده|مادة|المواد|اختبار|دراس/.test(t)&&!/فاتور|طباع|اطبع/.test(t)){
+  if(/ماجستير|مرشد|ماده|مادة|المواد|اختبار|دراس|محاضر|محور|واجب|mba/i.test(t)&&!/فاتور|طباع|اطبع/.test(t)){
     const n=+(t.match(/\d+/)||[0])[0];
-    if(/خلصت|انهيت|خلصنا|تم/.test(t))job=()=>SC.msDone(n?n-1:-1);
-    else if(/لخص|ملخص|تلخيص|اشرح/.test(t))job=()=>SC.msSummary(n?n-1:-1);
+    if(/خلصت|انهيت|خلصنا|سويت|حليت/.test(t))job=()=>SC.msDone(/اختبار|امتحان|كويز/.test(t)?'exam':/واجب|اساينمنت|assignment/.test(t)?'assignment':'lecture');
+    else if(/لخص|ملخص|تلخيص|اشرح/.test(t))job=()=>SC.msSummary();
     else if(/ذكرني|تذكير|ذكر/.test(t))job=()=>SC.msRemind();
-    else if(/رابط|لينك|موقع/.test(t))job=()=>say('adv','ارسل لي رابط المنصة وأسماء المواد في محادثة Claude، وأنا أحفظها هنا وأربط كل مادة برابطها',2600);
+    else if(/رابط|لينك|موقع/.test(t))job=()=>say('adv','البرنامج: MBA Standard – Intake 26 على بوابة IBA London. المحتوى ورا تسجيل الدخول، فأنت تفتحه وأنا أتابع تقدمك',2600);
     else job=()=>SC.msStatus();
     feed('المدير العام','حوّلتها للمرشد الأكاديمي.');enqueue(job);return;}
   if(/(وقف|ايقاف|اوقف|بوز).*(طباع|طابع)/.test(t)||/(طباع|طابع).*(وقف|ايقاف)/.test(t)){job=()=>printerCmd('pause');}
@@ -798,7 +810,7 @@ function ask(text){
   enqueue(job);
 }
 $('form').addEventListener('submit',e=>{e.preventDefault();const v=$('q').value.trim();if(v){ask(v);$('q').value='';}});
-const QUICK=[['الماجستير: كم باقي؟','المرشد الأكاديمي كم باقي لي؟'],['خلصت مادة','خلصت المادة'],['اختبر الواتساب','اختبر الواتساب'],['اطبع قطعة','اطبع لي القطعة رقم 21'],['فاتورة الكهرباء','وصلت فاتورة الكهرباء 420'],['صيانة المكيف','المكيف يحتاج صيانة'],['رحلة العلا','خطط لنا رحلة العلا'],['تصميم','صمم لي حامل جوال'],['الطابعة علقت','الطابعة علقت'],['@المالي وش صار؟','المدير المالي وش صار؟']];
+const QUICK=[['الماجستير: كم باقي؟','المرشد الأكاديمي كم باقي لي؟'],['خلصت محاضرة','خلصت المحاضرة'],['خلصت الاختبار','خلصت الاختبار'],['اختبر الواتساب','اختبر الواتساب'],['اطبع قطعة','اطبع لي القطعة رقم 21'],['فاتورة الكهرباء','وصلت فاتورة الكهرباء 420'],['صيانة المكيف','المكيف يحتاج صيانة'],['رحلة العلا','خطط لنا رحلة العلا'],['تصميم','صمم لي حامل جوال'],['الطابعة علقت','الطابعة علقت'],['@المالي وش صار؟','المدير المالي وش صار؟']];
 $('quick').innerHTML=QUICK.map(([l,q])=>`<button class="chipq" data-q="${q}">${l}</button>`).join('');
 $('quick').querySelectorAll('button').forEach(b=>b.onclick=()=>ask(b.dataset.q));
 $('updBtn').onclick=()=>ask('أبديت');
@@ -851,24 +863,31 @@ async function tryLive(){
   es.onerror=()=>setLiveBadge(false);es.onopen=()=>setLiveBadge(true);
   feed('المدير العام',`البيت صار لايف ✓ الطابعة: ${LIVE.printer?'متصلة':'غير مضبوطة'} · الواتساب: ${LIVE.whatsapp?'جاهز':'غير مضبوط'}`);
 }
-function applyMasters(m){if(m&&m.courses){MS.data=m;saveMS();updateTV('masters');}}
+function applyMasters(m){if(m&&m.modules){MS.data=m;saveMS();updateTV('masters');}}
 async function msAction(body){if(LIVE.on){try{applyMasters(await api('api/masters',body));return true;}catch(e){sys('masters error: '+e.message);}}return false;}
 Object.assign(SC,{
   async msStatus(){setPipe([['DES','ADVISOR'],['MGR','MANAGER']]);stepPipe(0);setStatus('adv','busy');await say('adv',MS.summary(),3200);setStatus('adv','done');AGENTS.adv.last=MS.summary();idlePipe();},
-  async msDone(i){
+  async msDone(kind){
     setPipe([['DES','ADVISOR'],['MGR','MANAGER'],['WA','WHATSAPP']]);stepPipe(0);setStatus('adv','busy');
-    const c=MS.data.courses;if(i<0||i>=c.length)i=c.findIndex(x=>!x.done);if(i<0){await say('adv','كل المواد مخلصة ✓ باقي الاختبار',1800);setStatus('adv','done');idlePipe();return;}
-    if(!(await msAction({action:'done',index:i}))){c[i].done=true;c[i].doneAt=new Date().toISOString();saveMS();updateTV('masters');}
-    const m=MS.state();await say('adv',`مبروك! سجلت ${c[i].name} ✓ خلصت ${m.done} من ${m.total}`,1800);
-    stepPipe(1);await visit('adv','ceo');await say('ceo','ممتاز، كمل عليه وذكّره بالجاية');
+    let r=null;
+    if(LIVE.on){try{const res=await api('api/masters',{action:kind});applyMasters(res.masters);r=res.result;}catch(e){sys('masters error: '+e.message);}}
+    if(!LIVE.on){r=kind==='exam'?MS.examDone():kind==='assignment'?MS.assignmentDone():MS.lectureDone();saveMS();updateTV('masters');}
+    if(!r){await say('adv','ما فيه شي باقي هنا ✓',1500);setStatus('adv','done');idlePipe();return;}
+    const st=MS.state();let msg;
+    if(r.kind==='lecture')msg=`سجلت ${r.m.ar} · Lech ${r.n} ✓`;
+    else if(r.kind==='examDue')msg=`محاضرات ${r.m.ar} كلها خلصت. باقي الاختبار النهائي، قل لي "خلصت الاختبار" إذا سويته`;
+    else if(r.kind==='exam')msg=`مبروك! خلصت اختبار ${r.m.ar} 🎉`;
+    else msg=`سجلت واجب ${r.m.ar} ✓`;
+    await say('adv',msg,2000);
+    stepPipe(1);await visit('adv','ceo');await say('ceo','ممتاز، تابع معه الجاية');
     stepPipe(2);await go('adv',0,-3.6,-.2);await face(AGENTS.adv,Math.PI);setStatus('wa','busy');
-    await whatsapp(m.done>=m.total?'🎓 خلصت المواد السبع! باقي اختبار MCQ ساعتين':`📚 خلصت ${c[i].name}. باقي ${m.remaining} مواد. الجاية: ${m.next.name}`);setStatus('wa','done');
+    await whatsapp('📚 '+msg+' · '+MS.summary());setStatus('wa','done');
     AGENTS.adv.last=MS.summary();await goHome('adv');idlePipe();},
   async msRemind(){
     setPipe([['DES','ADVISOR'],['WA','WHATSAPP']]);stepPipe(0);setStatus('adv','busy');await say('adv','أرسل لك تذكير الماجستير الحين',1200);
     stepPipe(1);await go('adv',0,-3.6,-.2);await face(AGENTS.adv,Math.PI);setStatus('wa','busy');await whatsapp('📚 تذكير الماجستير: '+MS.summary());setStatus('wa','done');await goHome('adv');idlePipe();},
-  async msSummary(i){setStatus('adv','busy');const c=MS.data.courses;if(i<0||i>=c.length)i=Math.max(0,c.findIndex(x=>!x.done));
-    await say('adv',`عشان ألخص ${c[i].name}: ارسل محتوى الدرس أو رابطه أو صوّر الشرائح في محادثة Claude، وأرجع لك بملخص بسيط وأسئلة اختيار من متعدد للمراجعة`,3600);setStatus('adv','idle');},
+  async msSummary(){setStatus('adv','busy');
+    await say('adv',`عشان ألخص ${MS.state().mod.ar}: انسخ نص المحاضرة أو صوّر الشرائح وارسلها في محادثة Claude، وأرجع لك بملخص بسيط وأسئلة MCQ للمراجعة`,3600);setStatus('adv','idle');},
 
   async liveStart(name){
     setPipe([['A1','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['A1','PRINTING']]);stepPipe(0);

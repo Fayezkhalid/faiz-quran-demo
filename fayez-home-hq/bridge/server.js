@@ -59,37 +59,53 @@ function addBill(name, amount) {
   return finance;
 }
 
-/* ---------------- master's program (academic advisor) ---------------- */
-const MS_FILE = path.join(DATA, 'masters.json');
+/* ---------------- MBA program (academic advisor) ----------------
+   IBA London · MBA Standard – Intake 26: 8 modules, 7 lectures each (Research has 8),
+   then a final MCQ exam (60 questions, 120 min) and a take-home assignment (15 days). */
+const MS_FILE = path.join(DATA, 'mba.json');
+const MBA_MODULES = [['Strategic Planning', 'التخطيط الاستراتيجي', 7], ['Strategic Human Resource Management', 'إدارة الموارد البشرية', 7],
+  ['Finance for Strategic Managers', 'الإدارة المالية', 7], ['Strategic Marketing', 'التسويق الاستراتيجي', 7],
+  ['Personal Development for Leadership', 'التطوير الشخصي للقيادة', 7], ['Organizational Behaviour', 'السلوك التنظيمي', 7],
+  ['Continuous Improvement', 'التحسين المستمر', 7], ['Research for Strategic Managers', 'البحث للمديرين الاستراتيجيين', 8]];
 function loadMasters() {
-  try { const m = JSON.parse(fs.readFileSync(MS_FILE, 'utf8')); if (m && Array.isArray(m.courses)) return m; } catch (_) {}
+  try { const m = JSON.parse(fs.readFileSync(MS_FILE, 'utf8')); if (m && Array.isArray(m.modules)) return m; } catch (_) {}
   return {
-    program: 'الماجستير', start: new Date().toISOString().slice(0, 10), pacePerWeek: 2,
-    courses: Array.from({ length: 7 }, (_, i) => ({ name: `المادة ${i + 1}`, hours: 2, done: false, doneAt: null, link: '' })),
-    exam: { type: 'MCQ', hours: 2, date: null },
+    program: 'MBA Standard – Intake 26', school: 'IBA London', start: new Date().toISOString().slice(0, 10),
+    pacePerWeek: +(process.env.MASTERS_PACE_PER_WEEK || 2), lectureHours: 2, baseline: 1,
+    modules: MBA_MODULES.map(([en, ar, n], i) => ({ en, ar, lectures: n, done: i === 0 ? 1 : 0, exam: false, assignment: false })),
     reminder: { time: process.env.MASTERS_REMINDER_TIME || '20:00', last: null },
   };
 }
 let masters = loadMasters();
 function saveMasters() { fs.writeFileSync(MS_FILE, JSON.stringify(masters, null, 2)); push('masters', masters); }
+function msCur() { const i = masters.modules.findIndex(x => x.done < x.lectures || !x.exam); return i < 0 ? masters.modules.length : i; }
 function msState() {
-  const c = masters.courses, done = c.filter(x => x.done).length, ni = c.findIndex(x => !x.done);
+  const m = masters.modules, ci = msCur(), total = m.reduce((a, x) => a + x.lectures, 0), done = m.reduce((a, x) => a + x.done, 0);
   const weeks = Math.max(0, (Date.now() - new Date(masters.start).getTime()) / 6048e5);
-  return { done, total: c.length, remaining: c.length - done, hoursLeft: c.filter(x => !x.done).reduce((a, x) => a + x.hours, 0),
-    next: c[ni < 0 ? c.length - 1 : ni], finished: ni < 0, behind: Math.max(0, Math.floor(weeks * masters.pacePerWeek) - done) };
+  const mod = m[Math.min(ci, m.length - 1)];
+  return { ci, mod, finished: ci >= m.length, total, done, remaining: total - done, hoursLeft: (total - done) * masters.lectureHours,
+    behind: Math.max(0, Math.floor(weeks * masters.pacePerWeek) - (done - (masters.baseline || 0))), examDue: mod.done >= mod.lectures && !mod.exam };
 }
 function msSummary() {
-  const m = msState();
-  if (m.finished) return `خلصت المواد السبع كلها 🎉 باقي اختبار الاختيارات المتعددة (ساعتين).`;
-  return `خلصت ${m.done} من ${m.total}. باقي ${m.remaining} مواد (${m.hoursLeft} ساعة). الجاية: ${m.next.name}${m.next.link ? ' ' + m.next.link : ''}.` +
-    (m.behind > 0 ? ` متأخر ${m.behind} عن الخطة (${masters.pacePerWeek} بالأسبوع).` : ' ماشي على الخطة ✓');
+  const s = msState(); if (s.finished) return 'خلصت المحاور الثمانية كلها 🎓 مبروك!';
+  const m = s.mod;
+  return `المحور ${s.ci + 1}/8: ${m.ar}. ` + (s.examDue ? 'المحاضرات خلصت ✓ الجاي: الاختبار النهائي (60 سؤال، ساعتين). ' : `خلصت ${m.done} من ${m.lectures}. الجاية: Lech ${m.done + 1}. `) +
+    `الإجمالي ${s.done}/${s.total} محاضرة، باقي ~${s.hoursLeft} ساعة.` + (s.behind > 0 ? ` متأخر ${s.behind} عن الخطة.` : ' ماشي على الخطة ✓');
+}
+function msApply(action) {
+  const s = msState();
+  if (action === 'assignment') { const m = masters.modules.find(x => !x.assignment); if (!m) return null; m.assignment = true; return { kind: 'assignment', m }; }
+  if (s.finished) return null;
+  if (action === 'exam') { s.mod.exam = true; return { kind: 'exam', m: s.mod }; }
+  if (s.mod.done < s.mod.lectures) { s.mod.done++; return { kind: 'lecture', m: s.mod, n: s.mod.done }; }
+  return { kind: 'examDue', m: s.mod };
 }
 // daily WhatsApp reminder at MASTERS_REMINDER_TIME (local time of this PC)
 setInterval(() => {
   const now = new Date(), hhmm = now.toTimeString().slice(0, 5), today = now.toISOString().slice(0, 10);
   if (hhmm === masters.reminder.time && masters.reminder.last !== today && !msState().finished) {
     masters.reminder.last = today; saveMasters();
-    whatsapp('📚 تذكير الماجستير من المرشد الأكاديمي: ' + msSummary());
+    whatsapp('📚 المرشد الأكاديمي: ' + msSummary());
   }
 }, 30000);
 
@@ -234,20 +250,22 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, addBill(name, Math.round(amount * 100) / 100));
     }
     if (req.method === 'POST' && url.pathname === '/api/masters') {
-      const b = await readBody(req), c = masters.courses, i = Number(b.index);
-      if (b.action === 'done' || b.action === 'undo') {
-        if (!Number.isInteger(i) || i < 0 || i >= c.length) return json(res, 400, { error: 'bad index' });
-        c[i].done = b.action === 'done'; c[i].doneAt = c[i].done ? new Date().toISOString() : null;
-      } else if (b.action === 'set') {
-        if (!Array.isArray(b.courses) || !b.courses.length || b.courses.length > 20) return json(res, 400, { error: 'courses array required' });
-        masters.courses = b.courses.map((x, k) => ({ name: String(x.name || `المادة ${k + 1}`).slice(0, 80), hours: Number(x.hours) || 2,
-          done: !!x.done, doneAt: x.done ? (x.doneAt || new Date().toISOString()) : null, link: /^https?:\/\//.test(x.link || '') ? String(x.link).slice(0, 300) : '' }));
+      const b = await readBody(req);
+      if (['lecture', 'exam', 'assignment'].includes(b.action)) {
+        const result = msApply(b.action); saveMasters();
+        return json(res, 200, { masters, result });
+      }
+      if (b.action === 'set') {
+        const mods = Array.isArray(b.modules) ? b.modules : null;
+        if (mods && mods.length === masters.modules.length) mods.forEach((x, i) => {
+          const m = masters.modules[i]; m.done = Math.max(0, Math.min(m.lectures, Number(x.done) || 0)); m.exam = !!x.exam; m.assignment = !!x.assignment; });
         if (b.start && /^\d{4}-\d{2}-\d{2}$/.test(b.start)) masters.start = b.start;
         if (Number(b.pacePerWeek) > 0) masters.pacePerWeek = Number(b.pacePerWeek);
+        if (Number.isInteger(b.baseline) && b.baseline >= 0) masters.baseline = b.baseline;
         if (b.reminderTime && /^\d{2}:\d{2}$/.test(b.reminderTime)) masters.reminder.time = b.reminderTime;
-      } else return json(res, 400, { error: 'action must be done, undo or set' });
-      saveMasters();
-      return json(res, 200, masters);
+        saveMasters(); return json(res, 200, { masters });
+      }
+      return json(res, 400, { error: 'action must be lecture, exam, assignment or set' });
     }
     if (req.method === 'POST' && url.pathname === '/api/printer') {
       const b = await readBody(req);
