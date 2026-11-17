@@ -154,7 +154,11 @@ function mergeReport(p) {
   if (p.mc_remaining_time != null) printer.remaining = +p.mc_remaining_time;
   if (p.subtask_name != null) printer.name = String(p.subtask_name).replace(/\.(gcode\.)?3mf$/i, '');
   if (p.print_error != null) printer.error = +p.print_error;
-  if (p.ams && p.ams.tray_now != null) printer.tray = +p.ams.tray_now;
+  // active AMS slot. Classic firmware: print.ams.tray_now ("0".."3", "254" = external, "255" = none).
+  // Newer firmware: print.device.extruder.info[0].snow = (ams_id << 8) | slot, 0xFF00 = none.
+  if (p.ams && p.ams.tray_now != null) { const t = +p.ams.tray_now; printer.tray = t < 16 ? t : null; printer.traySrc = 'tray_now'; }
+  const ex = p.device && p.device.extruder && Array.isArray(p.device.extruder.info) ? p.device.extruder.info[0] : null;
+  if (ex && ex.snow != null) { const v = +ex.snow, amsId = v >> 8, slot = v & 0xff; printer.tray = amsId === 0 && slot < 4 ? slot : null; printer.traySrc = 'snow'; }
   // AMS lite slot colours/materials: print.ams.ams[0].tray[i] = { id, tray_color: 'RRGGBBAA', tray_type, remain }
   const unit = p.ams && Array.isArray(p.ams.ams) ? p.ams.ams[0] : null;
   if (unit && Array.isArray(unit.tray)) for (const t of unit.tray) {
@@ -166,6 +170,15 @@ function mergeReport(p) {
     printer.trays[i] = cur;
   }
   onPrinterState();
+}
+// keep the latest raw report sections for diagnosis (no secrets in them)
+const RAW_FILE = path.join(DATA, 'last-report.json');
+const rawKeep = {};
+function keepRaw(p) {
+  if (!p || typeof p !== 'object') return;
+  for (const k of ['ams', 'device', 'vt_tray', 'gcode_state', 'mc_percent', 'layer_num']) if (p[k] !== undefined) rawKeep[k] = p[k];
+  rawKeep.keys = Object.keys(p).slice(0, 200); rawKeep.at = new Date().toISOString();
+  try { fs.writeFileSync(RAW_FILE, JSON.stringify(rawKeep, null, 1)); } catch (_) {}
 }
 let mqttClient = null;
 const printerReady = () => CFG.demo || !!(CFG.ip && CFG.serial && CFG.code);
@@ -187,7 +200,7 @@ function connectPrinter() {
     });
     push('printer', printer);
   });
-  mqttClient.on('message', (_t, buf) => { try { mergeReport(JSON.parse(buf.toString()).print); } catch (_) {} });
+  mqttClient.on('message', (_t, buf) => { try { const p = JSON.parse(buf.toString()).print; keepRaw(p); mergeReport(p); } catch (_) {} });
   mqttClient.on('close', () => { if (printer.connected) log('printer disconnected'); printer.connected = false; push('printer', printer); });
   mqttClient.on('error', e => log('printer error:', e.message));
   printer.command = cmd => new Promise((res, rej) => {

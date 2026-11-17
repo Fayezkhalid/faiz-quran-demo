@@ -869,7 +869,7 @@ const STATE_MAP={RUNNING:'printing',PREPARE:'printing',SLICING:'printing',FINISH
 let lastSlicerDraw=0;
 function applyPrinter(d){
   printer.live=d;let st=STATE_MAP[d.state]||'idle';if(d.state==='PAUSE')st=d.error?'stuck':'paused';
-  printer.state=st;printer.activeSpool=d.tray!=null?+d.tray%4:0;
+  printer.state=st;printer.activeSpool=d.tray!=null&&+d.tray>=0&&+d.tray<4?+d.tray:-1;
   if(Array.isArray(d.trays))d.trays.forEach((t,i)=>{if(!printer.spools[i]||!t)return;const g=printer.spoolGroups[i];
     if(t.empty){g.visible=false;}else{g.visible=true;if(t.color)printer.spools[i].material.color.set(t.color);}});
   if(d.pct!=null)setPrintProgress(Math.max(0,Math.min(1,d.pct/100)));
