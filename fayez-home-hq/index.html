@@ -828,8 +828,9 @@ function ask(text){
     else if(/رابط|لينك|موقع/.test(t))job=()=>say('adv','البرنامج: MBA Standard – Intake 26 على بوابة IBA London. المحتوى ورا تسجيل الدخول، فأنت تفتحه وأنا أتابع تقدمك',2600);
     else job=()=>SC.msStatus();
     feed('المدير العام','حوّلتها للمرشد الأكاديمي.');enqueue(job);return;}
-  if(/(وقف|ايقاف|اوقف|بوز).*(طباع|طابع)/.test(t)||/(طباع|طابع).*(وقف|ايقاف)/.test(t)){job=()=>printerCmd('pause');}
-  else if(/(كمل|استانف|شغل).*(طباع|طابع)/.test(t)){job=()=>printerCmd('resume');}
+  // printer control runs right away, not behind the agents' animation queue
+  if(/(وقف|ايقاف|اوقف|بوز).*(طباع|طابع)/.test(t)||/(طباع|طابع).*(وقف|ايقاف)/.test(t)){feed('المدير العام','تمام.');printerCmd('pause');return;}
+  if(/(كمل|استانف|شغل).*(طباع|طابع)/.test(t)){feed('المدير العام','تمام.');printerCmd('resume');return;}
   else if(/(اختبر|جرب).*(واتس|وتس)/.test(t)){job=async()=>{setStatus('wa','busy');await whatsapp('رسالة تجريبية من بيت فايز HQ ✓');setStatus('wa','done');};}
   if(job){feed('المدير العام','تمام.');enqueue(job);return;}
   if(/علق|عطل|خرب|سباقيتي/.test(t))job=()=>SC.stuck();
@@ -879,9 +880,18 @@ function applyPrinter(d){
   updatePrinterCard();}
 async function printerCmd(cmd){
   if(!LIVE.printer){await say('prt','الطابعة مو مربوطة. شغّل الجسر على الكمبيوتر وحط بيانات الطابعة',2200);return;}
-  setStatus('prt','busy');try{await api('api/printer',{cmd});await say('prt',cmd==='pause'?'وقفت الطباعة مؤقتاً':'كملت الطباعة',1400);}catch(e){await say('prt','ما ضبط الأمر: '+e.message,2000);}}
+  const want=cmd==='pause'?'PAUSE':'RUNNING',before=printer.live&&printer.live.state;
+  if(before===want){await say('prt',cmd==='pause'?'الطابعة واقفة أصلاً':'الطابعة شغالة أصلاً',1600);return;}
+  setStatus('prt','busy');
+  try{await api('api/printer',{cmd});}catch(e){await say('prt','ما وصل الأمر للطابعة: '+e.message,2200);setStatus('prt','idle');return;}
+  await say('prt',cmd==='pause'?'أرسلت أمر الإيقاف المؤقت…':'أرسلت أمر الإكمال…',1200);
+  const t0=Date.now();while(Date.now()-t0<10000){if(printer.live&&printer.live.state===want)break;await sleep(500);}
+  if(printer.live&&printer.live.state===want){await say('prt',cmd==='pause'?'وقفت الطباعة مؤقتاً ✓':'كملت الطباعة ✓',1600);setStatus('prt','busy');}
+  else{await say('prt','الطابعة استلمت الأمر بس ما نفذته. غالباً تحتاج تفعيل LAN Only و Developer Mode عشان تقبل الأوامر من برا',3200);setStatus('prt','idle');}
+}
 function onLiveEvent(ev){
   sys(`live ${ev.type}${ev.name?' · '+ev.name:''}`);
+  if(ev.type==='cmd_result'&&ev.result&&!/success/i.test(ev.result)){say('prt',`الطابعة رفضت أمر ${ev.cmd==='pause'?'الإيقاف':'الإكمال'}${ev.reason?': '+ev.reason:''}`,3000);return;}
   if(ev.type==='print_start')enqueue(()=>SC.liveStart(ev.name||'قطعة'));
   else if(ev.type==='print_done')enqueue(()=>SC.liveDone(ev.name||'القطعة',ev.whatsapp));
   else if(ev.type==='print_failed')enqueue(()=>SC.liveFail(ev));

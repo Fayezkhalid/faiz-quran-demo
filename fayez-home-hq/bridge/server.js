@@ -201,12 +201,20 @@ function connectPrinter() {
     });
     push('printer', printer);
   });
-  mqttClient.on('message', (_t, buf) => { try { const p = JSON.parse(buf.toString()).print; keepRaw(p); mergeReport(p); } catch (_) {} });
+  mqttClient.on('message', (_t, buf) => { try {
+    const p = JSON.parse(buf.toString()).print; keepRaw(p);
+    if (p && ['pause', 'resume', 'stop'].includes(p.command)) {  // the printer's answer to a control command
+      log('printer command reply:', p.command, p.result || '', p.reason || '', p.err_code || '');
+      push('event', { type: 'cmd_result', cmd: p.command, result: p.result || '', reason: p.reason || '', code: p.err_code || null });
+    }
+    mergeReport(p);
+  } catch (_) {} });
   mqttClient.on('close', () => { if (printer.connected) log('printer disconnected'); printer.connected = false; push('printer', printer); });
   mqttClient.on('error', e => log('printer error:', e.message));
   printer.command = cmd => new Promise((res, rej) => {
     if (!printer.connected) return rej(new Error('printer offline'));
-    mqttClient.publish(request, JSON.stringify({ print: { sequence_id: '0', command: cmd, param: '' } }), e => e ? rej(e) : res());
+    log('printer command sent:', cmd);
+    mqttClient.publish(request, JSON.stringify({ print: { sequence_id: String(Date.now() % 100000), command: cmd, param: '' } }), e => e ? rej(e) : res());
   });
 }
 function demoPrinter() {
