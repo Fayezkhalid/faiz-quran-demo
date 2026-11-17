@@ -156,9 +156,10 @@ function mergeReport(p) {
   if (p.print_error != null) printer.error = +p.print_error;
   // active AMS slot. Classic firmware: print.ams.tray_now ("0".."3", "254" = external, "255" = none).
   // Newer firmware: print.device.extruder.info[0].snow = (ams_id << 8) | slot, 0xFF00 = none.
-  if (p.ams && p.ams.tray_now != null) { const t = +p.ams.tray_now; printer.tray = t < 16 ? t : null; printer.traySrc = 'tray_now'; }
+  // tray_now is a global index (ams_id * 4 + slot); the A2L's AMS lite reports ams id 16, so 16*4+slot = 64..67
+  if (p.ams && p.ams.tray_now != null) { const t = +p.ams.tray_now; printer.tray = t >= 0 && t < 254 ? (t & 3) : null; printer.traySrc = 'tray_now'; }
   const ex = p.device && p.device.extruder && Array.isArray(p.device.extruder.info) ? p.device.extruder.info[0] : null;
-  if (ex && ex.snow != null) { const v = +ex.snow, amsId = v >> 8, slot = v & 0xff; printer.tray = amsId === 0 && slot < 4 ? slot : null; printer.traySrc = 'snow'; }
+  if (ex && ex.snow != null) { const v = +ex.snow, amsId = v >> 8, slot = v & 0xff; printer.tray = amsId !== 255 && slot < 4 ? slot : null; printer.traySrc = 'snow'; }
   // AMS lite slot colours/materials: print.ams.ams[0].tray[i] = { id, tray_color: 'RRGGBBAA', tray_type, remain }
   const unit = p.ams && Array.isArray(p.ams.ams) ? p.ams.ams[0] : null;
   if (unit && Array.isArray(unit.tray)) for (const t of unit.tray) {
