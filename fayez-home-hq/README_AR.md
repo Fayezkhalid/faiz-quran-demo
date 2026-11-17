@@ -21,7 +21,7 @@
    - **الطابعة:** من شاشة الـ A2L: الإعدادات ← الشبكة. خذ **IP** و**Access Code**، والرقم التسلسلي (Serial) من الإعدادات ← الجهاز أو من Bambu Studio.
      - إذا ما اتصلت: فعّل **LAN Only** و**Developer Mode** من إعدادات الطابعة (التحديثات الجديدة تمنع البرامج الخارجية بدونها).
    - **الواتساب (CallMeBot، مجاني):**
-     1. احفظ الرقم `+34 694 29 84 96` في جوالك.
+     1. افتح https://www.callmebot.com/blog/free-api-whatsapp-messages/ واحفظ رقم CallMeBot المكتوب هناك في جوالك (الرقم يتغير أحياناً، فخذه من الموقع).
      2. أرسل له على الواتساب: `I allow callmebot to send me messages`
      3. يرد عليك بـ **apikey**. حطه في `CALLMEBOT_APIKEY`، ورقمك في `CALLMEBOT_PHONE` (مثل 9665XXXXXXXX).
    - **الماجستير:** `MASTERS_REMINDER_TIME=20:00` وقت التذكير اليومي.
