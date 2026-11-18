@@ -145,7 +145,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v18</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v19</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -840,8 +840,8 @@ const QUICK_FOR={prt:['اطبع قطعة','اطبع لي القطعة رقم 21'
 async function whatsapp(text,alreadySent){
   HOME.wa=(HOME.wa||[]).concat(text);updateTV('whatsapp');
   if(LIVE.on&&!alreadySent){try{const r=await api('api/whatsapp',{text});alreadySent=r.ok;}catch(e){sys('whatsapp error: '+e.message);}}
-  if(LIVE.on&&alreadySent){await say('wa',`أرسلت لك على الواتساب: ${text}`,1500);}
-  else if(LIVE.on){await say('wa','ما قدرت أرسل الواتساب، تأكد من إعدادات CallMeBot',1800);}
+  if(LIVE.on&&alreadySent){await say('wa',`أرسلت لك تنبيه: ${text}`,1500);}
+  else if(LIVE.on){await say('wa','ما قدرت أرسل التنبيه. تأكد من بوت تيليجرام أو الواتساب',1800);}
   else{await say('wa',`(تجريبي) أرسلت لك: ${text}`,1500);sys('demo: whatsapp not sent');}
 }
 const SC={
@@ -1006,7 +1006,7 @@ async function tryLive(){
   es.addEventListener('masters',e=>applyMasters(JSON.parse(e.data)));
   es.addEventListener('event',e=>onLiveEvent(JSON.parse(e.data)));
   es.onerror=()=>setLiveBadge(false);es.onopen=()=>setLiveBadge(true);
-  feed('المدير العام',`البيت صار لايف ✓ الطابعة: ${LIVE.printer?'متصلة':'غير مضبوطة'} · الواتساب: ${LIVE.whatsapp?'جاهز':'غير مضبوط'}`);
+  feed('المدير العام',`البيت صار لايف ✓ الطابعة: ${LIVE.printer?'متصلة':'غير مضبوطة'} · التنبيهات: ${st.config.telegram?'تيليجرام ✓':''}${st.config.callmebot?' واتساب ✓':''}${!st.config.telegram&&!st.config.callmebot?'غير مضبوطة':''}`);
 }
 function applyMasters(m){if(m&&m.modules){MS.data=m;saveMS();updateTV('masters');}}
 async function msAction(body){if(LIVE.on){try{applyMasters(await api('api/masters',body));return true;}catch(e){sys('masters error: '+e.message);}}return false;}

@@ -24,6 +24,8 @@ const CFG = {
   model: process.env.PRINTER_MODEL || 'A2L Combo',
   waPhone: (process.env.CALLMEBOT_PHONE || '').replace(/[^\d]/g, ''),
   waKey: (process.env.CALLMEBOT_APIKEY || '').trim(),
+  tgToken: (process.env.TELEGRAM_BOT_TOKEN || '').trim(),
+  tgChat: (process.env.TELEGRAM_CHAT_ID || '').trim(),
   budget: +(process.env.MONTHLY_BUDGET || 9000),
   demo: process.argv.includes('--demo-printer') || process.env.DEMO_PRINTER === '1',
 };
@@ -109,10 +111,52 @@ setInterval(() => {
   }
 }, 30000);
 
-/* ---------------- WhatsApp (CallMeBot) ---------------- */
-const waReady = () => !!(CFG.waPhone && CFG.waKey);
-async function whatsapp(text) {
-  if (!waReady()) { log('whatsapp skipped (CALLMEBOT_PHONE / CALLMEBOT_APIKEY not set):', text); return false; }
+/* ---------------- notifications: Telegram bot and/or WhatsApp (CallMeBot) ---------------- */
+// Every agent alert goes through whatsapp(text); it now fans out to every configured channel.
+const tgReady = () => !!CFG.tgToken;
+const cmbReady = () => !!(CFG.waPhone && CFG.waKey);
+const waReady = () => (tgReady() && !!tgChat()) || cmbReady();
+const TG_FILE = path.join(DATA, 'telegram.json');
+let tgChatId = CFG.tgChat;
+try { if (!tgChatId) tgChatId = JSON.parse(fs.readFileSync(TG_FILE, 'utf8')).chat_id || ''; } catch (_) {}
+function tgChat() { return tgChatId; }
+async function tgApi(method, body) {
+  const r = await fetch(`https://api.telegram.org/bot${CFG.tgToken}/${method}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body || {}), signal: AbortSignal.timeout(35000) });
+  const j = await r.json().catch(() => ({}));
+  if (!j.ok) throw new Error(j.description || ('telegram ' + r.status));
+  return j.result;
+}
+// Pair automatically: the first person who sends /start to the bot becomes the owner (saved in data/telegram.json).
+async function tgPairLoop() {
+  if (!tgReady()) return;
+  let offset = 0;
+  log(tgChatId ? 'telegram ready (chat ' + tgChatId + ')' : 'telegram: send /start to your bot to pair it');
+  for (;;) {
+    try {
+      const ups = await tgApi('getUpdates', { offset, timeout: 30, allowed_updates: ['message'] });
+      for (const u of ups) {
+        offset = u.update_id + 1;
+        const m = u.message; if (!m || !m.chat) continue;
+        if (!tgChatId && m.chat.type === 'private') {
+          tgChatId = String(m.chat.id);
+          fs.writeFileSync(TG_FILE, JSON.stringify({ chat_id: tgChatId, paired_at: new Date().toISOString() }));
+          log('telegram paired with chat', tgChatId);
+          await tgApi('sendMessage', { chat_id: tgChatId, text: '✅ تم الربط مع بيت فايز HQ. من الحين توصلك التنبيهات هنا.' });
+          push('config', { whatsapp: waReady() });
+        } else if (String(m.chat.id) === tgChatId && /^\/(status|حالة)/.test(m.text || '')) {
+          await tgApi('sendMessage', { chat_id: tgChatId, text: `🏠 بيت فايز HQ\n🖨️ الطابعة: ${printer.state || '—'} ${printer.pct ? printer.pct + '%' : ''}\n💰 المصروف: ${finance.spent} / ${finance.budget}\n📚 ${msSummary()}` });
+        }
+      }
+    } catch (e) { log('telegram error:', e.message); await new Promise(r => setTimeout(r, 10000)); }
+  }
+}
+async function sendTelegram(text) {
+  if (!tgReady() || !tgChatId) return false;
+  try { await tgApi('sendMessage', { chat_id: tgChatId, text }); log('telegram sent:', text); return true; }
+  catch (e) { log('telegram FAILED:', e.message); return false; }
+}
+async function sendCallMeBot(text) {
+  if (!cmbReady()) return false;
   const url = `https://api.callmebot.com/whatsapp.php?phone=${CFG.waPhone}&text=${encodeURIComponent(text)}&apikey=${encodeURIComponent(CFG.waKey)}`;
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(20000) });
@@ -121,6 +165,11 @@ async function whatsapp(text) {
     log(ok ? 'whatsapp sent:' : 'whatsapp FAILED:', text, ok ? '' : body.slice(0, 200).replace(/\s+/g, ' '));
     return ok;
   } catch (e) { log('whatsapp error:', e.message); return false; }
+}
+async function whatsapp(text) {
+  if (!waReady()) { log('notification skipped (no Telegram or WhatsApp configured):', text); return false; }
+  const res = await Promise.all([sendTelegram(text), sendCallMeBot(text)]);
+  return res.some(Boolean);
 }
 
 /* ---------------- printer ---------------- */
@@ -262,7 +311,7 @@ const server = http.createServer(async (req, res) => {
       return fs.createReadStream(PAGE).pipe(res);
     }
     if (req.method === 'GET' && url.pathname === '/api/state') {
-      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), model: CFG.model, demo: CFG.demo }, printer, finance, masters });
+      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), model: CFG.model, demo: CFG.demo }, printer, finance, masters });
     }
     if (req.method === 'GET' && url.pathname === '/events') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' });
@@ -314,8 +363,9 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(CFG.port, CFG.host, () => {
   log(`Fayez Home HQ → http://${CFG.host === '0.0.0.0' ? 'localhost' : CFG.host}:${CFG.port}`);
-  log(`printer: ${CFG.demo ? 'DEMO' : printerReady() ? CFG.model + ' @ ' + CFG.ip : 'not configured'} · whatsapp: ${waReady() ? 'ready' : 'not configured'}`);
+  log(`printer: ${CFG.demo ? 'DEMO' : printerReady() ? CFG.model + ' @ ' + CFG.ip : 'not configured'} · telegram: ${tgReady() ? (tgChatId ? 'ready' : 'waiting for /start') : 'off'} · whatsapp: ${cmbReady() ? 'ready' : 'off'}`);
   connectPrinter();
+  tgPairLoop();
 });
 
 /* ---------------- utils ---------------- */
