@@ -154,7 +154,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v22</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v23</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -850,7 +850,7 @@ function homePanel(){
 function bindHomePanel(){
   const c=$('card');c.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{applyHome(await api('api/home',{action:'delete',id:b.dataset.del}));openAgent('home',true);});
   const f=$('rf');if(f)f.onsubmit=async e=>{e.preventDefault();try{applyHome(await api('api/home',{action:'add',title:$('rfT').value,at:$('rfA').value,cat:$('rfC').value,repeat:$('rfR').value,lead:+$('rfL').value,call:$('rfP').checked}));openAgent('home',true);enqueue(()=>say('home','حفظت الموعد ✓ وأرسلت لك تأكيد في تيليجرام',1800));}catch(err){feed('مدير البيت','ما انحفظ: '+err.message);}};
-  const cal=$('rfCal');if(cal)cal.onclick=()=>{const u=new URL('home.ics',location.href).href.replace(/^https?:/,'webcal:');feedLinks('مدير البيت','اضغط الرابط من الجوال واختر اشتراك (Subscribe)، وتطلع مواعيد البيت في تقويمك بمنبهاتها:',[['📅 اشترك في تقويم بيت فايز',u]]);};
+  const cal=$('rfCal');if(cal)cal.onclick=()=>{if(!matchMedia('(pointer: coarse)').matches){feed('مدير البيت','رابط التقويم للجوال: افتح البيت من الآيفون (رابط Tailscale) واضغط نفس الزر هناك.');return;}const u=new URL('home.ics',location.href).href.replace(/^https?:/,'webcal:');feedLinks('مدير البيت','اضغط الرابط من الجوال واختر اشتراك (Subscribe)، وتطلع مواعيد البيت في تقويمك بمنبهاتها:',[['📅 اشترك في تقويم بيت فايز',u]]);};
   const tc=$('rfTest');if(tc)tc.onclick=async()=>{enqueue(()=>say('home','أتصل عليك الحين…',1500));try{const r=await api('api/home',{action:'testcall'});feed('مدير البيت',r.ok?'رديت وسمعت الرسالة ✓':'ما رديت، أو الاتصال ما ضبط');}catch(e){feed('مدير البيت','ما قدرت أتصل: '+e.message);}};
 }
 function applyHome(h){if(!h)return;HOMEDATA=h;HOME.tasks=h.items.slice(0,3).map(r=>`${r.title} · ${fmtWhen(r.at)}`);if(!HOME.tasks.length)HOME.tasks=['ما فيه مواعيد'];updateTV('home');if(cardFor==='home')openAgent('home',true);}
@@ -860,17 +860,18 @@ function parseReminder(raw){
   if(/بعد بكره|بعد بكرة/.test(t)){d.setDate(d.getDate()+2);dayGiven=true;}else if(/بكره|بكرة|غدا/.test(t)){d.setDate(d.getDate()+1);dayGiven=true;}
   const days=['الاحد','الاثنين','الثلاثاء','الاربعاء','الخميس','الجمعه','السبت'];days.forEach((n,i)=>{if(!dayGiven&&t.includes(n)){let k=(i-d.getDay()+7)%7||7;d.setDate(d.getDate()+k);dayGiven=true;}});
   const m=t.match(/الساعه\s*(\d{1,2})(?::(\d{2}))?/);let h=null,mi=0;if(m){h=+m[1];mi=+(m[2]||0);}
-  if(h!==null){if(/مساء|العصر|الليل|الظهر|بالليل|pm/.test(t)&&h<12)h+=12;if(/الظهر/.test(t)&&h===24)h=12;if(/الفجر|الصبح|صباح/.test(t)&&h===12)h=0;d.setHours(h,mi);}
+  const AM=/الفجر|الصبح|صباح|فجرا|am\b/,PM=/مساء|عصر|العصر|الليل|ليلا|بالليل|الظهر|ظهرا|المغرب|مغربا|العشاء|pm\b/;
+  if(h!==null){if(PM.test(t)&&h<12)h+=12;else if(!AM.test(t)&&h>=1&&h<=6)h+=12;if(/الظهر|ظهرا/.test(t)&&h===24)h=12;if(AM.test(t)&&h===12)h=0;d.setHours(h,mi);}
   else return null;
   if(!dayGiven&&d<new Date())d.setDate(d.getDate()+1);
   const repeat=/كل يوم|يوميا/.test(t)?'daily':/كل اسبوع|اسبوعيا/.test(t)?'weekly':/كل شهر|شهريا/.test(t)?'monthly':/كل سنه|سنويا/.test(t)?'yearly':'none';
   const cat=/صيان|مكيف|سباك|فلتر|كهربائي|تصليح/.test(t)?'maint':/ام |امي|ابوي|ابوي|زوجت|العيال|ولد|بنت|اهل|عائل|عايل|مدرس|ميلاد/.test(t)?'family':'home';
   const call=/اتصل|اتصال|كلمني/.test(t);
-  const DROP=['بعد بكرة','بعد بكره','بكرة','بكره','غداً','غدا','اليوم','الليلة','العصر','الظهر','المغرب','بالليل','الليل','مساءً','مساء','صباحاً','صباحا','الصبح','الفجر','واتصل علي','اتصل علي','واتصل','كلمني','يومياً','يوميا','أسبوعياً','اسبوعيا','شهرياً','شهريا','سنوياً','سنويا'];
+  const DROP=['القادم','القادمة','الجاي','الجايه','الجاية','عصراً','عصرا','ظهراً','ظهرا','مساءاً','مساءا','ليلاً','ليلا','فجراً','فجرا','بالعصر','بالظهر','بالمغرب','بعد بكرة','بعد بكره','بكرة','بكره','غداً','غدا','اليوم','الليلة','العصر','الظهر','المغرب','بالليل','الليل','مساءً','مساء','صباحاً','صباحا','الصبح','الفجر','واتصل علي','اتصل علي','واتصل','كلمني','يومياً','يوميا','أسبوعياً','اسبوعيا','شهرياً','شهريا','سنوياً','سنويا'];
   let title=' '+raw+' ';
-  title=title.replace(/^\s*(ذكّرني|ذكرني|تذكير)\s*(ب(?!كر|عد\s)(?=\S))?/,' ').replace(/(موعد)\s*/,' ').replace(/كل\s+(يوم|اسبوع|أسبوع|شهر|سنة|سنه)/g,' ').replace(/يوم\s+(ال)?(أحد|احد|اثنين|إثنين|ثلاثاء|أربعاء|اربعاء|خميس|جمعة|جمعه|سبت)/g,' ').replace(/الساع[ةه]\s*\d{1,2}(:\d{2})?/g,' ');
+  title=title.replace(/^\s*(ذكّرني|ذكرني|تذكير)\s*(ب(?!كر|عد\s)(?=\S))?/,' ').replace(/(موعد)\s*/,' ').replace(/كل\s+(يوم|اسبوع|أسبوع|شهر|سنة|سنه)/g,' ').replace(/(يوم\s+)?(ال)(أحد|احد|اثنين|إثنين|ثلاثاء|أربعاء|اربعاء|خميس|جمعة|جمعه|سبت)/g,' ').replace(/الساع[ةه]\s*\d{1,2}(:\d{2})?/g,' ');
   for(const w of DROP)title=title.split(' '+w+' ').join(' ');
-  title=title.replace(/\s+/g,' ').trim();
+  title=title.replace(/\s+/g,' ').trim().replace(/^(في|عن|على|ب)\s+/,'');
   if(!title)title='موعد';
   const pad=n=>String(n).padStart(2,'0');
   return {title,at:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`,repeat,cat,lead:cat==='maint'&&repeat==='none'?60:0,call};
