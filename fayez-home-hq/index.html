@@ -154,7 +154,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v25</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v26</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -271,7 +271,7 @@ const neon=glowMat('#ffc657');
 const neonSoft=glowMat('#ff9f2e');
 
 const ROOMS=[
-  {id:'lobby', f:0,x0:-8,x1:0, en:'WHATSAPP', ar:'الاستقبال والواتساب', rug:'#14593a', lamp:'#ffd9a0'},
+  {id:'lobby', f:0,x0:-8,x1:0, en:'TELEGRAM', ar:'الاستقبال والتنبيهات', rug:'#14593a', lamp:'#ffd9a0'},
   {id:'study', f:0,x0:0, x1:8, en:"MASTER'S", ar:'الماجستير', rug:'#1d5a7a', lamp:'#ffe9c4'},
   {id:'home',  f:1,x0:-8,x1:0, en:'HOME', ar:'إدارة البيت', rug:'#9c4421', lamp:'#ffcf8a'},
   {id:'family',f:1,x0:0, x1:8, en:'FAMILY · TRAVEL', ar:'العائلة والسفر', rug:'#5d2f91', lamp:'#ffd9b0'},
@@ -373,10 +373,10 @@ box(2.1,NF*FH,2.3,shaftMat,EX,NF*FH/2,1.2);
 for(let f=0;f<=NF;f++)box(2.2,.06,2.4,M('#1a140d'),EX,fy(f)+.08,1.2);
 const car=new THREE.Group();scene.add(car);
 box(1.8,.08,2,M('#2a2116',{metalness:.5,roughness:.4}),0,0,0,car);
-box(1.8,.06,2,glowMat('#ffd27a'),0,2.6,0,car);
-box(.05,2.6,2,new THREE.MeshStandardMaterial({color:'#ffd27a',transparent:true,opacity:.18}),.9,1.3,0,car);
-const carGlow=glow('#ffd27a',2.4,0,2.45,0,car,.6);
-const carLight=new THREE.PointLight('#ffd27a',.8,4,2);carLight.position.set(0,2.2,0);car.add(carLight);
+box(1.8,.06,2,M('#5a4a2c',{emissive:'#ffd27a',emissiveIntensity:.25}),0,2.6,0,car);
+box(.05,2.6,2,new THREE.MeshStandardMaterial({color:'#ffd27a',transparent:true,opacity:.07}),.9,1.3,0,car);
+const carGlow=glow('#ffd27a',1.0,0,2.45,0,car,.22);
+const carLight=new THREE.PointLight('#ffd27a',.3,3,2);carLight.position.set(0,2.2,0);car.add(carLight);
 car.position.set(EX,fy(0)+.12,1.2);
 
 /* ---------------- furniture ---------------- */
@@ -451,7 +451,7 @@ const drawTV={
     const pct=st.done/st.total;g.fillStyle='#ffffff14';g.fillRect(40,290,w-80,16);g.fillStyle='#46b4ff';g.fillRect(w-40-(w-80)*pct,290,(w-80)*pct,16);
     g.fillStyle='#9fc3dd';g.font='500 21px "Readex Pro"';g.fillText(`${st.done}/${st.total} محاضرة · باقي ~${st.hoursLeft} ساعة`,w-40,340);
     g.fillStyle=st.behind>0?'#ff8a8a':'#7fe0b0';g.textAlign='left';g.fillText(st.behind>0?`متأخر ${st.behind}`:'على الخطة ✓',40,340);},
-  whatsapp:(g,w,h)=>{bgTV(g,w,h,'#0b1f17');title(g,w,'WHATSAPP','آخر الرسائل');
+  whatsapp:(g,w,h)=>{bgTV(g,w,h,'#0b1f17');title(g,w,'TELEGRAM','آخر التنبيهات');
     const msgs=(HOME.wa||['هلا أبو خالد، البيت تمام 👌']).slice(-3);msgs.forEach((m,i)=>{const y=120+i*76;g.fillStyle='#1f5c3f';const tw=Math.min(w-120,g.measureText(m).width+80);g.fillRect(w-40-Math.max(260,tw),y,Math.max(260,tw),58);g.fillStyle='#e8fff1';g.font='500 26px "Readex Pro"';g.textAlign='right';g.fillText(m,w-60,y+38);});},
 };
 function bgTV(g,w,h,c){const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,c);gr.addColorStop(1,'#05060a');g.fillStyle=gr;g.fillRect(0,0,w,h);}
@@ -710,7 +710,7 @@ const AGENTS={
   home: {name:'مدير البيت', en:'HOME', room:'home', x:-4.6, look:{thobe:1,shirt:'#e9e4d8',ghutra:'red'}, role:'مواعيد البيت والأهل والصيانة: تذكير في تيليجرام، واتصال، وتقويم الجوال', keys:['مدير البيت','البيت','الصيانة']},
   fam:  {name:'منسق العائلة', en:'FAMILY', room:'family', x:3.4, look:{shirt:'#2fb36e',hair:'#120c08',beard:1}, role:'السفر والمدارس ومواعيد العيال', keys:['العائلة','العايلة','منسق','السفر','الرحلة']},
   adv:  {name:'المرشد الأكاديمي', en:'ADVISOR', room:'study', x:3.2, look:{thobe:1,shirt:'#f1efe8',ghutra:'white',glasses:1,beard:1}, role:'MBA – IBA London: ٨ محاور × ٧ محاضرات، الاختبارات والواجبات، وتذكير واتساب يومي', keys:['المرشد الاكاديمي','المرشد','مرشد','الماجستير','ماجستير']},
-  wa:   {name:'وكيل الواتساب', en:'WHATSAPP', room:'lobby', x:-4.8, look:{shirt:'#1fa35a',hair:'#1a120c'}, role:'يرسل لك التنبيهات على الواتساب', keys:['الواتساب','واتساب','الوتساب']},
+  wa:   {name:'وكيل التنبيهات', en:'ALERTS', room:'lobby', x:-4.8, look:{shirt:'#1fa35a',hair:'#1a120c'}, role:'يرسل لك كل التنبيهات في تيليجرام (بوت بيت فايز HQ)', keys:['التنبيهات','تيليجرام','تليجرام','الواتساب','واتساب','الوتساب']},
 };
 const SEAT_Z=-1.95;
 for(const [id,a] of Object.entries(AGENTS)){
@@ -812,7 +812,7 @@ function setPipe(steps){pipeSteps=steps;$('pipe').classList.remove('idle');
   $('pipe').innerHTML=steps.map((s,i)=>(i?`<div class="link" data-i="${i}"><i></i></div>`:'')+`<div class="node" data-i="${i}"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[s[0]]}</svg></div><span>${s[1]}</span></div>`).join('');}
 function stepPipe(n){$('pipe').querySelectorAll('.node').forEach(el=>{const i=+el.dataset.i;el.classList.toggle('on',i<=n);el.classList.toggle('cur',i===n);});$('pipe').querySelectorAll('.link').forEach(el=>el.classList.toggle('on',+el.dataset.i<=n));}
 function idlePipe(){$('pipe').classList.add('idle');$('pipe').querySelectorAll('.cur').forEach(e=>e.classList.remove('cur'));}
-setPipe([['A1','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);idlePipe();
+setPipe([['A1','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','TELEGRAM']]);idlePipe();
 function feedLinks(who,text,links){const m=document.createElement('div');m.className='msg';const b=document.createElement('b');b.textContent=who+': ';m.append(b,text);
   links.forEach(([label,url])=>{const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent=label;a.className='mlink';m.append(document.createElement('br'),a);});
   const f=$('feed');f.append(m);f.scrollTop=f.scrollHeight;}
@@ -902,12 +902,12 @@ async function whatsapp(text,alreadySent){
   HOME.wa=(HOME.wa||[]).concat(text);updateTV('whatsapp');
   if(LIVE.on&&!alreadySent){try{const r=await api('api/whatsapp',{text});alreadySent=r.ok;}catch(e){sys('whatsapp error: '+e.message);}}
   if(LIVE.on&&alreadySent){await say('wa',`أرسلت لك تنبيه: ${text}`,1500);}
-  else if(LIVE.on){await say('wa','ما قدرت أرسل التنبيه. تأكد من بوت تيليجرام أو الواتساب',1800);}
+  else if(LIVE.on){await say('wa','ما قدرت أرسل التنبيه. تأكد من بوت تيليجرام',1800);}
   else{await say('wa',`(تجريبي) أرسلت لك: ${text}`,1500);sys('demo: whatsapp not sent');}
 }
 const SC={
   async print(n){
-    setPipe([['A1','A2L'],['A1','PRINT MGR'],['FIN','FINANCE'],['MGR','MANAGER'],['A1','PRINTING'],['WA','WHATSAPP']]);
+    setPipe([['A1','A2L'],['A1','PRINT MGR'],['FIN','FINANCE'],['MGR','MANAGER'],['A1','PRINTING'],['WA','TELEGRAM']]);
     stepPipe(0);sys(`a1.request part=#${n}`);stepPipe(1);setStatus('prt','busy');await say('prt',`طلب طباعة القطعة رقم ${n} من MakerWorld`);
     stepPipe(2);await visit('prt','fin');await say('prt','كم تكلفة الفلامنت؟');await say('fin','١٤ غرام PLA، تقريباً ٠٫٤ ريال. موافق ✓');HOME.spent+=1;updateTV('finance');
     stepPipe(3);await visit('prt','ceo');await say('ceo','اعتمدت. ابدأ وبلّغ أبو خالد إذا خلصت');
@@ -917,7 +917,7 @@ const SC={
     AGENTS.prt.last=`طبعت القطعة رقم ${n}.`;await goHome('prt');printer.state='idle';idlePipe();
   },
   async stuck(){
-    setPipe([['CAM','A2L CAMERA'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);
+    setPipe([['CAM','A2L CAMERA'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','TELEGRAM']]);
     printer.state='stuck';updatePrinterCard();stepPipe(0);sys('a1.camera → spaghetti detected · pause');
     stepPipe(1);setStatus('prt','err');await say('prt','الكاميرا شافت الطباعة خربت! وقفتها');
     stepPipe(2);await visit('prt','ceo');setStatus('prt','err');await say('ceo','بلّغ أبو خالد فوراً');
@@ -925,7 +925,7 @@ const SC={
     AGENTS.prt.last='الطابعة علقت ووقفتها وبلغتك.';await goHome('prt','err');idlePipe();
   },
   async bill(name,amount){
-    setPipe([['MAIL','EMAILS'],['FIN','FINANCE'],['MGR','MANAGER'],['WA','WHATSAPP']]);
+    setPipe([['MAIL','EMAILS'],['FIN','FINANCE'],['MGR','MANAGER'],['WA','TELEGRAM']]);
     stepPipe(0);HOME.inbox++;updateTV('mail');setStatus('mail','busy');await say('mail',`وصلت فاتورة ${name}: ${amount} ريال`);
     stepPipe(1);await visit('mail','fin');await recordBill(name,amount);await say('fin',`سجلتها. باقي من ميزانية الشهر ${(HOME.budget-HOME.spent).toLocaleString('en')} ريال`);setStatus('fin','done');
     stepPipe(2);await visit('mail','ceo');await say('ceo','ادفعها قبل الموعد وذكّر أبو خالد');
@@ -933,7 +933,7 @@ const SC={
     AGENTS.mail.last=`فرزت فاتورة ${name}.`;AGENTS.fin.last=`سجلت فاتورة ${name} ${amount} ريال.`;idlePipe();
   },
   async maintenance(item){
-    setPipe([['HOME','HOME'],['CAL','BOOKING'],['FIN','FINANCE'],['WA','WHATSAPP']]);
+    setPipe([['HOME','HOME'],['CAL','BOOKING'],['FIN','FINANCE'],['WA','TELEGRAM']]);
     stepPipe(0);setStatus('home','busy');await say('home',`${item} يحتاج صيانة. أدور أقرب موعد`);
     stepPipe(1);await sleep(800);HOME.tasks.unshift(`صيانة ${item} الخميس ٤ العصر`);updateTV('home');await say('home','حجزت الخميس الساعة ٤ العصر');
     stepPipe(2);await visit('home','fin');await say('fin','التكلفة المتوقعة ٢٥٠ ريال. ضمن الميزانية ✓');if(!LIVE.on){HOME.spent+=250;updateTV('finance');}setStatus('fin','idle');
@@ -941,7 +941,7 @@ const SC={
     AGENTS.home.last=`حجزت صيانة ${item}.`;idlePipe();
   },
   async trip(place){
-    setPipe([['FAM','FAMILY'],['FIN','FINANCE'],['MGR','MANAGER'],['WA','WHATSAPP']]);
+    setPipe([['FAM','FAMILY'],['FIN','FINANCE'],['MGR','MANAGER'],['WA','TELEGRAM']]);
     stepPipe(0);HOME.trip=place;updateTV('family');setStatus('fam','busy');await say('fam',`جهزت خطة رحلة ${place}: يومين، فندق عائلي، أنشطة للعيال`);
     stepPipe(1);await visit('fam','fin');await say('fin','الميزانية المقترحة ٢٬٤٠٠ ريال. تمشي ✓');
     stepPipe(2);await visit('fam','ceo');await say('ceo','حلو، أرسلها لأبو خالد للاعتماد');
@@ -961,7 +961,7 @@ const SC={
     await goHome('des');AGENTS.des.last=`جهزت بحث ${item} في MakerWorld.`;idlePipe();
   },
   async report(){
-    setPipe([['MGR','MANAGER'],['FIN','FINANCE'],['MAIL','EMAILS'],['A1','PRINTS'],['WA','WHATSAPP']]);
+    setPipe([['MGR','MANAGER'],['FIN','FINANCE'],['MAIL','EMAILS'],['A1','PRINTS'],['WA','TELEGRAM']]);
     stepPipe(0);setStatus('ceo','busy');await say('ceo','اجتماع التحديث اليومي، الكل للطاولة');
     const seats=[['fin',2.2,-.9,Math.PI/2],['mail',4.6,-.9,-Math.PI/2],['prt',3.4,.35,Math.PI],['home',2.4,.05,Math.PI*.75],['fam',4.4,.05,-Math.PI*.75]];
     await Promise.all(seats.map(([id,x,z,r])=>go(id,4,x,z).then(()=>face(AGENTS[id],r))));
@@ -1010,7 +1010,7 @@ function ask(text){
     feed('المدير العام','حوّلتها للمرشد الأكاديمي.');enqueue(job);return;}
   // printer control runs right away, not behind the agents' animation queue
   if(/(وقف|ايقاف|اوقف|بوز|كمل|استانف).*(طباع|طابع)/.test(t)||/(طباع|طابع).*(وقف|ايقاف)/.test(t)){enqueue(()=>say('prt','الطابعة ما تقبل أوامر من العمارة. وقّفها أو كمّلها من شاشتها أو من Bambu Handy، وأنا أتابع وأبلغك',2600));return;}
-  else if(/(اختبر|جرب).*(واتس|وتس)/.test(t)){job=async()=>{setStatus('wa','busy');await whatsapp('رسالة تجريبية من بيت فايز HQ ✓');setStatus('wa','done');};}
+  else if(/(اختبر|جرب).*(واتس|وتس|تنبيه|تيليجرام|تليجرام)/.test(t)){job=async()=>{setStatus('wa','busy');await whatsapp('رسالة تجريبية من بيت فايز HQ ✓');setStatus('wa','done');};}
   if(job){feed('المدير العام','تمام.');enqueue(job);return;}
   if(/علق|عطل|خرب|سباقيتي/.test(t))job=()=>SC.stuck();
   else if(/فاتور|كهرب|انترنت|سداد/.test(t)){const nm=/انترنت/.test(t)?'الإنترنت':/موي|مياه/.test(t)?'المياه':'الكهرباء';job=()=>SC.bill(nm,num||420);}
@@ -1025,7 +1025,7 @@ function ask(text){
   enqueue(job);
 }
 $('form').addEventListener('submit',e=>{e.preventDefault();const v=$('q').value.trim();if(v){ask(v);$('q').value='';}});
-const QUICK=[['الماجستير: كم باقي؟','المرشد الأكاديمي كم باقي لي؟'],['خلصت محاضرة','خلصت المحاضرة'],['خلصت الاختبار','خلصت الاختبار'],['اختبر الواتساب','اختبر الواتساب'],['اطبع قطعة','اطبع لي القطعة رقم 21'],['فاتورة الكهرباء','وصلت فاتورة الكهرباء 420'],['صيانة المكيف','المكيف يحتاج صيانة'],['رحلة العلا','خطط لنا رحلة العلا'],['تصميم','صمم لي حامل جوال'],['الطابعة علقت','الطابعة علقت'],['@المالي وش صار؟','المدير المالي وش صار؟']];
+const QUICK=[['الماجستير: كم باقي؟','المرشد الأكاديمي كم باقي لي؟'],['خلصت محاضرة','خلصت المحاضرة'],['خلصت الاختبار','خلصت الاختبار'],['اختبر التنبيهات','اختبر التنبيهات'],['اطبع قطعة','اطبع لي القطعة رقم 21'],['فاتورة الكهرباء','وصلت فاتورة الكهرباء 420'],['صيانة المكيف','المكيف يحتاج صيانة'],['رحلة العلا','خطط لنا رحلة العلا'],['تصميم','صمم لي حامل جوال'],['الطابعة علقت','الطابعة علقت'],['@المالي وش صار؟','المدير المالي وش صار؟']];
 $('quick').innerHTML=QUICK.map(([l,q])=>`<button class="chipq" data-q="${q}">${l}</button>`).join('');
 $('quick').querySelectorAll('button').forEach(b=>b.onclick=()=>ask(b.dataset.q));
 $('updBtn').onclick=()=>ask('أبديت');
@@ -1040,7 +1040,7 @@ async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET'
 function setLiveBadge(connected){const b=$('liveBadge');
   if(!LIVE.on){b.style.setProperty('--c','var(--mute)');b.lastChild.textContent='تجريبي';b.title='الصفحة شغالة محاكاة. شغّل الجسر على الكمبيوتر عشان تصير لايف';return;}
   b.style.setProperty('--c',connected===false?'var(--bad)':'var(--ok)');b.lastChild.textContent=connected===false?'انقطع':'LIVE';
-  b.title=`الطابعة: ${LIVE.printer?'متصلة':'غير مضبوطة'} · الواتساب: ${LIVE.whatsapp?'مضبوط':'غير مضبوط'}`;}
+  b.title=`الطابعة: ${LIVE.printer?'متصلة':'غير مضبوطة'} · التنبيهات: ${LIVE.whatsapp?'تيليجرام ✓':'غير مضبوطة'}`;}
 async function recordBill(name,amount){
   if(LIVE.on){try{applyFinance(await api('api/finance',{name,amount}));return;}catch(e){sys('finance error: '+e.message);}}
   HOME.spent+=amount;HOME.bills.push([name,amount]);updateTV('finance');updateTV('daily');}
@@ -1101,7 +1101,7 @@ async function msAction(body){if(LIVE.on){try{applyMasters(await api('api/master
 Object.assign(SC,{
   async msStatus(){setPipe([['DES','ADVISOR'],['MGR','MANAGER']]);stepPipe(0);setStatus('adv','busy');await say('adv',MS.summary(),3200);setStatus('adv','done');AGENTS.adv.last=MS.summary();idlePipe();},
   async msDone(kind){
-    setPipe([['DES','ADVISOR'],['MGR','MANAGER'],['WA','WHATSAPP']]);stepPipe(0);setStatus('adv','busy');
+    setPipe([['DES','ADVISOR'],['MGR','MANAGER'],['WA','TELEGRAM']]);stepPipe(0);setStatus('adv','busy');
     let r=null;
     if(LIVE.on){try{const res=await api('api/masters',{action:kind});applyMasters(res.masters);r=res.result;}catch(e){sys('masters error: '+e.message);}}
     if(!LIVE.on){r=kind==='exam'?MS.examDone():kind==='assignment'?MS.assignmentDone():MS.lectureDone();saveMS();updateTV('masters');}
@@ -1117,7 +1117,7 @@ Object.assign(SC,{
     await whatsapp('📚 '+msg+' · '+MS.summary());setStatus('wa','done');
     AGENTS.adv.last=MS.summary();await goHome('adv');idlePipe();},
   async msRemind(){
-    setPipe([['DES','ADVISOR'],['WA','WHATSAPP']]);stepPipe(0);setStatus('adv','busy');await say('adv','أرسل لك تذكير الماجستير الحين',1200);
+    setPipe([['DES','ADVISOR'],['WA','TELEGRAM']]);stepPipe(0);setStatus('adv','busy');await say('adv','أرسل لك تذكير الماجستير الحين',1200);
     stepPipe(1);await go('adv',0,-3.6,-.2);await face(AGENTS.adv,Math.PI);setStatus('wa','busy');await whatsapp('📚 تذكير الماجستير: '+MS.summary());setStatus('wa','done');await goHome('adv');idlePipe();},
   async msSummary(){setStatus('adv','busy');
     await say('adv',`عشان ألخص ${MS.state().mod.ar}: انسخ نص المحاضرة أو صوّر الشرائح وارسلها في محادثة Claude، وأرجع لك بملخص بسيط وأسئلة MCQ للمراجعة`,3600);setStatus('adv','idle');},
@@ -1148,13 +1148,13 @@ Object.assign(SC,{
     stepPipe(3);await go('prt',2,-2.55,-.6);await face(AGENTS.prt,Math.PI);AGENTS.prt.mode='stand';AGENTS.prt.last=`أتابع طباعة ${name}.`;idlePipe();
   },
   async liveDone(name,sent){
-    setPipe([['A1','A2L'],['A1','PRINT MGR'],['WA','WHATSAPP']]);stepPipe(0);HOME.prints++;updateTV('daily');
+    setPipe([['A1','A2L'],['A1','PRINT MGR'],['WA','TELEGRAM']]);stepPipe(0);HOME.prints++;updateTV('daily');
     stepPipe(1);setStatus('prt','busy');await say('prt',`خلصت ${name} ✓`,1200);
     stepPipe(2);await go('prt',0,-3.6,-.2);await face(AGENTS.prt,Math.PI);setStatus('wa','busy');await whatsapp(`خلصت طباعة ${name} على A2L`,sent!==false);setStatus('wa','done');
     AGENTS.prt.last=`طبعت ${name}.`;await goHome('prt');idlePipe();
   },
   async liveFail(ev){
-    setPipe([['CAM','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);stepPipe(0);
+    setPipe([['CAM','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','TELEGRAM']]);stepPipe(0);
     stepPipe(1);setStatus('prt','err');await say('prt',`الطابعة وقفت${ev.error?' · خطأ '+ev.error:''}`);
     stepPipe(2);await visit('prt','ceo');setStatus('prt','err');await say('ceo','بلّغ أبو خالد فوراً');
     stepPipe(3);await go('prt',0,-3.6,-.2);setStatus('prt','err');await face(AGENTS.prt,Math.PI);setStatus('wa','busy');await whatsapp(`الطابعة A2L وقفت: ${ev.name||''}`,ev.whatsapp!==false);setStatus('wa','err');
