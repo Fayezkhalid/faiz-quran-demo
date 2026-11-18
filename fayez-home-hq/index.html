@@ -145,7 +145,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v14</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v15</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -457,52 +457,54 @@ function desk(x,y,z){box(1.7,.07,.78,deskMat,x,y+.78,z);box(.06,.75,.7,deskDark,
 /* ---------------- Bambu Lab A2L Combo ---------------- */
 const printer={progress:0,state:'idle',live:null};
 (function buildA2L(){
+  // Bambu Lab A2L Combo: flat white base, grey aluminium portal frame (two posts + top beam), X gantry riding between the posts,
+  // and a free-standing AMS lite with four spools stacked two over two, facing forward.
   const room=roomById.print, base=new THREE.Group();base.position.set(-2.25,fy(room.f)+.1,-1.75);scene.add(base);printer.g=base;
   box(2.1,.66,.95,deskDark,0,.33,0,base);box(2.14,.05,.99,deskMat,0,.68,0,base); // workbench
-  const P=new THREE.Group();P.position.set(-.3,.7,0);base.add(P);printer.root=P;
-  const white=M('#ececee',{roughness:.42}), grey=M('#3b3f47',{metalness:.45,roughness:.4}), dark=M('#15171c',{roughness:.5}), alu=M('#9aa0aa',{metalness:.8,roughness:.3});
-  // base: wide low body with front screen
-  box(1.06,.13,.84,white,0,.065,0,P);
-  box(1.0,.012,.02,glowMat('#2b7cff'),0,.03,.425,P);
-  const scr=box(.16,.1,.012,M('#0b0d12',{emissive:'#1b4fbf',emissiveIntensity:.6}),.36,.08,.426,P);
-  box(.98,.05,.05,alu,0,.155,-.32,P);box(.98,.05,.05,alu,0,.155,.32,P);        // Y linear rails
-  printer.bed=new THREE.Group();P.add(printer.bed);printer.bed.position.y=.2;
-  box(.78,.03,.76,dark,0,0,0,printer.bed);                                   // 330x320 heated bed
-  box(.75,.006,.73,M('#2a2c31',{roughness:.95}),0,.018,0,printer.bed);        // textured PEI
+  const P=new THREE.Group();P.position.set(-.32,.7,0);base.add(P);printer.root=P;
+  const white=M('#eceef0',{roughness:.42}), alu=M('#a9aeb6',{metalness:.75,roughness:.32}), grey=M('#3b3f47',{metalness:.45,roughness:.4}), dark=M('#15171c',{roughness:.5});
+  box(1.06,.12,.84,white,0,.06,0,P);                                          // base
+  box(.16,.09,.012,M('#0b0d12',{emissive:'#1b4fbf',emissiveIntensity:.7}),.38,.07,.425,P); // front screen (right)
+  box(.98,.012,.02,glowMat('#2b7cff'),0,.02,.425,P);
+  box(.92,.04,.05,alu,0,.14,-.32,P);box(.92,.04,.05,alu,0,.14,.32,P);          // Y rails
+  printer.bed=new THREE.Group();P.add(printer.bed);printer.bed.position.y=.18;
+  box(.8,.03,.78,dark,0,0,0,printer.bed);
+  box(.77,.006,.75,M('#8a7a5e',{roughness:.95}),0,.018,0,printer.bed);       // gold-ish textured PEI like the photo
   printer.part=box(.2,.001,.2,M('#2b7cff',{emissive:'#2b7cff',emissiveIntensity:.15}),0,.022,0,printer.bed);
-  // left Z tower + motor
-  box(.11,1.22,.13,white,-.5,.72,-.04,P);box(.06,1.18,.04,alu,-.465,.72,.04,P);box(.14,.12,.16,grey,-.5,1.38,-.04,P);
-  // X gantry
+  // portal frame
+  [-.52,.52].forEach(x=>{box(.07,1.3,.09,alu,x,.72,-.18,P);box(.11,.06,.13,grey,x,.12,-.18,P);});
+  box(1.11,.07,.09,alu,0,1.36,-.18,P);                                        // top beam
+  box(.14,.1,.1,grey,-.52,1.3,-.18,P);box(.14,.1,.1,grey,.52,1.3,-.18,P);      // corner motors
+  // X gantry between the posts
   printer.xg=new THREE.Group();P.add(printer.xg);printer.xg.position.y=.72;
-  box(.98,.06,.07,white,.0,0,0,printer.xg);box(.94,.02,.02,alu,0,-.035,.04,printer.xg);
-  printer.head=new THREE.Group();printer.xg.add(printer.head);printer.head.position.set(0,-.03,.07);
-  box(.16,.2,.12,white,0,0,0,printer.head);box(.14,.08,.012,dark,0,.04,.061,printer.head);
-  box(.05,.05,.04,grey,0,-.11,0,printer.head);
-  printer.nozzle=sph(.014,glowMat('#ff9f2e'),0,-.145,0,printer.head,8);
+  box(1.0,.055,.06,alu,0,0,-.12,printer.xg);box(.96,.02,.02,M('#d0d4da',{metalness:.8,roughness:.2}),0,-.035,-.08,printer.xg);
+  printer.head=new THREE.Group();printer.xg.add(printer.head);printer.head.position.set(0,-.02,-.04);
+  box(.15,.2,.12,M('#c9cdd3',{metalness:.5,roughness:.35}),0,0,0,printer.head);box(.13,.07,.012,dark,0,.04,.061,printer.head);
+  box(.05,.05,.04,grey,0,-.12,0,printer.head);
+  printer.nozzle=sph(.014,glowMat('#ff9f2e'),0,-.15,0,printer.head,8);
   printer.led=sph(.02,glowMat('#3fe08c'),.05,.07,.064,printer.head,8);
   printer.ledGlow=glow('#3fe08c',.28,.05,.07,.08,printer.head,.9);
-  printer.headLight=new THREE.PointLight('#cfe3ff',.0,1.2,2);printer.headLight.position.set(0,-.18,.05);printer.head.add(printer.headLight);
-  // camera on top of the Z tower
-  box(.06,.05,.05,dark,-.5,1.47,.05,P);sph(.012,glowMat('#ff4f6a'),-.5,1.47,.078,P,6);
-  // AMS lite (Combo): free-standing unit to the right, 4 spools on a 4-arm hub
-  const ams=new THREE.Group();ams.position.set(.78,.7,-.05);base.add(ams);printer.ams=ams;
-  cyl(.22,.26,.06,white,0,.03,0,ams,28);cyl(.035,.04,.62,grey,0,.34,0,ams,12);
-  const hub=new THREE.Group();hub.position.y=.68;ams.add(hub);printer.amsHub=hub;cyl(.09,.09,.08,white,0,0,0,hub,20);
+  printer.headLight=new THREE.PointLight('#cfe3ff',0,1.2,2);printer.headLight.position.set(0,-.18,.05);printer.head.add(printer.headLight);
+  box(.06,.05,.05,dark,-.52,1.42,-.1,P);sph(.012,glowMat('#ff4f6a'),-.52,1.42,-.072,P,6); // camera on the frame
+  // AMS lite: curved foot, upright, two rows of two spools facing forward
+  const ams=new THREE.Group();ams.position.set(.72,.7,-.02);base.add(ams);printer.ams=ams;printer.amsHub=new THREE.Group();ams.add(printer.amsHub);
+  box(.42,.03,.3,white,0,.015,0,ams);box(.05,.95,.05,grey,0,.5,-.04,ams);box(.42,.04,.06,grey,0,.66,-.04,ams);box(.42,.04,.06,grey,0,.3,-.04,ams);
   printer.spools=[];printer.spoolGroups=[];
+  const slots=[[-.15,.82],[.15,.82],[-.15,.46],[.15,.46]];                   // tray 0..3: top-left, top-right, bottom-left, bottom-right
   ['#1a1a1a','#f2f2f2','#ff7a1a','#ffd23a'].forEach((c,i)=>{
-    const a=i*Math.PI/2+Math.PI/4, arm=new THREE.Group();arm.rotation.y=a;hub.add(arm);
-    box(.2,.025,.04,white,.1,0,0,arm);
-    const sp=new THREE.Group();sp.position.set(.2,.03,0);sp.rotation.z=.55;arm.add(sp);
-    const ring=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.07,26),M(c,{roughness:.55}));ring.rotation.z=Math.PI/2;sp.add(ring);
-    const core=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.075,16),dark);core.rotation.z=Math.PI/2;sp.add(core);
-    [-.04,.04].forEach(dx=>{const fl=new THREE.Mesh(new THREE.CylinderGeometry(.125,.125,.008,26),M('#1d1f27'));fl.rotation.z=Math.PI/2;fl.position.x=dx;sp.add(fl);});
+    const sp=new THREE.Group();sp.position.set(slots[i][0],slots[i][1],.02);ams.add(sp);
+    const ring=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.075,30),M(c,{roughness:.55,emissive:c,emissiveIntensity:.08}));ring.rotation.x=Math.PI/2;sp.add(ring);
+    const core=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.08,18),dark);core.rotation.x=Math.PI/2;sp.add(core);
+    [-.042,.042].forEach(dz=>{const fl=new THREE.Mesh(new THREE.TorusGeometry(.13,.009,6,30),M('#1d1f27'));fl.position.z=dz;sp.add(fl);});  // thin rims only, so the filament colour shows
+    box(.03,.03,.03,M('#c9cdd3'),0,.14,0,sp);                                  // feeder on top of each spool
     printer.spools.push(ring);printer.spoolGroups.push(sp);
   });
-  // PTFE tubes AMS -> hub -> toolhead
-  const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(.78,1.38,-.05),new THREE.Vector3(.55,1.6,.05),new THREE.Vector3(.0,1.55,.1),new THREE.Vector3(-.3,1.45,.07)]);
-  printer.tube=new THREE.Mesh(new THREE.TubeGeometry(curve,30,.009,6),M('#f4f4f4',{transparent:true,opacity:.75}));base.add(printer.tube);
-  // spare filament boxes under the bench
-  [[-.7,'#1b5fd1'],[-.38,'#1fa36a'],[-.06,'#d0d0d0']].forEach(([x,c])=>box(.27,.2,.27,M(c),x,.1,.25,base));
+  // PTFE tubes from the AMS up over the frame to the toolhead
+  const tm=M('#f4f4f4',{transparent:true,opacity:.75});
+  [[-.15,.98],[.15,.98],[-.15,.62],[.15,.62]].forEach(([x,y],i)=>{
+    const c=new THREE.CatmullRomCurve3([new THREE.Vector3(.72+x,.7+y,-.02),new THREE.Vector3(.65+x*.5,.7+1.25+i*.03,-.1),new THREE.Vector3(.1,.7+1.62,-.15),new THREE.Vector3(-.32,.7+1.5,-.16)]);
+    base.add(new THREE.Mesh(new THREE.TubeGeometry(c,30,.007,6),tm));});
+  [[-.75,'#1b5fd1'],[-.45,'#1fa36a']].forEach(([x,c])=>box(.27,.2,.27,M(c),x,.1,.25,base));
 })();
 function setPrinterLed(c){printer.led.material.color.set(c);printer.ledGlow.material.color.set(c);}
 function setPrintProgress(k){printer.progress=k;printer.part.scale.y=1+k*150;printer.part.position.y=.022+k*.075;printer.xg.position.y=.26+k*.16;}
@@ -515,7 +517,7 @@ async function runPrint(n){
 function printerTick(t){
   const on=printer.state==='printing';
   printer.headLight.intensity=on?.9:0;
-  if(on){printer.head.position.x=Math.sin(t*7.3)*.3;printer.bed.position.z=Math.sin(t*5.1)*.16;printer.nozzle.material.color.set('#ff6a00');printer.amsHub.rotation.y+=.004;printer.spools.forEach((s,i)=>{if(i===printer.activeSpool)s.rotation.x+=.05;});}
+  if(on){printer.head.position.x=Math.sin(t*7.3)*.3;printer.bed.position.z=Math.sin(t*5.1)*.16;printer.nozzle.material.color.set('#ff6a00');printer.spoolGroups.forEach((g,i)=>{if(i===printer.activeSpool)g.rotation.z-=.05;});}
   else{printer.head.position.x+=(0-printer.head.position.x)*.05;printer.bed.position.z+=(0-printer.bed.position.z)*.05;if(printer.state!=='stuck'&&printer.xg.position.y<.7)printer.xg.position.y+=(.72-printer.xg.position.y)*.03;}
   if(printer.state==='stuck'){const b=Math.floor(t*4)%2;setPrinterLed(b?'#ff4f6a':'#300');}
 }
