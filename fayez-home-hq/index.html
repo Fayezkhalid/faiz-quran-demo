@@ -88,6 +88,7 @@ button{font-family:var(--ui);cursor:pointer}
 .feed{display:grid;gap:5px;max-height:16vh;overflow-y:auto;font-size:.76rem;line-height:1.5;max-width:620px;width:100%;justify-self:center;mask-image:linear-gradient(transparent,#000 30%)}
 .msg{padding:5px 10px;border-radius:12px;background:#151824e6;border:1px solid var(--line);justify-self:start;max-width:92%}
 .msg b{color:var(--gold);font-weight:600}
+.msg a.mlink{color:var(--gold);font-weight:600;text-decoration:underline;display:inline-block;margin-top:4px}
 .msg.me{background:#2b7cff;border-color:#2b7cff;color:#fff;justify-self:end}
 .msg.sys{background:none;border:0;color:var(--mute);font:500 .66rem var(--mono);direction:ltr;justify-self:center}
 .quick{display:flex;gap:6px;overflow-x:auto;max-width:620px;width:100%;justify-self:center;scrollbar-width:none}
@@ -145,7 +146,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v20</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v21</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -697,7 +698,7 @@ const AGENTS={
   fin:  {name:'المدير المالي', en:'FINANCE', room:'finance', x:-4.6, look:{thobe:1,shirt:'#f3f1ea',ghutra:'white',beard:1}, role:'ميزانية البيت والفواتير وتكلفة الطباعة', keys:['المالي','المالية','الفلوس','الميزانية']},
   mail: {name:'مدير الإيميلات', en:'EMAILS', room:'mail', x:3.4, look:{shirt:'#2f6fe0',hair:'#1a120c',headset:1,hood:1}, role:'يقرأ Gmail (قراءة فقط): يطلّع الفواتير للمالي وإيميلات الماجستير للمرشد', keys:['الايميلات','الإيميلات','الايميل','البريد']},
   prt:  {name:'مدير الطابعات', en:'PRINT MGR', room:'print', x:-5.6, look:{shirt:'#ff7a2e',cap:'#1d1f27',hood:1}, role:'يدير Bambu Lab A2L Combo ويراقب الكاميرا', keys:['الطابعات','الطابعة','الطباعة','الطابعه']},
-  des:  {name:'المصمم', en:'DESIGN', room:'design', x:3.2, look:{shirt:'#e0457f',hair:'#2a1a10',glasses:1}, role:'يجهز ملفات STL من MakerWorld وتصاميمك', keys:['المصمم','التصميم','تصميم']},
+  des:  {name:'المصمم', en:'DESIGN', room:'design', x:3.2, look:{shirt:'#e0457f',hair:'#2a1a10',glasses:1}, role:'يجهز لك روابط تصاميم MakerWorld، وأنت تختار وتطبع من Bambu Handy', keys:['المصمم','التصميم','تصميم']},
   home: {name:'مدير البيت', en:'HOME', room:'home', x:-4.6, look:{thobe:1,shirt:'#e9e4d8',ghutra:'red'}, role:'الصيانة والمواعيد وطلبات البيت', keys:['مدير البيت','البيت','الصيانة']},
   fam:  {name:'منسق العائلة', en:'FAMILY', room:'family', x:3.4, look:{shirt:'#2fb36e',hair:'#120c08',beard:1}, role:'السفر والمدارس ومواعيد العيال', keys:['العائلة','العايلة','منسق','السفر','الرحلة']},
   adv:  {name:'المرشد الأكاديمي', en:'ADVISOR', room:'study', x:3.2, look:{thobe:1,shirt:'#f1efe8',ghutra:'white',glasses:1,beard:1}, role:'MBA – IBA London: ٨ محاور × ٧ محاضرات، الاختبارات والواجبات، وتذكير واتساب يومي', keys:['المرشد الاكاديمي','المرشد','مرشد','الماجستير','ماجستير']},
@@ -804,6 +805,10 @@ function setPipe(steps){pipeSteps=steps;$('pipe').classList.remove('idle');
 function stepPipe(n){$('pipe').querySelectorAll('.node').forEach(el=>{const i=+el.dataset.i;el.classList.toggle('on',i<=n);el.classList.toggle('cur',i===n);});$('pipe').querySelectorAll('.link').forEach(el=>el.classList.toggle('on',+el.dataset.i<=n));}
 function idlePipe(){$('pipe').classList.add('idle');$('pipe').querySelectorAll('.cur').forEach(e=>e.classList.remove('cur'));}
 setPipe([['A1','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['WA','WHATSAPP']]);idlePipe();
+function feedLinks(who,text,links){const m=document.createElement('div');m.className='msg';const b=document.createElement('b');b.textContent=who+': ';m.append(b,text);
+  links.forEach(([label,url])=>{const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent=label;a.className='mlink';m.append(document.createElement('br'),a);});
+  const f=$('feed');f.append(m);f.scrollTop=f.scrollHeight;}
+const EN_HINT=t=>{const d={'جوال':'phone stand','حامل':'holder','قاعدة':'stand','سماعة':'headphone stand','مفاتيح':'key holder','لعبة':'toy','لعبه':'toy','منظم':'organizer','كيبل':'cable organizer','قلم':'pen holder','ساعة':'watch stand','نبتة':'planter','اصيص':'planter','ديناصور':'dinosaur','تنين':'dragon','لمبة':'lamp','لمبه':'lamp','مزهرية':'vase'};return [...new Set(Object.keys(d).filter(k=>t.includes(k)).flatMap(k=>d[k].split(' ')))].join(' ');};
 function feed(who,text,cls=''){const m=document.createElement('div');m.className='msg '+cls;if(who){const b=document.createElement('b');b.textContent=who+': ';m.append(b);}m.append(text);const f=$('feed');f.append(m);while(f.children.length>40)f.firstChild.remove();f.scrollTop=f.scrollHeight;}
 const sys=t=>feed('',t,'sys');
 
@@ -891,11 +896,16 @@ const SC={
     AGENTS.fam.last=`جهزت خطة رحلة ${place}.`;idlePipe();
   },
   async design(item){
-    setPipe([['DES','DESIGN'],['A1','PRINT MGR'],['MGR','MANAGER']]);
-    stepPipe(0);setStatus('des','busy');await say('des',`أدور تصميم ${item} على MakerWorld…`);await sleep(900);HOME.designs++;updateTV('design');await say('des','لقيت تصميم ممتاز وجهزت ملف الطباعة');
-    stepPipe(1);await visit('des','prt');await say('prt','استلمت الملف. ٢ ساعة و١٤ غرام');
-    stepPipe(2);await visit('des','ceo');await say('ceo','تمام، انتظر أمر الطباعة من أبو خالد');
-    await goHome('des');AGENTS.des.last=`جهزت ملف ${item}.`;idlePipe();
+    // Real hand-off: the designer prepares MakerWorld searches; Fayez picks a model and prints it from Bambu Studio / Handy,
+    // and the print manager picks the print up automatically once it starts (live mode).
+    setPipe([['DES','DESIGN'],['A1','MAKERWORLD'],['A1','PRINT MGR']]);
+    stepPipe(0);setStatus('des','busy');await say('des',`أجهز لك بحث ${item} في MakerWorld…`,1200);
+    const en=EN_HINT(item),qs=[...new Set([item,en].filter(Boolean))];
+    stepPipe(1);feedLinks('المصمم','اختر التصميم اللي يعجبك من هنا:',qs.map(q=>[`🔎 ${q} في MakerWorld`,'https://makerworld.com/en/search/models?keyword='+encodeURIComponent(q)]));
+    HOME.designs++;updateTV('design');
+    await say('des','حطيت لك روابط البحث تحت. افتح التصميم واضغط Print في Bambu Handy أو Studio',2600);
+    stepPipe(2);await visit('des','prt');await say('prt','أول ما تبدأ الطباعة أتابعها وأبلغك في تيليجرام',2000);
+    await goHome('des');AGENTS.des.last=`جهزت بحث ${item} في MakerWorld.`;idlePipe();
   },
   async report(){
     setPipe([['MGR','MANAGER'],['FIN','FINANCE'],['MAIL','EMAILS'],['A1','PRINTS'],['WA','WHATSAPP']]);
