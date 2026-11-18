@@ -319,6 +319,8 @@ function homeIcs() {
 /* ---------------- printer ---------------- */
 const printer = { connected: false, state: null, pct: 0, layer: 0, total: 0, nozzle: null, bed: null, remaining: null, name: '', error: 0, tray: null, trays: [null, null, null, null] };
 let lastState = null;
+// phone call when a print finishes and/or fails (PRINT_CALL=done,fail · set PRINT_CALL=off to disable)
+const PRINT_CALL = (process.env.PRINT_CALL || 'done,fail').toLowerCase();
 function onPrinterState() {
   push('printer', printer);
   const prev = lastState, next = printer.state;
@@ -331,9 +333,11 @@ function onPrinterState() {
     whatsapp(`🖨️ بدأت طباعة ${name} على ${CFG.model}`);
   } else if (next === 'FINISH') {
     whatsapp(`✅ خلصت طباعة ${name} على ${CFG.model}`).then(ok => push('event', { type: 'print_done', name, whatsapp: ok }));
+    if (PRINT_CALL.includes('done')) phoneCall(`هلا أبو خالد، معك مدير الطابعات. خلصت طباعة ${name}، تقدر تشيلها من الطابعة.`);
   } else if (next === 'FAILED' || (next === 'PAUSE' && printer.error)) {
     whatsapp(`⚠️ الطابعة ${CFG.model} وقفت أثناء طباعة ${name}${printer.error ? ' (خطأ ' + printer.error + ')' : ''}`)
       .then(ok => push('event', { type: 'print_failed', name, error: printer.error || null, whatsapp: ok }));
+    if (PRINT_CALL.includes('fail')) phoneCall(`هلا أبو خالد، معك مدير الطابعات. الطابعة وقفت أثناء طباعة ${name}، تحتاج تشوفها.`);
   }
 }
 function mergeReport(p) {
