@@ -724,7 +724,7 @@ function openPrinter(){cardFor='printer';Object.values(AGENTS).forEach(x=>x.el.c
   <div class="spec"><div><b id="pP">0%</b><span>PROGRESS</span></div><div><b id="pN">—</b><span>NOZZLE</span></div><div><b id="pB">—</b><span>BED</span></div></div>
   <div class="bar"><i id="pBar"></i></div><div class="sub" id="pS">IDLE</div>
   <div class="trays" id="pT"></div>
-  <div class="acts">${LIVE.printer?'<button class="btn" data-ask="وقف الطباعة مؤقتاً">إيقاف مؤقت</button><button class="btn gold" data-ask="كمل الطباعة">كمل</button>':'<button class="btn gold" data-ask="اطبع لي القطعة رقم 21">اطبع قطعة</button><button class="btn" data-ask="الطابعة علقت">محاكاة عطل</button>'}</div>`;
+  <div class="acts">${LIVE.printer?'<span class="sub" style="direction:rtl;text-align:right;letter-spacing:0;font-family:var(--ui)">متابعة فقط · الإيقاف والإكمال من شاشة الطابعة أو Bambu Handy</span>':'<button class="btn gold" data-ask="اطبع لي القطعة رقم 21">اطبع قطعة</button><button class="btn" data-ask="الطابعة علقت">محاكاة عطل</button>'}</div>`;
   bindCard();updatePrinterCard();}
 function updatePrinterCard(){if(cardFor!=='printer')return;const e=id=>document.getElementById(id);if(!e('pP'))return;
   const L=printer.live, p=Math.round(printer.progress*100), on=printer.state==='printing';
@@ -832,8 +832,7 @@ function ask(text){
     else job=()=>SC.msStatus();
     feed('المدير العام','حوّلتها للمرشد الأكاديمي.');enqueue(job);return;}
   // printer control runs right away, not behind the agents' animation queue
-  if(/(وقف|ايقاف|اوقف|بوز).*(طباع|طابع)/.test(t)||/(طباع|طابع).*(وقف|ايقاف)/.test(t)){feed('المدير العام','تمام.');printerCmd('pause');return;}
-  if(/(كمل|استانف|شغل).*(طباع|طابع)/.test(t)){feed('المدير العام','تمام.');printerCmd('resume');return;}
+  if(/(وقف|ايقاف|اوقف|بوز|كمل|استانف).*(طباع|طابع)/.test(t)||/(طباع|طابع).*(وقف|ايقاف)/.test(t)){enqueue(()=>say('prt','الطابعة ما تقبل أوامر من العمارة. وقّفها أو كمّلها من شاشتها أو من Bambu Handy، وأنا أتابع وأبلغك',2600));return;}
   else if(/(اختبر|جرب).*(واتس|وتس)/.test(t)){job=async()=>{setStatus('wa','busy');await whatsapp('رسالة تجريبية من بيت فايز HQ ✓');setStatus('wa','done');};}
   if(job){feed('المدير العام','تمام.');enqueue(job);return;}
   if(/علق|عطل|خرب|سباقيتي/.test(t))job=()=>SC.stuck();
