@@ -250,6 +250,72 @@ function startGmail() {
   run(); setInterval(run, 3 * 60 * 1000);
 }
 
+/* ---------------- home manager: reminders (Telegram + phone call + calendar feed) ----------------
+   Stored in data/home.json. Times are this PC's local time. A reminder fires `lead` minutes before `at`;
+   repeating ones then move to the next date. With call=true the PC rings Fayez's phone through the
+   call-me skill (Linphone) and reads the reminder out loud. */
+const HOME_FILE = path.join(DATA, 'home.json');
+let home = { items: [] };
+try { home = JSON.parse(fs.readFileSync(HOME_FILE, 'utf8')); if (!Array.isArray(home.items)) home.items = []; } catch (_) {}
+const saveHome = () => { fs.writeFileSync(HOME_FILE, JSON.stringify(home, null, 1)); push('home', publicHome()); };
+const CAT = { home: '🏠 البيت', family: '👨‍👩‍👧 الأهل', maint: '🔧 صيانة' };
+const pad = n => String(n).padStart(2, '0');
+const localIso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+function nextDate(d, rep) { const n = new Date(d); if (rep === 'daily') n.setDate(n.getDate() + 1); else if (rep === 'weekly') n.setDate(n.getDate() + 7); else if (rep === 'monthly') n.setMonth(n.getMonth() + 1); else if (rep === 'yearly') n.setFullYear(n.getFullYear() + 1); return n; }
+function publicHome() { return { items: home.items.slice().sort((a, b) => new Date(a.at) - new Date(b.at)), call: callReady() }; }
+const CALL_SCRIPT = process.env.CALLME_SCRIPT || path.join(require('os').homedir(), '.claude', 'skills', 'call-me', 'call_me.py');
+const callReady = () => { try { return fs.existsSync(CALL_SCRIPT) && fs.existsSync(path.join(path.dirname(CALL_SCRIPT), 'sip-password.txt')); } catch (_) { return false; } };
+let callQueue = Promise.resolve();
+function phoneCall(text) {
+  if (!callReady()) { log('call skipped (call-me skill not installed at', CALL_SCRIPT + ')'); return Promise.resolve(false); }
+  callQueue = callQueue.then(() => new Promise(resolve => {
+    const { spawn } = require('child_process');
+    log('calling phone:', text);
+    const py = process.platform === 'win32' ? 'python' : 'python3';
+    const ch = spawn(py, [CALL_SCRIPT, text], { cwd: path.dirname(CALL_SCRIPT), windowsHide: true });
+    const t = setTimeout(() => ch.kill(), 150000);
+    ch.on('close', code => { clearTimeout(t); log('call finished, answered =', code === 0); resolve(code === 0); });
+    ch.on('error', e => { clearTimeout(t); log('call error:', e.message); resolve(false); });
+  }));
+  return callQueue;
+}
+async function fireReminder(r) {
+  const when = new Date(r.at), t = `${pad(when.getHours())}:${pad(when.getMinutes())}`;
+  const soon = r.lead ? ` (بعد ${r.lead >= 1440 ? Math.round(r.lead / 1440) + ' يوم' : r.lead >= 60 ? Math.round(r.lead / 60) + ' ساعة' : r.lead + ' دقيقة'})` : '';
+  const msg = `⏰ تذكير ${CAT[r.cat] || ''}: ${r.title}${soon} · الساعة ${t}`;
+  whatsapp(msg);
+  push('event', { type: 'reminder', id: r.id, title: r.title, cat: r.cat, call: !!r.call });
+  if (r.call) phoneCall(`هلا أبو خالد، معك مدير البيت. تذكير: ${r.title}${r.lead ? '' : '، الحين'}.`);
+}
+setInterval(() => {
+  const now = Date.now(); let changed = false;
+  for (const r of home.items) {
+    if (r.done) continue;
+    const fireAt = new Date(r.at).getTime() - (r.lead || 0) * 60000;
+    if (now >= fireAt && r.firedFor !== r.at) {
+      r.firedFor = r.at; changed = true;
+      if (now - fireAt < 6 * 3600000) fireReminder(r);   // don't spam very old ones after the PC was off
+      if (r.repeat && r.repeat !== 'none') { let n = new Date(r.at); while (n.getTime() - (r.lead || 0) * 60000 <= now) n = nextDate(n, r.repeat); r.at = localIso(n); }
+    }
+  }
+  const before = home.items.length;
+  home.items = home.items.filter(r => r.repeat !== 'none' || r.firedFor !== r.at || now - new Date(r.at).getTime() < 2 * 86400000);
+  if (changed || home.items.length !== before) saveHome();
+}, 20000);
+function icsEscape(s) { return String(s).replace(/[\\;,]/g, m => '\\' + m).replace(/\n/g, '\\n'); }
+function homeIcs() {
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const fmt = iso => iso.replace(/[-:]/g, '') + '00';
+  const RR = { daily: 'DAILY', weekly: 'WEEKLY', monthly: 'MONTHLY', yearly: 'YEARLY' };
+  const ev = home.items.filter(r => !r.done).map(r => {
+    const end = localIso(new Date(new Date(r.at).getTime() + 30 * 60000));
+    return ['BEGIN:VEVENT', `UID:${r.id}@fayez-home-hq`, `DTSTAMP:${stamp}`, `DTSTART:${fmt(r.at)}`, `DTEND:${fmt(end)}`,
+      `SUMMARY:${icsEscape((CAT[r.cat] || '') + ' ' + r.title)}`, RR[r.repeat] ? `RRULE:FREQ=${RR[r.repeat]}` : null,
+      'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEscape(r.title)}`, `TRIGGER:-PT${r.lead || 0}M`, 'END:VALARM', 'END:VEVENT'].filter(Boolean).join('\r\n');
+  });
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Fayez Home HQ//AR', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:بيت فايز', 'X-WR-TIMEZONE:Asia/Riyadh', ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
+}
+
 /* ---------------- printer ---------------- */
 const printer = { connected: false, state: null, pct: 0, layer: 0, total: 0, nozzle: null, bed: null, remaining: null, name: '', error: 0, tray: null, trays: [null, null, null, null] };
 let lastState = null;
@@ -389,7 +455,7 @@ const server = http.createServer(async (req, res) => {
       return fs.createReadStream(PAGE).pipe(res);
     }
     if (req.method === 'GET' && url.pathname === '/api/state') {
-      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), gmail: gmailReady(), model: CFG.model, demo: CFG.demo }, printer, finance, masters, mail: { unread: mail.unread, recent: mail.recent.slice(0, 6) } });
+      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), gmail: gmailReady(), call: callReady(), model: CFG.model, demo: CFG.demo }, printer, finance, masters, home: publicHome(), mail: { unread: mail.unread, recent: mail.recent.slice(0, 6) } });
     }
     if (req.method === 'GET' && url.pathname === '/events') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' });
@@ -427,6 +493,24 @@ const server = http.createServer(async (req, res) => {
         saveMasters(); return json(res, 200, { masters });
       }
       return json(res, 400, { error: 'action must be lecture, exam, assignment or set' });
+    }
+    if (req.method === 'GET' && url.pathname === '/home.ics') {
+      res.writeHead(200, { 'content-type': 'text/calendar; charset=utf-8', 'cache-control': 'no-store' }); return res.end(homeIcs());
+    }
+    if (req.method === 'POST' && url.pathname === '/api/home') {
+      const b = await readBody(req);
+      if (b.action === 'add') {
+        const title = String(b.title || '').trim().slice(0, 120), at = String(b.at || '');
+        if (!title || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(at) || isNaN(new Date(at))) return json(res, 400, { error: 'title and at (YYYY-MM-DDTHH:MM) required' });
+        const r = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title, at, cat: CAT[b.cat] ? b.cat : 'home',
+          repeat: ['none', 'daily', 'weekly', 'monthly', 'yearly'].includes(b.repeat) ? b.repeat : 'none', lead: Math.max(0, Math.min(10080, Number(b.lead) || 0)), call: !!b.call, created: new Date().toISOString() };
+        home.items.push(r); saveHome();
+        whatsapp(`📅 انحفظ موعد ${CAT[r.cat]}: ${r.title} · ${r.at.replace('T', ' ')}${r.repeat !== 'none' ? ' (يتكرر)' : ''}${r.call ? ' · 📞 مع اتصال' : ''}`);
+        return json(res, 200, publicHome());
+      }
+      if (b.action === 'delete') { home.items = home.items.filter(r => r.id !== b.id); saveHome(); return json(res, 200, publicHome()); }
+      if (b.action === 'testcall') { const ok = await phoneCall('هلا أبو خالد، معك مدير البيت. هذا اتصال تجريبي من بيت فايز.'); return json(res, 200, { ok }); }
+      return json(res, 400, { error: 'action must be add, delete or testcall' });
     }
     if (req.method === 'POST' && url.pathname === '/api/printer') {
       const b = await readBody(req);

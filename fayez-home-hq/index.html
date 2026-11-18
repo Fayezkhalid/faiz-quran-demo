@@ -88,6 +88,14 @@ button{font-family:var(--ui);cursor:pointer}
 .feed{display:grid;gap:5px;max-height:16vh;overflow-y:auto;font-size:.76rem;line-height:1.5;max-width:620px;width:100%;justify-self:center;mask-image:linear-gradient(transparent,#000 30%)}
 .msg{padding:5px 10px;border-radius:12px;background:#151824e6;border:1px solid var(--line);justify-self:start;max-width:92%}
 .msg b{color:var(--gold);font-weight:600}
+.rem{display:grid;gap:6px;max-height:150px;overflow:auto}
+.rem .it{display:flex;gap:8px;align-items:center;font-size:.74rem;background:#0c0e15;border:1px solid var(--line);border-radius:10px;padding:6px 8px}
+.rem .it b{font-weight:600;color:var(--ink)}.rem .it span{color:var(--mute);font:500 .64rem var(--mono);direction:ltr}
+.rem .it .del{margin-inline-start:auto;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--mute);flex:none}
+.rf{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rf input,.rf select{min-width:0;font:400 .76rem var(--ui);background:#0c0e15;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.rf .full{grid-column:1/-1}
+.rf label{display:flex;gap:6px;align-items:center;font-size:.74rem;color:var(--mute)}
 .msg a.mlink{color:var(--gold);font-weight:600;text-decoration:underline;display:inline-block;margin-top:4px}
 .msg.me{background:#2b7cff;border-color:#2b7cff;color:#fff;justify-self:end}
 .msg.sys{background:none;border:0;color:var(--mute);font:500 .66rem var(--mono);direction:ltr;justify-self:center}
@@ -146,7 +154,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v21</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v22</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -699,7 +707,7 @@ const AGENTS={
   mail: {name:'مدير الإيميلات', en:'EMAILS', room:'mail', x:3.4, look:{shirt:'#2f6fe0',hair:'#1a120c',headset:1,hood:1}, role:'يقرأ Gmail (قراءة فقط): يطلّع الفواتير للمالي وإيميلات الماجستير للمرشد', keys:['الايميلات','الإيميلات','الايميل','البريد']},
   prt:  {name:'مدير الطابعات', en:'PRINT MGR', room:'print', x:-5.6, look:{shirt:'#ff7a2e',cap:'#1d1f27',hood:1}, role:'يدير Bambu Lab A2L Combo ويراقب الكاميرا', keys:['الطابعات','الطابعة','الطباعة','الطابعه']},
   des:  {name:'المصمم', en:'DESIGN', room:'design', x:3.2, look:{shirt:'#e0457f',hair:'#2a1a10',glasses:1}, role:'يجهز لك روابط تصاميم MakerWorld، وأنت تختار وتطبع من Bambu Handy', keys:['المصمم','التصميم','تصميم']},
-  home: {name:'مدير البيت', en:'HOME', room:'home', x:-4.6, look:{thobe:1,shirt:'#e9e4d8',ghutra:'red'}, role:'الصيانة والمواعيد وطلبات البيت', keys:['مدير البيت','البيت','الصيانة']},
+  home: {name:'مدير البيت', en:'HOME', room:'home', x:-4.6, look:{thobe:1,shirt:'#e9e4d8',ghutra:'red'}, role:'مواعيد البيت والأهل والصيانة: تذكير في تيليجرام، واتصال، وتقويم الجوال', keys:['مدير البيت','البيت','الصيانة']},
   fam:  {name:'منسق العائلة', en:'FAMILY', room:'family', x:3.4, look:{shirt:'#2fb36e',hair:'#120c08',beard:1}, role:'السفر والمدارس ومواعيد العيال', keys:['العائلة','العايلة','منسق','السفر','الرحلة']},
   adv:  {name:'المرشد الأكاديمي', en:'ADVISOR', room:'study', x:3.2, look:{thobe:1,shirt:'#f1efe8',ghutra:'white',glasses:1,beard:1}, role:'MBA – IBA London: ٨ محاور × ٧ محاضرات، الاختبارات والواجبات، وتذكير واتساب يومي', keys:['المرشد الاكاديمي','المرشد','مرشد','الماجستير','ماجستير']},
   wa:   {name:'وكيل الواتساب', en:'WHATSAPP', room:'lobby', x:-4.8, look:{shirt:'#1fa35a',hair:'#1a120c'}, role:'يرسل لك التنبيهات على الواتساب', keys:['الواتساب','واتساب','الوتساب']},
@@ -820,8 +828,52 @@ function openAgent(id,refresh){
   c.innerHTML=`<button class="x" aria-label="إغلاق">✕</button><h3><i></i>${a.name}</h3><div class="sub">${a.en} · ${roomById[a.room].en} · ${st}</div>
   <div style="font-size:.8rem;color:var(--mute)">${a.role}</div>
   <div class="hist">${(a.hist.length?a.hist:[a.last]).map(h=>`<div>${esc(h)}</div>`).join('')}</div>
-  <div class="acts"><button class="btn" data-ask="@${a.name} وش صار؟">وش صار؟</button>${QUICK_FOR[id]?`<button class="btn gold" data-ask="${QUICK_FOR[id][1]}">${QUICK_FOR[id][0]}</button>`:''}</div>`;
-  bindCard();
+  <div class="acts"><button class="btn" data-ask="@${a.name} وش صار؟">وش صار؟</button>${QUICK_FOR[id]?`<button class="btn gold" data-ask="${QUICK_FOR[id][1]}">${QUICK_FOR[id][0]}</button>`:''}</div>${id==='home'?homePanel():''}`;
+  bindCard();if(id==='home')bindHomePanel();
+}
+/* ---- home manager reminders ---- */
+const CATS={home:'🏠 البيت',family:'👨‍👩‍👧 الأهل',maint:'🔧 صيانة'},REPS={none:'مرة',daily:'يومياً',weekly:'أسبوعياً',monthly:'شهرياً',yearly:'سنوياً'};
+let HOMEDATA={items:[],call:false};
+function fmtWhen(iso){const d=new Date(iso);return d.toLocaleDateString('ar-SA-u-ca-gregory',{weekday:'short',day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'});}
+function homePanel(){
+  if(!LIVE.on)return `<div class="sub" style="direction:rtl;text-align:right;font-family:var(--ui);letter-spacing:0">المواعيد والتذكير والاتصال تشتغل في نسخة البيت (localhost أو رابط Tailscale)</div>`;
+  const pad=n=>String(n).padStart(2,'0'),d=new Date(Date.now()+3600000);const def=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`;
+  return `<div class="rem">${HOMEDATA.items.length?HOMEDATA.items.map(r=>`<div class="it">${CATS[r.cat].split(' ')[0]}<div><b>${esc(r.title)}</b><br><span>${fmtWhen(r.at)} · ${REPS[r.repeat]}${r.call?' · 📞':''}</span></div><button class="del" data-del="${r.id}" aria-label="حذف">✕</button></div>`).join(''):'<div class="sub" style="font-family:var(--ui);letter-spacing:0;text-align:right">ما فيه مواعيد. أضف أول موعد تحت</div>'}</div>
+  <form class="rf" id="rf"><input class="full" id="rfT" placeholder="الموعد (مثلاً صيانة المكيف)" required>
+  <input id="rfA" type="datetime-local" value="${def}" required><select id="rfC">${Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+  <select id="rfR">${Object.entries(REPS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+  <select id="rfL"><option value="0">ذكّرني على الوقت</option><option value="15">قبل 15 دقيقة</option><option value="60">قبل ساعة</option><option value="1440">قبل يوم</option></select>
+  <label class="full"><input type="checkbox" id="rfP" ${HOMEDATA.call?'':'disabled'}> 📞 اتصل علي كمان${HOMEDATA.call?'':' (سكيل الاتصال مو مثبت على الكمبيوتر)'}</label>
+  <button class="btn gold full">حفظ الموعد</button></form>
+  <div class="acts"><button class="btn" id="rfCal">📅 أضفها لتقويم الجوال</button>${HOMEDATA.call?'<button class="btn" id="rfTest">📞 اتصال تجريبي</button>':''}</div>`;
+}
+function bindHomePanel(){
+  const c=$('card');c.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{applyHome(await api('api/home',{action:'delete',id:b.dataset.del}));openAgent('home',true);});
+  const f=$('rf');if(f)f.onsubmit=async e=>{e.preventDefault();try{applyHome(await api('api/home',{action:'add',title:$('rfT').value,at:$('rfA').value,cat:$('rfC').value,repeat:$('rfR').value,lead:+$('rfL').value,call:$('rfP').checked}));openAgent('home',true);enqueue(()=>say('home','حفظت الموعد ✓ وأرسلت لك تأكيد في تيليجرام',1800));}catch(err){feed('مدير البيت','ما انحفظ: '+err.message);}};
+  const cal=$('rfCal');if(cal)cal.onclick=()=>{const u=new URL('home.ics',location.href).href.replace(/^https?:/,'webcal:');feedLinks('مدير البيت','اضغط الرابط من الجوال واختر اشتراك (Subscribe)، وتطلع مواعيد البيت في تقويمك بمنبهاتها:',[['📅 اشترك في تقويم بيت فايز',u]]);};
+  const tc=$('rfTest');if(tc)tc.onclick=async()=>{enqueue(()=>say('home','أتصل عليك الحين…',1500));try{const r=await api('api/home',{action:'testcall'});feed('مدير البيت',r.ok?'رديت وسمعت الرسالة ✓':'ما رديت، أو الاتصال ما ضبط');}catch(e){feed('مدير البيت','ما قدرت أتصل: '+e.message);}};
+}
+function applyHome(h){if(!h)return;HOMEDATA=h;HOME.tasks=h.items.slice(0,3).map(r=>`${r.title} · ${fmtWhen(r.at)}`);if(!HOME.tasks.length)HOME.tasks=['ما فيه مواعيد'];updateTV('home');if(cardFor==='home')openAgent('home',true);}
+/* "ذكرني بكرة الساعة 5 العصر صيانة المكيف" -> reminder */
+function parseReminder(raw){
+  const t=norm(raw);let d=new Date();d.setSeconds(0,0);let dayGiven=false;
+  if(/بعد بكره|بعد بكرة/.test(t)){d.setDate(d.getDate()+2);dayGiven=true;}else if(/بكره|بكرة|غدا/.test(t)){d.setDate(d.getDate()+1);dayGiven=true;}
+  const days=['الاحد','الاثنين','الثلاثاء','الاربعاء','الخميس','الجمعه','السبت'];days.forEach((n,i)=>{if(!dayGiven&&t.includes(n)){let k=(i-d.getDay()+7)%7||7;d.setDate(d.getDate()+k);dayGiven=true;}});
+  const m=t.match(/الساعه\s*(\d{1,2})(?::(\d{2}))?/);let h=null,mi=0;if(m){h=+m[1];mi=+(m[2]||0);}
+  if(h!==null){if(/مساء|العصر|الليل|الظهر|بالليل|pm/.test(t)&&h<12)h+=12;if(/الظهر/.test(t)&&h===24)h=12;if(/الفجر|الصبح|صباح/.test(t)&&h===12)h=0;d.setHours(h,mi);}
+  else return null;
+  if(!dayGiven&&d<new Date())d.setDate(d.getDate()+1);
+  const repeat=/كل يوم|يوميا/.test(t)?'daily':/كل اسبوع|اسبوعيا/.test(t)?'weekly':/كل شهر|شهريا/.test(t)?'monthly':/كل سنه|سنويا/.test(t)?'yearly':'none';
+  const cat=/صيان|مكيف|سباك|فلتر|كهربائي|تصليح/.test(t)?'maint':/ام |امي|ابوي|ابوي|زوجت|العيال|ولد|بنت|اهل|عائل|عايل|مدرس|ميلاد/.test(t)?'family':'home';
+  const call=/اتصل|اتصال|كلمني/.test(t);
+  const DROP=['بعد بكرة','بعد بكره','بكرة','بكره','غداً','غدا','اليوم','الليلة','العصر','الظهر','المغرب','بالليل','الليل','مساءً','مساء','صباحاً','صباحا','الصبح','الفجر','واتصل علي','اتصل علي','واتصل','كلمني','يومياً','يوميا','أسبوعياً','اسبوعيا','شهرياً','شهريا','سنوياً','سنويا'];
+  let title=' '+raw+' ';
+  title=title.replace(/^\s*(ذكّرني|ذكرني|تذكير)\s*(ب(?!كر|عد\s)(?=\S))?/,' ').replace(/(موعد)\s*/,' ').replace(/كل\s+(يوم|اسبوع|أسبوع|شهر|سنة|سنه)/g,' ').replace(/يوم\s+(ال)?(أحد|احد|اثنين|إثنين|ثلاثاء|أربعاء|اربعاء|خميس|جمعة|جمعه|سبت)/g,' ').replace(/الساع[ةه]\s*\d{1,2}(:\d{2})?/g,' ');
+  for(const w of DROP)title=title.split(' '+w+' ').join(' ');
+  title=title.replace(/\s+/g,' ').trim();
+  if(!title)title='موعد';
+  const pad=n=>String(n).padStart(2,'0');
+  return {title,at:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`,repeat,cat,lead:cat==='maint'&&repeat==='none'?60:0,call};
 }
 function openPrinter(){cardFor='printer';Object.values(AGENTS).forEach(x=>x.el.classList.remove('sel'));const c=$('card');c.hidden=false;c.style.setProperty('--c','var(--busy)');
   c.innerHTML=`<button class="x" aria-label="إغلاق">✕</button><h3><i></i>Bambu Lab A2L Combo</h3><div class="sub">330 × 320 × 325 mm · AMS lite · ${LIVE.printer?'LIVE':'DEMO'}</div>
@@ -842,7 +894,7 @@ function updatePrinterCard(){if(cardFor!=='printer')return;const e=id=>document.
 function bindCard(){const c=$('card');c.querySelector('.x').onclick=closeCard;c.querySelectorAll('[data-ask]').forEach(b=>b.onclick=()=>ask(b.dataset.ask));}
 function closeCard(){cardFor=null;$('card').hidden=true;Object.values(AGENTS).forEach(x=>x.el.classList.remove('sel'));}
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-const QUICK_FOR={prt:['اطبع قطعة','اطبع لي القطعة رقم 21'],fin:['فاتورة جديدة','وصلت فاتورة الكهرباء 420'],mail:['إيميل جديد','وصلت فاتورة الكهرباء 420'],home:['صيانة','المكيف يحتاج صيانة'],fam:['رحلة','خطط لنا رحلة العلا'],des:['تصميم','صمم لي حامل جوال'],ceo:['أبديت','عطني التقرير اليومي'],adv:['كم باقي؟','المرشد الأكاديمي كم باقي لي؟'],wa:['اختبار','عطني التقرير اليومي']};
+const QUICK_FOR={prt:['اطبع قطعة','اطبع لي القطعة رقم 21'],fin:['فاتورة جديدة','وصلت فاتورة الكهرباء 420'],mail:['إيميل جديد','وصلت فاتورة الكهرباء 420'],home:['مواعيدي','وش عندي مواعيد'],fam:['رحلة','خطط لنا رحلة العلا'],des:['تصميم','صمم لي حامل جوال'],ceo:['أبديت','عطني التقرير اليومي'],adv:['كم باقي؟','المرشد الأكاديمي كم باقي لي؟'],wa:['اختبار','عطني التقرير اليومي']};
 
 /* ---------------- scenarios ---------------- */
 async function whatsapp(text,alreadySent){
@@ -932,6 +984,15 @@ function ask(text){
     enqueue(async()=>{await say(who.id,`${who.last} (حالتي: ${STATUS[who.status][0]})`,2200);});return;}
   const num=+(t.match(/\d+/)||[0])[0];
   let job=null;
+  if(/^ذكرني|^ذكّرني|موعد|^تذكير/.test(t)){
+    const r=parseReminder(text);
+    if(!LIVE.on){enqueue(()=>say('home','المواعيد تنحفظ في نسخة البيت (localhost أو Tailscale). هنا تجربة بس',2400));return;}
+    if(!r){enqueue(()=>say('home','قل لي الوقت، مثلاً: ذكرني بكرة الساعة 5 العصر صيانة المكيف',2600));return;}
+    feed('المدير العام','حوّلتها لمدير البيت.');
+    // save right away (don't wait behind the agents' animation queue), then let the manager announce it
+    api('api/home',{action:'add',...r}).then(h=>{applyHome(h);feed('مدير البيت',`حفظت: ${r.title} · ${fmtWhen(r.at)}${r.repeat!=='none'?' · '+REPS[r.repeat]:''}${r.call?' · 📞 وبتصل عليك':''} ✓`);enqueue(()=>say('home','حفظت الموعد ✓',1200));}).catch(e=>feed('مدير البيت','ما انحفظ: '+e.message));
+    return;}
+  if(/(وش|ايش|شنو) (عندي|مواعيدي|المواعيد)|مواعيدي/.test(t)){enqueue(()=>say('home',HOMEDATA.items.length?'الجاية: '+HOMEDATA.items.slice(0,3).map(r=>`${r.title} (${fmtWhen(r.at)})`).join('، '):'ما عندك مواعيد محفوظة',3000));return;}
   if(/ماجستير|مرشد|ماده|مادة|المواد|اختبار|دراس|محاضر|محور|واجب|mba/i.test(t)&&!/فاتور|طباع|اطبع/.test(t)){
     const n=+(t.match(/\d+/)||[0])[0];
     if(/خلصت|انهيت|خلصنا|سويت|حليت/.test(t))job=()=>SC.msDone(/اختبار|امتحان|كويز/.test(t)?'exam':/واجب|اساينمنت|assignment/.test(t)?'assignment':'lecture');
@@ -1007,6 +1068,7 @@ function onLiveEvent(ev){
   if(ev.type==='print_start')enqueue(()=>SC.liveStart(ev.name||'قطعة'));
   else if(ev.type==='print_done')enqueue(()=>SC.liveDone(ev.name||'القطعة',ev.whatsapp));
   else if(ev.type==='print_failed')enqueue(()=>SC.liveFail(ev));
+  else if(ev.type==='reminder')enqueue(()=>SC.liveReminder(ev));
   else if(ev.type==='mail_bill')enqueue(()=>SC.liveBill(ev));
   else if(ev.type==='mail_iba')enqueue(()=>SC.liveIba(ev));
   else if(ev.type==='mail_new'){AGENTS.mail.last=`آخر إيميل: ${ev.subject}`;}
@@ -1016,11 +1078,12 @@ async function tryLive(){
   let st;try{st=await api('api/state');}catch(e){return;}
   if(!st||!st.bridge)return;
   LIVE.on=true;LIVE.printer=!!st.config.printer;LIVE.whatsapp=!!st.config.whatsapp;
-  applyFinance(st.finance);applyMasters(st.masters);applyMail(st.mail);if(st.printer&&st.printer.state)applyPrinter(st.printer);setLiveBadge(true);
+  applyFinance(st.finance);applyMasters(st.masters);applyMail(st.mail);applyHome(st.home);if(st.printer&&st.printer.state)applyPrinter(st.printer);setLiveBadge(true);
   const es=new EventSource('events');
   es.addEventListener('printer',e=>applyPrinter(JSON.parse(e.data)));
   es.addEventListener('finance',e=>applyFinance(JSON.parse(e.data)));
   es.addEventListener('mail',e=>applyMail(JSON.parse(e.data)));
+  es.addEventListener('home',e=>applyHome(JSON.parse(e.data)));
   es.addEventListener('masters',e=>applyMasters(JSON.parse(e.data)));
   es.addEventListener('event',e=>onLiveEvent(JSON.parse(e.data)));
   es.onerror=()=>setLiveBadge(false);es.onopen=()=>setLiveBadge(true);
@@ -1052,6 +1115,13 @@ Object.assign(SC,{
   async msSummary(){setStatus('adv','busy');
     await say('adv',`عشان ألخص ${MS.state().mod.ar}: انسخ نص المحاضرة أو صوّر الشرائح وارسلها في محادثة Claude، وأرجع لك بملخص بسيط وأسئلة MCQ للمراجعة`,3600);setStatus('adv','idle');},
 
+  async liveReminder(ev){
+    setPipe([['CAL','REMINDER'],['HOME','HOME'],['WA','TELEGRAM']].concat(ev.call?[['WA','CALL']]:[]));stepPipe(0);
+    stepPipe(1);setStatus('home','busy');await say('home',`⏰ تذكير: ${ev.title}`,2200);
+    stepPipe(2);await go('home',0,-3.6,-.2);await face(AGENTS.home,Math.PI);setStatus('wa','busy');await say('wa','أرسلت التذكير في تيليجرام',1400);
+    if(ev.call){stepPipe(3);await say('wa','📞 أتصل على أبو خالد الحين…',1800);}
+    setStatus('wa','done');AGENTS.home.last=`ذكّرتك: ${ev.title}`;await goHome('home');idlePipe();
+  },
   async liveBill(ev){
     setPipe([['MAIL','GMAIL'],['MAIL','EMAILS'],['FIN','FINANCE'],['WA','TELEGRAM']]);stepPipe(0);
     stepPipe(1);setStatus('mail','busy');await say('mail',`وصلت فاتورة ${ev.name}${ev.amount?' · '+ev.amount+' ريال':''}`);
