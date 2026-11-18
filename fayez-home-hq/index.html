@@ -109,6 +109,11 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 .floors button{font:600 .66rem var(--ui);min-width:62px;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:var(--glass);color:var(--mute);backdrop-filter:blur(8px);text-align:center}
 .floors button[aria-pressed="true"]{color:#2a1800;background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:transparent}
 .floors button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.floors button.on{color:var(--ink);border-color:var(--c);box-shadow:0 0 10px color-mix(in srgb,var(--c) 45%,transparent)}
+.floors button .bd{display:none;margin-inline-start:6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--c);color:#fff;font:700 .58rem/16px var(--mono);vertical-align:middle;animation:bd 1.2s ease-in-out infinite}
+.floors button.on .bd{display:inline-block}
+@keyframes bd{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.floors button .bd{animation:none}}
 .floors .zm{display:flex;gap:5px}.floors .zm button{min-width:0;flex:1;font:700 .9rem var(--mono);padding:4px 0}
 #liveBadge{cursor:default}
 @media (max-width:520px){.floors button{min-width:52px;font-size:.6rem;padding:5px 6px}}
@@ -140,7 +145,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v13</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v14</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -1037,7 +1042,16 @@ function roomActivity(t){
     r.rugMat.emissiveIntensity=st?.3+.25*k:.18;
     const base=r.light.userData.base||1.25;r.light.intensity=st?base*1.3:base;
   }
+  // floor buttons: badge with the number of busy departments on that floor (red if any has an error)
+  const fl={},all={n:0,err:false,names:[]};
+  for(const r of ROOMS){if(!r.room_state)continue;const o=fl[r.f]||(fl[r.f]={n:0,err:false,names:[]});o.n++;o.names.push(r.ar);all.n++;all.names.push(r.ar);if(r.room_state==='err'){o.err=true;all.err=true;}}
+  const key=JSON.stringify([fl,all.n,all.err]);
+  if(key!==floorKey){floorKey=key;
+    $('floors').querySelectorAll('[data-f]').forEach(b=>{const o=b.dataset.f===''?all:fl[+b.dataset.f];const on=!!(o&&o.n);
+      b.classList.toggle('on',on);b.style.setProperty('--c',on&&o.err?'#ff4f6a':'#2b7cff');b.querySelector('.bd').textContent=on?o.n:'';
+      b.title=on?`مشغول: ${o.names.join('، ')}`:'';b.setAttribute('aria-label',b.firstChild.textContent+(on?` — ${o.n} مشغول`:''));});}
 }
+let floorKey='';
 
 /* ---------------- resize / loop ---------------- */
 const TARGET=new THREE.Vector3(.8,8.4,0);
@@ -1060,7 +1074,7 @@ addEventListener('resize',frame);frame();
 function flyTo(tgt,dist,dir){const st=controls.target.clone(),sp=camera.position.clone();const d=(dir||sp.clone().sub(st)).clone().normalize();const ep=tgt.clone().addScaledVector(d,dist);
   return tween(.9,k=>{const e=ease(k);controls.target.lerpVectors(st,tgt,e);camera.position.lerpVectors(sp,ep,e);});}
 const FLOORS=[['الكل',null],['الإدارة',4],['المالية',3],['الطباعة',2],['البيت',1],['الاستقبال',0]];
-$('floors').innerHTML=FLOORS.map(([n,f])=>`<button data-f="${f===null?'':f}" aria-pressed="${f===null}">${n}</button>`).join('')+'<div class="zm"><button data-z="in" aria-label="تقريب">+</button><button data-z="out" aria-label="تبعيد">−</button></div>';
+$('floors').innerHTML=FLOORS.map(([n,f])=>`<button data-f="${f===null?'':f}" aria-pressed="${f===null}">${n}<span class="bd"></span></button>`).join('')+'<div class="zm"><button data-z="in" aria-label="تقريب">+</button><button data-z="out" aria-label="تبعيد">−</button></div>';
 $('floors').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{$('floors').querySelectorAll('[data-f]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
   if(b.dataset.f==='')flyTo(TARGET.clone(),homeDist,HOME_DIR);else flyTo(new THREE.Vector3(.8,fy(+b.dataset.f)+1.6,0),Math.max(10,homeDist*.36));});
 $('floors').querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{const d=camera.position.distanceTo(controls.target);flyTo(controls.target.clone(),Math.min(controls.maxDistance,Math.max(controls.minDistance,d*(b.dataset.z==='in'?.75:1.33))));});
