@@ -154,7 +154,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v24</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v25</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -985,6 +985,12 @@ function ask(text){
     enqueue(async()=>{await say(who.id,`${who.last} (حالتي: ${STATUS[who.status][0]})`,2200);});return;}
   const num=+(t.match(/\d+/)||[0])[0];
   let job=null;
+  if(/(اتصل|تتصل|اتصال|كلمني|تكلمني|دق علي|تدق)/.test(t)&&/(طباع|طابع)/.test(t)){
+    if(!LIVE.on){enqueue(()=>say('prt','الاتصال يشتغل في نسخة البيت (localhost أو Tailscale)',2200));return;}
+    const off=/لا تتصل|بدون اتصال|وقف الاتصال|لا تكلمني|الغ/.test(t);
+    const mode=off?'off':/(علق|عطل|وقف|خرب)/.test(t)&&!/خلص/.test(t)?'fail':'done,fail';
+    api('api/settings',{printCall:mode}).then(r=>{enqueue(()=>say('prt',!r.call?'سكيل الاتصال مو مثبت على الكمبيوتر، بس بأرسل لك في تيليجرام':mode==='off'?'تمام، ما بتصل. بس بأرسل لك في تيليجرام':mode==='fail'?'تمام، بتصل عليك بس إذا علقت الطباعة 📞':'أبشر، أول ما تخلص الطباعة أتصل عليك 📞 وإذا علقت بعد',2400));}).catch(e=>feed('مدير الطابعات','ما ضبط: '+e.message));
+    return;}
   if(/^ذكرني|^ذكّرني|موعد|^تذكير/.test(t)){
     const r=parseReminder(text);
     if(!LIVE.on){enqueue(()=>say('home','المواعيد تنحفظ في نسخة البيت (localhost أو Tailscale). هنا تجربة بس',2400));return;}
@@ -1009,7 +1015,7 @@ function ask(text){
   if(/علق|عطل|خرب|سباقيتي/.test(t))job=()=>SC.stuck();
   else if(/فاتور|كهرب|انترنت|سداد/.test(t)){const nm=/انترنت/.test(t)?'الإنترنت':/موي|مياه/.test(t)?'المياه':'الكهرباء';job=()=>SC.bill(nm,num||420);}
   else if(/صمم|تصميم|stl|ستل/.test(t)){const it=(text.replace(/.*(صمم لي|تصميم)\s*/,'')||'قطعة').slice(0,24);job=()=>SC.design(it);}
-  else if(/اطبع|طباعه|طبع/.test(t))job=LIVE.printer?()=>say('prt','ابدأ الطباعة من Bambu Studio أو Bambu Handy، وأنا أتابعها لحظة بلحظة وأبلغك على الواتساب',2800):()=>SC.print(num||Math.floor(Math.random()*30)+1);
+  else if(/اطبع|طباعه|طبع/.test(t))job=LIVE.printer?()=>say('prt','ابدأ الطباعة من Bambu Studio أو Bambu Handy، وأنا أتابعها لحظة بلحظة وأبلغك في تيليجرام وأتصل عليك إذا خلصت',2800):()=>SC.print(num||Math.floor(Math.random()*30)+1);
   else if(/صيانه|مكيف|سباك|كهربائي|تصليح/.test(t)){const it=/مكيف/.test(t)?'المكيف':/سباك|موي/.test(t)?'السباكة':'البيت';job=()=>SC.maintenance(it);}
   else if(/رحله|سفر|سافر|عطله/.test(t)){const m=text.match(/رحلة\s+(\S+)/)||text.match(/الى\s+(\S+)/)||text.match(/إلى\s+(\S+)/);job=()=>SC.trip(m?m[1]:'العلا');}
   else if(/تقرير|ابديت|أبديت|ملخص|تحديث/.test(t))job=()=>SC.report();

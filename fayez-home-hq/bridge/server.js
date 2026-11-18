@@ -320,7 +320,9 @@ function homeIcs() {
 const printer = { connected: false, state: null, pct: 0, layer: 0, total: 0, nozzle: null, bed: null, remaining: null, name: '', error: 0, tray: null, trays: [null, null, null, null] };
 let lastState = null;
 // phone call when a print finishes and/or fails (PRINT_CALL=done,fail · set PRINT_CALL=off to disable)
-const PRINT_CALL = (process.env.PRINT_CALL || 'done,fail').toLowerCase();
+let PRINT_CALL = (process.env.PRINT_CALL || 'done,fail').toLowerCase();
+const SET_FILE = path.join(DATA, 'settings.json');
+try { const st = JSON.parse(fs.readFileSync(SET_FILE, 'utf8')); if (typeof st.printCall === 'string') PRINT_CALL = st.printCall; } catch (_) {}
 function onPrinterState() {
   push('printer', printer);
   const prev = lastState, next = printer.state;
@@ -459,7 +461,7 @@ const server = http.createServer(async (req, res) => {
       return fs.createReadStream(PAGE).pipe(res);
     }
     if (req.method === 'GET' && url.pathname === '/api/state') {
-      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), gmail: gmailReady(), call: callReady(), model: CFG.model, demo: CFG.demo }, printer, finance, masters, home: publicHome(), mail: { unread: mail.unread, recent: mail.recent.slice(0, 6) } });
+      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), gmail: gmailReady(), call: callReady(), printCall: PRINT_CALL, model: CFG.model, demo: CFG.demo }, printer, finance, masters, home: publicHome(), mail: { unread: mail.unread, recent: mail.recent.slice(0, 6) } });
     }
     if (req.method === 'GET' && url.pathname === '/events') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' });
@@ -497,6 +499,11 @@ const server = http.createServer(async (req, res) => {
         saveMasters(); return json(res, 200, { masters });
       }
       return json(res, 400, { error: 'action must be lecture, exam, assignment or set' });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/settings') {
+      const b = await readBody(req);
+      if (typeof b.printCall === 'string' && /^(off|done|fail|done,fail)$/.test(b.printCall)) { PRINT_CALL = b.printCall; fs.writeFileSync(SET_FILE, JSON.stringify({ printCall: PRINT_CALL })); log('print call set to', PRINT_CALL); }
+      return json(res, 200, { printCall: PRINT_CALL, call: callReady() });
     }
     if (req.method === 'GET' && url.pathname === '/home.ics') {
       res.writeHead(200, { 'content-type': 'text/calendar; charset=utf-8', 'cache-control': 'no-store' }); return res.end(homeIcs());
