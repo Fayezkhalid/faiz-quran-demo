@@ -154,7 +154,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v23</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v24</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -845,12 +845,12 @@ function homePanel(){
   <select id="rfL"><option value="0">ذكّرني على الوقت</option><option value="15">قبل 15 دقيقة</option><option value="60">قبل ساعة</option><option value="1440">قبل يوم</option></select>
   <label class="full"><input type="checkbox" id="rfP" ${HOMEDATA.call?'':'disabled'}> 📞 اتصل علي كمان${HOMEDATA.call?'':' (سكيل الاتصال مو مثبت على الكمبيوتر)'}</label>
   <button class="btn gold full">حفظ الموعد</button></form>
-  <div class="acts"><button class="btn" id="rfCal">📅 أضفها لتقويم الجوال</button>${HOMEDATA.call?'<button class="btn" id="rfTest">📞 اتصال تجريبي</button>':''}</div>`;
+  <div class="acts"><a class="btn" id="rfCal" href="${new URL('home.ics',location.href).href.replace(/^https?:/,'webcal:')}" style="text-decoration:none">📅 أضفها لتقويم الجوال</a>${HOMEDATA.call?'<button class="btn" id="rfTest">📞 اتصال تجريبي</button>':''}</div>`;
 }
 function bindHomePanel(){
   const c=$('card');c.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{applyHome(await api('api/home',{action:'delete',id:b.dataset.del}));openAgent('home',true);});
   const f=$('rf');if(f)f.onsubmit=async e=>{e.preventDefault();try{applyHome(await api('api/home',{action:'add',title:$('rfT').value,at:$('rfA').value,cat:$('rfC').value,repeat:$('rfR').value,lead:+$('rfL').value,call:$('rfP').checked}));openAgent('home',true);enqueue(()=>say('home','حفظت الموعد ✓ وأرسلت لك تأكيد في تيليجرام',1800));}catch(err){feed('مدير البيت','ما انحفظ: '+err.message);}};
-  const cal=$('rfCal');if(cal)cal.onclick=()=>{if(!matchMedia('(pointer: coarse)').matches){feed('مدير البيت','رابط التقويم للجوال: افتح البيت من الآيفون (رابط Tailscale) واضغط نفس الزر هناك.');return;}const u=new URL('home.ics',location.href).href.replace(/^https?:/,'webcal:');feedLinks('مدير البيت','اضغط الرابط من الجوال واختر اشتراك (Subscribe)، وتطلع مواعيد البيت في تقويمك بمنبهاتها:',[['📅 اشترك في تقويم بيت فايز',u]]);};
+  const cal=$('rfCal');if(cal)cal.onclick=e=>{if(!matchMedia('(pointer: coarse)').matches){e.preventDefault();feed('مدير البيت','رابط التقويم للجوال: افتح البيت من الآيفون (رابط Tailscale) واضغط نفس الزر هناك.');}};
   const tc=$('rfTest');if(tc)tc.onclick=async()=>{enqueue(()=>say('home','أتصل عليك الحين…',1500));try{const r=await api('api/home',{action:'testcall'});feed('مدير البيت',r.ok?'رديت وسمعت الرسالة ✓':'ما رديت، أو الاتصال ما ضبط');}catch(e){feed('مدير البيت','ما قدرت أتصل: '+e.message);}};
 }
 function applyHome(h){if(!h)return;HOMEDATA=h;HOME.tasks=h.items.slice(0,3).map(r=>`${r.title} · ${fmtWhen(r.at)}`);if(!HOME.tasks.length)HOME.tasks=['ما فيه مواعيد'];updateTV('home');if(cardFor==='home')openAgent('home',true);}
