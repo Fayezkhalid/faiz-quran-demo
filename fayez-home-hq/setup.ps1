@@ -44,12 +44,15 @@ if ($ask) {
   $phone  = (Read-Host 'Your WhatsApp number, international without + (e.g. 9665XXXXXXXX)') -replace '[^\d]',''
   $key    = Plain (Read-Host 'CallMeBot apikey (press Enter to skip WhatsApp for now)' -AsSecureString)
   $tg     = Plain (Read-Host 'Telegram bot token from @BotFather (press Enter to skip)' -AsSecureString)
+  $guser  = Read-Host 'Gmail address for the email manager (press Enter to skip)'
+  $gpass  = ''
+  if ($guser) { $gpass = (Plain (Read-Host 'Gmail App Password, 16 letters (myaccount.google.com/apppasswords)' -AsSecureString)) -replace '\s','' }
   $remind = Read-Host 'Daily MBA reminder time HH:MM (Enter = 20:00)'
   if (-not $remind) { $remind = '20:00' }
   $lines = @(
     'PORT=8787', 'HOST=127.0.0.1',
     "PRINTER_IP=$ip", "PRINTER_SERIAL=$serial", "PRINTER_ACCESS_CODE=$code", 'PRINTER_MODEL=A2L Combo',
-    "CALLMEBOT_PHONE=$phone", "CALLMEBOT_APIKEY=$key", "TELEGRAM_BOT_TOKEN=$tg",
+    "CALLMEBOT_PHONE=$phone", "CALLMEBOT_APIKEY=$key", "TELEGRAM_BOT_TOKEN=$tg", "GMAIL_USER=$guser", "GMAIL_APP_PASSWORD=$gpass",
     'MONTHLY_BUDGET=9000', "MASTERS_REMINDER_TIME=$remind"
   )
   Set-Content -Path $envFile -Value $lines -Encoding ASCII

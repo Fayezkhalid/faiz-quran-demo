@@ -145,7 +145,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v19</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v20</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -415,7 +415,10 @@ const drawTV={
     g.fillStyle='#e6fff8';g.font='700 34px "JetBrains Mono"';g.textAlign='left';g.fillText(`${HOME.spent.toLocaleString('en')} / ${HOME.budget.toLocaleString('en')} SAR`,40,196);
     const bars=[.4,.65,.5,.8,.55,.7,p];bars.forEach((b,i)=>{g.fillStyle=i===bars.length-1?'#ffd27a':'#2fc4b2';g.fillRect(40+i*((w-80)/7),h-30-b*140,(w-80)/7-14,b*140);});},
   mail:(g,w,h)=>{bgTV(g,w,h,'#0b1736');title(g,w,'INBOX',`الوارد · ${HOME.inbox}`);
-    for(let i=0;i<4;i++){const y=118+i*62;g.fillStyle=i<HOME.inbox?'#ffffff16':'#ffffff08';g.fillRect(40,y,w-80,50);g.fillStyle=i<HOME.inbox?'#46b4ff':'#3a4466';g.beginPath();g.arc(70,y+25,10,0,TAU);g.fill();g.fillStyle='#ffffff40';g.fillRect(96,y+14,(w-200)*(.5+((i*37)%40)/100),10);g.fillRect(96,y+30,(w-260)*.4,8);}},
+    const R=HOME.mailRecent||[];for(let i=0;i<4;i++){const y=118+i*62,it=R[i];g.fillStyle=it||i<HOME.inbox?'#ffffff16':'#ffffff08';g.fillRect(40,y,w-80,50);
+      g.fillStyle=it?(it.kind==='bill'?'#ffc657':it.kind==='iba'?'#3fe08c':'#46b4ff'):(i<HOME.inbox?'#46b4ff':'#3a4466');g.beginPath();g.arc(w-70,y+25,10,0,TAU);g.fill();
+      if(it){g.fillStyle='#e9f0ff';g.font='500 22px "Readex Pro"';g.textAlign='right';g.fillText(fitText(g,it.subject||'(بدون عنوان)',w-150),w-96,y+33);}
+      else{g.fillStyle='#ffffff40';g.fillRect(96,y+14,(w-200)*(.5+((i*37)%40)/100),10);g.fillRect(96,y+30,(w-260)*.4,8);}}},
   slicer:(g,w,h)=>{bgTV(g,w,h,'#0e1424');title(g,w,'BAMBU STUDIO','A2L Combo');
     g.strokeStyle='#2b3550';g.lineWidth=1;for(let x=40;x<w-40;x+=24){g.beginPath();g.moveTo(x,120);g.lineTo(x,h-24);g.stroke();}for(let y=120;y<h-24;y+=24){g.beginPath();g.moveTo(40,y);g.lineTo(w-40,y);g.stroke();}
     const p=printer.progress||0;g.fillStyle='#46b4ff';for(let i=0;i<6;i++){const bx=70+(i%3)*120,by=150+Math.floor(i/3)*110;g.globalAlpha=.35;g.fillRect(bx,by,80,80);g.globalAlpha=1;g.fillRect(bx,by+80-80*p,80,80*p);}
@@ -692,7 +695,7 @@ const STATUS={sleep:['نايم','--sleep','#a98bff'],idle:['فاضي','--ok','#3
 const AGENTS={
   ceo:  {name:'المدير العام', en:'MANAGER', room:'ceo', x:-3.2, look:{thobe:1,shirt:'#f6f4ef',bisht:1,ghutra:'red',beard:1}, role:'Claude · يوزع المهام ويعتمد القرارات', keys:['المدير العام','المدير','مدير عام']},
   fin:  {name:'المدير المالي', en:'FINANCE', room:'finance', x:-4.6, look:{thobe:1,shirt:'#f3f1ea',ghutra:'white',beard:1}, role:'ميزانية البيت والفواتير وتكلفة الطباعة', keys:['المالي','المالية','الفلوس','الميزانية']},
-  mail: {name:'مدير الإيميلات', en:'EMAILS', room:'mail', x:3.4, look:{shirt:'#2f6fe0',hair:'#1a120c',headset:1,hood:1}, role:'يقرأ الإيميلات ويفرز المهم ويرد', keys:['الايميلات','الإيميلات','الايميل','البريد']},
+  mail: {name:'مدير الإيميلات', en:'EMAILS', room:'mail', x:3.4, look:{shirt:'#2f6fe0',hair:'#1a120c',headset:1,hood:1}, role:'يقرأ Gmail (قراءة فقط): يطلّع الفواتير للمالي وإيميلات الماجستير للمرشد', keys:['الايميلات','الإيميلات','الايميل','البريد']},
   prt:  {name:'مدير الطابعات', en:'PRINT MGR', room:'print', x:-5.6, look:{shirt:'#ff7a2e',cap:'#1d1f27',hood:1}, role:'يدير Bambu Lab A2L Combo ويراقب الكاميرا', keys:['الطابعات','الطابعة','الطباعة','الطابعه']},
   des:  {name:'المصمم', en:'DESIGN', room:'design', x:3.2, look:{shirt:'#e0457f',hair:'#2a1a10',glasses:1}, role:'يجهز ملفات STL من MakerWorld وتصاميمك', keys:['المصمم','التصميم','تصميم']},
   home: {name:'مدير البيت', en:'HOME', room:'home', x:-4.6, look:{thobe:1,shirt:'#e9e4d8',ghutra:'red'}, role:'الصيانة والمواعيد وطلبات البيت', keys:['مدير البيت','البيت','الصيانة']},
@@ -963,6 +966,7 @@ function setLiveBadge(connected){const b=$('liveBadge');
 async function recordBill(name,amount){
   if(LIVE.on){try{applyFinance(await api('api/finance',{name,amount}));return;}catch(e){sys('finance error: '+e.message);}}
   HOME.spent+=amount;HOME.bills.push([name,amount]);updateTV('finance');updateTV('daily');}
+function applyMail(m){if(!m)return;HOME.inbox=m.unread||0;HOME.mailRecent=m.recent||[];updateTV('mail');updateTV('daily');}
 function applyFinance(f){if(!f)return;HOME.budget=f.budget;HOME.spent=f.spent;HOME.bills=(f.bills||[]).map(b=>[b.name,b.amount]);updateTV('finance');updateTV('daily');}
 const STATE_MAP={RUNNING:'printing',PREPARE:'printing',SLICING:'printing',FINISH:'done',FAILED:'stuck',IDLE:'idle'};
 let lastSlicerDraw=0;
@@ -993,16 +997,20 @@ function onLiveEvent(ev){
   if(ev.type==='print_start')enqueue(()=>SC.liveStart(ev.name||'قطعة'));
   else if(ev.type==='print_done')enqueue(()=>SC.liveDone(ev.name||'القطعة',ev.whatsapp));
   else if(ev.type==='print_failed')enqueue(()=>SC.liveFail(ev));
+  else if(ev.type==='mail_bill')enqueue(()=>SC.liveBill(ev));
+  else if(ev.type==='mail_iba')enqueue(()=>SC.liveIba(ev));
+  else if(ev.type==='mail_new'){AGENTS.mail.last=`آخر إيميل: ${ev.subject}`;}
 }
 async function tryLive(){
   if(!/^https?:$/.test(location.protocol))return;
   let st;try{st=await api('api/state');}catch(e){return;}
   if(!st||!st.bridge)return;
   LIVE.on=true;LIVE.printer=!!st.config.printer;LIVE.whatsapp=!!st.config.whatsapp;
-  applyFinance(st.finance);applyMasters(st.masters);if(st.printer&&st.printer.state)applyPrinter(st.printer);setLiveBadge(true);
+  applyFinance(st.finance);applyMasters(st.masters);applyMail(st.mail);if(st.printer&&st.printer.state)applyPrinter(st.printer);setLiveBadge(true);
   const es=new EventSource('events');
   es.addEventListener('printer',e=>applyPrinter(JSON.parse(e.data)));
   es.addEventListener('finance',e=>applyFinance(JSON.parse(e.data)));
+  es.addEventListener('mail',e=>applyMail(JSON.parse(e.data)));
   es.addEventListener('masters',e=>applyMasters(JSON.parse(e.data)));
   es.addEventListener('event',e=>onLiveEvent(JSON.parse(e.data)));
   es.onerror=()=>setLiveBadge(false);es.onopen=()=>setLiveBadge(true);
@@ -1034,6 +1042,18 @@ Object.assign(SC,{
   async msSummary(){setStatus('adv','busy');
     await say('adv',`عشان ألخص ${MS.state().mod.ar}: انسخ نص المحاضرة أو صوّر الشرائح وارسلها في محادثة Claude، وأرجع لك بملخص بسيط وأسئلة MCQ للمراجعة`,3600);setStatus('adv','idle');},
 
+  async liveBill(ev){
+    setPipe([['MAIL','GMAIL'],['MAIL','EMAILS'],['FIN','FINANCE'],['WA','TELEGRAM']]);stepPipe(0);
+    stepPipe(1);setStatus('mail','busy');await say('mail',`وصلت فاتورة ${ev.name}${ev.amount?' · '+ev.amount+' ريال':''}`);
+    stepPipe(2);await visit('mail','fin');await say('fin',ev.amount?`سجلتها. المصروف صار ${HOME.spent.toLocaleString('en')} من ${HOME.budget.toLocaleString('en')}`:'ما لقيت المبلغ في الإيميل، سجله أبو خالد بنفسه');setStatus('fin','done');
+    stepPipe(3);await goHome('mail');AGENTS.mail.last=`فرزت فاتورة ${ev.name}.`;idlePipe();
+  },
+  async liveIba(ev){
+    setPipe([['MAIL','GMAIL'],['MAIL','EMAILS'],['DES','ADVISOR'],['WA','TELEGRAM']]);stepPipe(0);
+    stepPipe(1);setStatus('mail','busy');await say('mail','إيميل من الماجستير، أوصله للمرشد');
+    stepPipe(2);await visit('mail','adv');await say('adv',`وصلني: ${ev.subject}`,2200);
+    stepPipe(3);await goHome('mail');AGENTS.mail.last='حوّلت إيميل الماجستير للمرشد.';AGENTS.adv.last=`آخر إيميل من الماجستير: ${ev.subject}`;idlePipe();
+  },
   async liveStart(name){
     setPipe([['A1','A2L'],['A1','PRINT MGR'],['MGR','MANAGER'],['A1','PRINTING']]);stepPipe(0);
     stepPipe(1);setStatus('prt','busy');await say('prt',`بدأت طباعة ${name} على A2L`);
@@ -1177,7 +1197,7 @@ function loop(){
   requestAnimationFrame(loop);
 }
 applyDay();renderCounts();setLiveBadge();tryLive();
-window.__hq={THREE,openAgent,openPrinter,setStatus,flyTo,printer,fy,updateTV,AGENTS};  // handy for debugging from the console
+window.__hq={THREE,openAgent,openPrinter,setStatus,flyTo,printer,fy,updateTV,AGENTS,applyMail,onLiveEvent};  // handy for debugging from the console
 feed('المدير العام','هلا أبو خالد 👋 الفريق في البيت جاهز. اكتب لي أي أمر، أو اضغط على أي وكيل أو على الطابعة.');
 sys(matchMedia('(pointer: coarse)').matches?'إصبع واحد: تحريك · إصبعين: زوم وتدوير':'سحب: تدوير · كليك يمين: تحريك · العجلة: زوم');
 document.fonts&&document.fonts.ready.then(()=>{signTexes.forEach(redraw);Object.values(tvs).forEach(redraw);});

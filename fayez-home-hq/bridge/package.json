@@ -8,8 +8,12 @@
     "start": "node server.js",
     "demo": "node server.js --demo-printer"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
-    "mqtt": "5.10.1"
+    "mqtt": "5.10.1",
+    "imapflow": "1.0.191",
+    "mailparser": "3.7.4"
   }
 }

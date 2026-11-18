@@ -26,6 +26,8 @@ const CFG = {
   waKey: (process.env.CALLMEBOT_APIKEY || '').trim(),
   tgToken: (process.env.TELEGRAM_BOT_TOKEN || '').trim(),
   tgChat: (process.env.TELEGRAM_CHAT_ID || '').trim(),
+  gmailUser: (process.env.GMAIL_USER || '').trim(),
+  gmailPass: (process.env.GMAIL_APP_PASSWORD || '').replace(/\s+/g, ''),
   budget: +(process.env.MONTHLY_BUDGET || 9000),
   demo: process.argv.includes('--demo-printer') || process.env.DEMO_PRINTER === '1',
 };
@@ -172,6 +174,82 @@ async function whatsapp(text) {
   return res.some(Boolean);
 }
 
+/* ---------------- Gmail (read-only) for the email manager ----------------
+   Uses an App Password over IMAP. The mailbox is opened read-only and messages are fetched with
+   BODY.PEEK, so nothing is marked as read, moved, sent or deleted. Checks every 3 minutes. */
+const MAIL_FILE = path.join(DATA, 'mail.json');
+let mail = { lastUid: 0, unread: 0, recent: [], seenIds: [] };
+try { Object.assign(mail, JSON.parse(fs.readFileSync(MAIL_FILE, 'utf8'))); } catch (_) {}
+const saveMail = () => fs.writeFileSync(MAIL_FILE, JSON.stringify(mail, null, 1));
+const gmailReady = () => !!(CFG.gmailUser && CFG.gmailPass);
+// bills only (not shop receipts or bank statements, which would double-count spending)
+const BILL_WORDS = /فاتور|invoice|\bbill\b|مستحق|سداد|كهرباء|SEC\b|المياه|NWC|STC|mobily|موبايلي|zain|زين|الاتصالات/i;
+const IBA_WORDS = /ibalondon|iba london|IBA\b|MBA|ماجستير|assignment|lecture|محاضر/i;
+function parseAmount(text) {
+  const t = String(text || '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g, '.');
+  const m = t.match(/(?:SAR|SR|ر\.?\s?س|ريال|﷼)\s*([\d,]+(?:\.\d{1,2})?)/i) || t.match(/([\d,]+(?:\.\d{1,2})?)\s*(?:SAR|SR|ر\.?\s?س|ريال|﷼)/i);
+  if (!m) return null; const v = Number(m[1].replace(/,/g, '')); return v > 0 && v < 100000 ? v : null;
+}
+function billName(from, subject) {
+  const t = (from + ' ' + subject).toLowerCase();
+  if (/sec|كهرباء|electric/.test(t)) return 'الكهرباء';
+  if (/nwc|المياه|water/.test(t)) return 'المياه';
+  if (/stc|mobily|موبايلي|zain|زين|اتصالات|internet|انترنت|fiber/.test(t)) return 'الاتصالات والإنترنت';
+  return (subject || 'فاتورة').slice(0, 40);
+}
+async function checkGmail() {
+  const { ImapFlow } = require('imapflow'); const { simpleParser } = require('mailparser');
+  const client = new ImapFlow({ host: 'imap.gmail.com', port: 993, secure: true, auth: { user: CFG.gmailUser, pass: CFG.gmailPass }, logger: false });
+  await client.connect();
+  const lock = await client.getMailboxLock('INBOX', { readOnly: true });
+  try {
+    const st = await client.status('INBOX', { unseen: true, uidNext: true });
+    mail.unread = st.unseen || 0;
+    const first = !mail.lastUid;
+    const from = first ? Math.max(1, st.uidNext - 15) : mail.lastUid + 1;   // first run: just look at the last 15
+    const found = [];
+    if (from < st.uidNext) {
+      for await (const m of client.fetch(`${from}:*`, { uid: true, envelope: true, source: true }, { uid: true })) {
+        if (m.uid < from) continue;
+        mail.lastUid = Math.max(mail.lastUid, m.uid);
+        const env = m.envelope || {}, sender = (env.from && env.from[0]) ? `${env.from[0].name || ''} <${env.from[0].address || ''}>` : '';
+        const subject = env.subject || '';
+        let text = '';
+        try { const parsed = await simpleParser(m.source); text = (parsed.text || '').slice(0, 4000); } catch (_) {}
+        const id = env.messageId || String(m.uid);
+        if (mail.seenIds.includes(id)) continue;
+        mail.seenIds.push(id); mail.seenIds = mail.seenIds.slice(-300);
+        const item = { uid: m.uid, from: sender, subject, at: (env.date || new Date()).toISOString?.() || String(env.date) };
+        if (BILL_WORDS.test(subject + ' ' + sender)) { item.kind = 'bill'; item.amount = parseAmount(subject + '\n' + text); item.name = billName(sender, subject); }
+        else if (IBA_WORDS.test(subject + ' ' + sender)) item.kind = 'iba';
+        else item.kind = 'mail';
+        found.push(item);
+      }
+    }
+    mail.lastUid = Math.max(mail.lastUid, st.uidNext - 1);
+    mail.recent = found.concat(mail.recent).slice(0, 20);
+    saveMail();
+    push('mail', { unread: mail.unread, recent: mail.recent.slice(0, 6) });
+    if (!first) for (const it of found) {
+      if (it.kind === 'bill') {
+        let note = '';
+        if (it.amount) { addBill(it.name, it.amount); note = ` وسجلت ${it.amount} ريال في المالية`; }
+        whatsapp(`💳 فاتورة جديدة: ${it.name}${it.amount ? ' · ' + it.amount + ' ريال' : ''}${note ? '.' + note : ' (ما لقيت المبلغ، سجله بنفسك)'}`);
+        push('event', { type: 'mail_bill', name: it.name, amount: it.amount || 0 });
+      } else if (it.kind === 'iba') {
+        whatsapp(`🎓 إيميل من الماجستير: ${it.subject}`);
+        push('event', { type: 'mail_iba', subject: it.subject });
+      } else push('event', { type: 'mail_new', subject: it.subject, from: it.from });
+    }
+    log(`gmail checked: ${found.length} new, ${mail.unread} unread`);
+  } finally { lock.release(); await client.logout().catch(() => {}); }
+}
+function startGmail() {
+  if (!gmailReady()) { log('gmail: off (GMAIL_USER / GMAIL_APP_PASSWORD not set)'); return; }
+  const run = () => checkGmail().catch(e => log('gmail error:', e.message));
+  run(); setInterval(run, 3 * 60 * 1000);
+}
+
 /* ---------------- printer ---------------- */
 const printer = { connected: false, state: null, pct: 0, layer: 0, total: 0, nozzle: null, bed: null, remaining: null, name: '', error: 0, tray: null, trays: [null, null, null, null] };
 let lastState = null;
@@ -311,7 +389,7 @@ const server = http.createServer(async (req, res) => {
       return fs.createReadStream(PAGE).pipe(res);
     }
     if (req.method === 'GET' && url.pathname === '/api/state') {
-      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), model: CFG.model, demo: CFG.demo }, printer, finance, masters });
+      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), gmail: gmailReady(), model: CFG.model, demo: CFG.demo }, printer, finance, masters, mail: { unread: mail.unread, recent: mail.recent.slice(0, 6) } });
     }
     if (req.method === 'GET' && url.pathname === '/events') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' });
@@ -366,6 +444,7 @@ server.listen(CFG.port, CFG.host, () => {
   log(`printer: ${CFG.demo ? 'DEMO' : printerReady() ? CFG.model + ' @ ' + CFG.ip : 'not configured'} · telegram: ${tgReady() ? (tgChatId ? 'ready' : 'waiting for /start') : 'off'} · whatsapp: ${cmbReady() ? 'ready' : 'off'}`);
   connectPrinter();
   tgPairLoop();
+  startGmail();
 });
 
 /* ---------------- utils ---------------- */
