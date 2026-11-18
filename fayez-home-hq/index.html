@@ -145,7 +145,7 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v17</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v18</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
       <button class="btn gold" id="updBtn">أبديت</button>
@@ -1078,6 +1078,9 @@ $('micBtn').onclick=()=>{
 };
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&rec)micReset();});
 paintLang();
+// iPhone/iPad: Apple blocks web speech in home-screen apps and it is unreliable in Safari, so use the keyboard's dictation instead
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+if(IOS||!SR){$('micBtn').hidden=true;$('langBtn').hidden=true;$('q').placeholder='اكتب أو اضغط 🎙 في الكيبورد…';}
 
 /* ---------------- day / night ---------------- */
 let day=false;
