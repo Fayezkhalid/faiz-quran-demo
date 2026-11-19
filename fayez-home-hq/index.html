@@ -154,9 +154,11 @@ form{display:flex;gap:8px;max-width:620px;width:100%;justify-self:center}
 
   <div class="ui top">
     <div class="row">
-      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v26</small></div>
+      <div class="brand"><b>بيت <span>فايز</span> HQ</b><small>FAYEZ HOME · 9 AGENTS · v27</small></div>
       <span class="pill" id="liveBadge" style="--c:var(--mute)" title="وضع التشغيل"><i></i>تجريبي</span>
       <button class="btn" id="dayBtn" aria-pressed="false">☾ ليلي</button>
+      <button class="btn" id="lunchBtn" title="اعزم الفريق على الغداء">🍔 غداء</button>
+      <button class="btn" id="partyBtn" title="احتفال">🎉 احتفال</button>
       <button class="btn gold" id="updBtn">أبديت</button>
     </div>
     <div class="row" id="counts"></div>
@@ -782,13 +784,15 @@ function animateAgent(a,dt,t){
     case 'type':by=-u.sitDrop;legX=-1.45;armX=-1.05;armXR=-1.05+Math.sin(ph*22)*.12;headX=.12+Math.sin(ph*3)*.03;headY=Math.sin(ph*.8)*.12;break;
     case 'sleep':by=-u.sitDrop;legX=-1.45;armX=-1.2;headX=.55;break;
     case 'talk':armX=-.2;armXR=-.9+Math.sin(ph*5)*.35;headX=Math.sin(ph*6)*.08;by=Math.sin(ph*3)*.01;break;
+    case 'eat':armX=-.25;armXR=-1.5+Math.max(0,Math.sin(ph*3))*.9;headX=.1+Math.max(0,Math.sin(ph*3))*.12;by=Math.sin(ph*1.5)*.01;break;
+    case 'dance':{const b=Math.sin(ph*8);by=Math.abs(b)*.14;legX=b*.35;armX=-2.6+Math.sin(ph*8)*.5;armXR=-2.6+Math.sin(ph*8+Math.PI)*.5;headY=Math.sin(ph*4)*.35;headX=Math.sin(ph*8)*.08;a.g.rotation.y+=dt*1.6;break;}
     case 'ride':case 'stand':default:by=Math.sin(ph*2)*.012;armX=Math.sin(ph*2)*.04;
   }
   const L=.18; // smoothing
   u.body.position.y+=(by-u.body.position.y)*L*3;
   u.legs[0].rotation.x+=(legX-u.legs[0].rotation.x)*L*2.5;u.legs[1].rotation.x+=((a.mode==='walk'?-legX:legX)-u.legs[1].rotation.x)*L*2.5;
-  u.arms[0].rotation.x+=((armXR!==null?armX+Math.sin(ph*22+1.5)*(a.mode==='type'?.12:0):armX)-u.arms[0].rotation.x)*L*2.5;
-  u.arms[1].rotation.x+=((armXR!==null?armXR:(a.mode==='walk'?-armX:armX))-u.arms[1].rotation.x)*L*2.5;
+  u.arms[0].rotation.x+=((armXR!==null?armX+Math.sin(ph*22+1.5)*(a.mode==='type'?.12:0):armX)-u.arms[0].rotation.x)*L*(a.mode==='dance'?6:2.5);
+  u.arms[1].rotation.x+=((armXR!==null?armXR:(a.mode==='walk'?-armX:armX))-u.arms[1].rotation.x)*L*(a.mode==='dance'?6:2.5);
   u.head.rotation.x+=(headX-u.head.rotation.x)*L;u.head.rotation.y+=(headY-u.head.rotation.y)*L;
   u.orb.position.y=u.orbY+Math.sin(t*2.4+a.phase)*.04+(by<0?by:0);u.orbGlow.position.y=u.orb.position.y;
   if(u.zz.visible){u.zz.position.y=u.zzY+((t*.5)%1)*.45;u.zz.material.opacity=1-((t*.5)%1);}
@@ -852,6 +856,15 @@ function bindHomePanel(){
   const f=$('rf');if(f)f.onsubmit=async e=>{e.preventDefault();try{applyHome(await api('api/home',{action:'add',title:$('rfT').value,at:$('rfA').value,cat:$('rfC').value,repeat:$('rfR').value,lead:+$('rfL').value,call:$('rfP').checked}));openAgent('home',true);enqueue(()=>say('home','حفظت الموعد ✓ وأرسلت لك تأكيد في تيليجرام',1800));}catch(err){feed('مدير البيت','ما انحفظ: '+err.message);}};
   const cal=$('rfCal');if(cal)cal.onclick=e=>{if(!matchMedia('(pointer: coarse)').matches){e.preventDefault();feed('مدير البيت','رابط التقويم للجوال: افتح البيت من الآيفون (رابط Tailscale) واضغط نفس الزر هناك.');}};
   const tc=$('rfTest');if(tc)tc.onclick=async()=>{enqueue(()=>say('home','أتصل عليك الحين…',1500));try{const r=await api('api/home',{action:'testcall'});feed('مدير البيت',r.ok?'رديت وسمعت الرسالة ✓':'ما رديت، أو الاتصال ما ضبط');}catch(e){feed('مدير البيت','ما قدرت أتصل: '+e.message);}};
+}
+const CHATLOG={};
+async function chatWith(id,text){
+  const a=AGENTS[id],h=CHATLOG[id]||(CHATLOG[id]=[]);
+  const think=setTimeout(()=>{const b=a.el.querySelector('.say');b.textContent='…';b.hidden=false;},300);
+  try{const r=await api('api/chat',{agent:id,text,history:h});clearTimeout(think);a.el.querySelector('.say').hidden=true;
+    h.push({role:'user',content:text},{role:'assistant',content:r.reply});if(h.length>12)h.splice(0,h.length-12);
+    a.last=r.reply;enqueue(()=>say(id,r.reply,Math.min(6000,1800+r.reply.length*45)));}
+  catch(e){clearTimeout(think);a.el.querySelector('.say').hidden=true;feed(a.name,'ما قدرت أرد: '+e.message);}
 }
 function applyHome(h){if(!h)return;HOMEDATA=h;HOME.tasks=h.items.slice(0,3).map(r=>`${r.title} · ${fmtWhen(r.at)}`);if(!HOME.tasks.length)HOME.tasks=['ما فيه مواعيد'];updateTV('home');if(cardFor==='home')openAgent('home',true);}
 /* "ذكرني بكرة الساعة 5 العصر صيانة المكيف" -> reminder */
@@ -981,10 +994,15 @@ const norm=s=>s.replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي'
 function ask(text){
   feed('',text,'me');const t=norm(text);
   const who=Object.values(AGENTS).sort((a,b)=>Math.max(...b.keys.map(k=>k.length))-Math.max(...a.keys.map(k=>k.length))).find(a=>a.keys.some(k=>t.includes(norm(k))));
+  if(LIVE.chat&&/(اسمك|من انت|مين انت|شكرا|يعطيك|مشكور|تسلم|كيف حالك|كيفك|كيف الامور|وش الاخبار|صباح|مساء الخير|السلام|هلا|اخبارك|تحب|رايك|نكته|ضحكني)/.test(t)){chatWith(who?who.id:'ceo',text);return;}
   if(who&&/(شنو|وش|ايش|شو|كيف) ?(صار|الوضع|سويت|عندك|اخبار)/.test(t)){
     enqueue(async()=>{await say(who.id,`${who.last} (حالتي: ${STATUS[who.status][0]})`,2200);});return;}
   const num=+(t.match(/\d+/)||[0])[0];
   let job=null;
+  const DESK=!matchMedia('(pointer: coarse)').matches&&innerWidth>640;
+  if(!DESK&&/(غدا|غداء|عشا|عشاء|عزيم|اعزم|ارقص|رقص|حفل|احتفال)/.test(t)){enqueue(()=>say('ceo','الغداء والحفلة متاحين في نسخة الكمبيوتر 😉',2000));return;}
+  if(/(غدا|غداء|عشا|عشاء|عزيم|اعزم|دليفري|هنقر|هانقر|جوعان)/.test(t)){feed('المدير العام','أبشر!');enqueue(()=>SC.lunch());return;}
+  if(/(ارقص|رقص|حفل|احتفال|احتفلوا|افرحوا)/.test(t)){feed('المدير العام','يلا!');enqueue(()=>SC.party());return;}
   if(/(اتصل|تتصل|اتصال|كلمني|تكلمني|دق علي|تدق)/.test(t)&&/(طباع|طابع)/.test(t)){
     if(!LIVE.on){enqueue(()=>say('prt','الاتصال يشتغل في نسخة البيت (localhost أو Tailscale)',2200));return;}
     const off=/لا تتصل|بدون اتصال|وقف الاتصال|لا تكلمني|الغ/.test(t);
@@ -1020,6 +1038,7 @@ function ask(text){
   else if(/رحله|سفر|سافر|عطله/.test(t)){const m=text.match(/رحلة\s+(\S+)/)||text.match(/الى\s+(\S+)/)||text.match(/إلى\s+(\S+)/);job=()=>SC.trip(m?m[1]:'العلا');}
   else if(/تقرير|ابديت|أبديت|ملخص|تحديث/.test(t))job=()=>SC.report();
   else if(/ناموا|نوم|ارتاحوا/.test(t))job=async()=>{Object.keys(AGENTS).forEach(id=>{if(id!=='ceo')setStatus(id,'sleep');});await say('ceo','الكل نام. أصحيهم أول ما يجي شغل');};
+  if(!job&&LIVE.chat){chatWith(who?who.id:'ceo',text);return;}
   if(!job){enqueue(()=>say('ceo','جرّب: اطبع لي رقم 21 · وصلت فاتورة الكهرباء 420 · المكيف يحتاج صيانة · خطط رحلة العلا · صمم لي حامل جوال · أبديت',2600));return;}
   if(pending)feed('المدير العام',`تمام، حطيته في الطابور (${pending} قبله).`);else feed('المدير العام','تمام، أوزعه الحين.');
   enqueue(job);
@@ -1029,9 +1048,80 @@ const QUICK=[['الماجستير: كم باقي؟','المرشد الأكادي
 $('quick').innerHTML=QUICK.map(([l,q])=>`<button class="chipq" data-q="${q}">${l}</button>`).join('');
 $('quick').querySelectorAll('button').forEach(b=>b.onclick=()=>ask(b.dataset.q));
 $('updBtn').onclick=()=>ask('أبديت');
+const DESKTOP=!matchMedia('(pointer: coarse)').matches&&innerWidth>640;
+if(!DESKTOP){$('lunchBtn').hidden=true;$('partyBtn').hidden=true;}
+$('lunchBtn').onclick=()=>ask('اعزم الفريق على الغداء');
+$('partyBtn').onclick=()=>ask('حفلة! ارقصوا');
 
 /* public event API */
 window.tower={emit(e){const m={print:()=>SC.print(e.part||1),stuck:()=>SC.stuck(),bill:()=>SC.bill(e.name||'فاتورة',e.amount||0),maintenance:()=>SC.maintenance(e.item||'البيت'),trip:()=>SC.trip(e.place||'رحلة'),design:()=>SC.design(e.item||'قطعة'),report:()=>SC.report()}[e.type];if(m){sys(`event ${e.type}`);enqueue(m);}},agents:AGENTS,home:HOME};
+
+/* ---------------- team moments: lunch delivery + party ---------------- */
+const TEAM=['fin','mail','prt','des','home','fam','adv','wa'];
+const TABLE={x:3.4,z:-.9};
+function seatAround(i,n,r){const a=i/n*TAU+Math.PI/2;return {x:TABLE.x+Math.cos(a)*r,z:TABLE.z+Math.sin(a)*r,face:Math.atan2(TABLE.x-(TABLE.x+Math.cos(a)*r),TABLE.z-(TABLE.z+Math.sin(a)*r))};}
+// delivery scooter (generic; yellow food box, no brand logo)
+const scooter=new THREE.Group();scooter.visible=false;scene.add(scooter);
+(function(){const red=M('#c8102e',{roughness:.5}),dark=M('#1b1d22',{roughness:.6}),yel=M('#ffd23a',{roughness:.6});
+  const wheel=r=>{const w=new THREE.Mesh(new THREE.TorusGeometry(r,.06,10,24),dark);w.rotation.y=Math.PI/2;return w;};
+  const wf=wheel(.2);wf.position.set(.55,.2,0);scooter.add(wf);const wb=wheel(.2);wb.position.set(-.5,.2,0);scooter.add(wb);scooter.userData.wheels=[wf,wb];
+  box(.9,.12,.32,red,0,.32,0,scooter);box(.3,.35,.3,red,-.35,.5,0,scooter);box(.06,.6,.06,dark,.5,.6,0,scooter);box(.06,.06,.5,dark,.5,.9,0,scooter);
+  const bx=box(.48,.42,.46,yel,-.45,.92,0,scooter);
+  const lt=canvasTex(256,128,(g,w,h)=>{g.fillStyle='#ffd23a';g.fillRect(0,0,w,h);g.fillStyle='#c8102e';g.font='700 56px "Readex Pro"';g.textAlign='center';g.fillText('توصيل',w/2,82);});
+  [.24,-.24].forEach(z=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(.44,.22),new THREE.MeshBasicMaterial({map:lt}));p.position.set(-.45,.95,z);if(z<0)p.rotation.y=Math.PI;scooter.add(p);});
+  const rider=makeAgent({o:'polo',shirt:'#c8102e',pants:'#1b1d22',hat:'cap',hatC:'#c8102e',hair:'short',hairC:'#1a1410',skin:'#d39a70'});rider.scale.multiplyScalar(.85);rider.position.set(-.05,.25,0);rider.rotation.y=Math.PI/2;scooter.add(rider);scooter.userData.rider=rider;
+  rider.userData.legs.forEach(l=>l.rotation.x=-1.3);rider.userData.arms.forEach(a=>a.rotation.x=-1.2);rider.userData.orb.visible=false;rider.userData.orbGlow.visible=false;})();
+const food=new THREE.Group();food.visible=false;scene.add(food);
+(function(){const bag=M('#f1e3c6',{roughness:.9}),burger=[M('#c98a3a'),M('#5a2e16'),M('#3fa34d'),M('#f2c230')];
+  for(let i=0;i<8;i++){const a=i/8*TAU,g=new THREE.Group();g.position.set(TABLE.x+Math.cos(a)*.7,fy(4)+.92,TABLE.z+Math.sin(a)*.7);food.add(g);
+    [[.12,.04,0],[.13,.03,.04],[.135,.015,.065],[.125,.012,.08],[.12,.05,.11]].forEach(([r,h,y],k)=>cyl(r,r,h,burger[[0,1,2,3,0][k]],0,y,0,g,16));
+    cyl(.04,.035,.14,M(['#c8102e','#2b7cff','#ffd23a','#3fe08c'][i%4]),.2,.07,0,g,12);}
+  box(.5,.35,.3,bag,TABLE.x,fy(4)+1.06,TABLE.z);})();
+// group move: everyone walks to the lift door on their floor, rides up together (no queue), then takes a seat
+async function groupTo(id,f,x,z){
+  const a=AGENTS[id];if(a.status==='sleep'){a.status='idle';a.g.userData.zz.visible=false;}
+  if(a.status!=='err')setStatus(id,'busy');
+  if(a.f!==f){const p=a.g.position;if(p.z<CORR-.1)await walkTo(a,p.x,CORR);await walkTo(a,EDOOR,CORR);
+    a.mode='ride';const sy=p.y,ty=fy(f)+.1,d=Math.abs(f-a.f);await tween(.45*d+.3,k=>{p.y=sy+(ty-sy)*ease(k);});a.f=f;}
+  const p=a.g.position;if(Math.abs(p.x-x)>.05)await walkTo(a,x,CORR);await walkTo(a,x,z);a.mode='stand';a.atHome=false;
+}
+async function gatherTable(r){
+  const ids=['ceo',...TEAM];car.position.y=fy(4)+.12;carFloor=4;
+  await Promise.all(ids.map((id,i)=>{const p=seatAround(i,ids.length,r);return groupTo(id,4,p.x,p.z).then(()=>face(AGENTS[id],p.face));}));
+}
+async function sendHome(){await Promise.all(['ceo',...TEAM].map(async id=>{const a=AGENTS[id];await groupTo(id,a.home.f,a.home.x,a.home.z+.6);await walkTo(a,a.home.x,a.home.z);await face(a,0);a.atHome=true;a.mode='sit';setStatus(id,'idle');}));}
+Object.assign(SC,{
+  async lunch(){
+    setPipe([['MGR','MANAGER'],['WA','ORDER'],['HOME','DELIVERY'],['MGR','LUNCH']]);stepPipe(0);
+    setStatus('ceo','busy');await say('ceo','أبو خالد عازمنا على الغداء! 🍔 طلبت لكم توصيل',2000);
+    stepPipe(1);await say('wa','الطلب في الطريق، أنزل أستلمه',1500);
+    const wa=AGENTS.wa;go('wa',0,-6.5,1.6);
+    // scooter rides in along the street in front of the lobby
+    stepPipe(2);scooter.visible=true;scooter.position.set(-18,fy(0)+.0,4.6);scooter.rotation.y=0;
+    await tween(4,k=>{scooter.position.x=-18+k*11;scooter.userData.wheels.forEach(w=>w.rotation.x-=.3);});
+    await say('wa','وصل الدليفري! يعطيك العافية 👋',1400);
+    await tween(.6,k=>{});await tween(3,k=>{scooter.position.x=-7+k*-11;scooter.userData.wheels.forEach(w=>w.rotation.x+=.3);});scooter.visible=false;
+    stepPipe(3);await gatherTable(1.55);food.visible=true;
+    ['ceo',...TEAM].forEach(id=>{AGENTS[id].mode='eat';});
+    await say('ceo','بسم الله، يعطيكم العافية على شغلكم 👏',2000);
+    await say('fin','الله يعطيك العافية أبو خالد، بس سجلتها على ميزانية الضيافة 😄',2200);
+    await say('prt','أحلى برقر، أطبع له حامل؟ 🍔',1800);
+    await say('adv','شكراً أبو خالد، الحين نشحن طاقة للمحاضرة الجاية 📚',2000);
+    await sleep(2500);food.visible=false;await say('ceo','يلا كل واحد على مكتبه 💪',1500);
+    await sendHome();idlePipe();
+  },
+  async party(){
+    setPipe([['MGR','MANAGER'],['FAM','PARTY']]);stepPipe(0);
+    setStatus('ceo','busy');await say('ceo','حفلة! 🎉 الكل يطلع للإدارة',1600);
+    stepPipe(1);await gatherTable(2.3);
+    const ids=['ceo',...TEAM];ids.forEach(id=>{AGENTS[id].mode='dance';AGENTS[id].phase=Math.random()*3;});
+    const disco=new THREE.PointLight('#ff4fd8',0,8,2);disco.position.set(TABLE.x,fy(4)+2.6,TABLE.z);scene.add(disco);
+    await tween(reduced?.5:9,k=>{disco.intensity=1.2;disco.color.setHSL((k*6)%1,.9,.6);});
+    scene.remove(disco);
+    await say('ceo','يعطيكم العافية يا شباب 😄 يلا نرجع للشغل',1600);
+    ids.forEach(id=>{AGENTS[id].mode='stand';});await sendHome();idlePipe();
+  },
+});
 
 /* ---------------- live bridge ---------------- */
 const LIVE={on:false,printer:false,whatsapp:false};
@@ -1084,7 +1174,8 @@ async function tryLive(){
   if(!/^https?:$/.test(location.protocol))return;
   let st;try{st=await api('api/state');}catch(e){return;}
   if(!st||!st.bridge)return;
-  LIVE.on=true;LIVE.printer=!!st.config.printer;LIVE.whatsapp=!!st.config.whatsapp;
+  LIVE.on=true;LIVE.printer=!!st.config.printer;LIVE.whatsapp=!!st.config.whatsapp;LIVE.chat=!!st.config.chat&&!matchMedia('(pointer: coarse)').matches&&innerWidth>640;  // free chat: computer only (phone stays light)
+
   applyFinance(st.finance);applyMasters(st.masters);applyMail(st.mail);applyHome(st.home);if(st.printer&&st.printer.state)applyPrinter(st.printer);setLiveBadge(true);
   const es=new EventSource('events');
   es.addEventListener('printer',e=>applyPrinter(JSON.parse(e.data)));
@@ -1270,7 +1361,7 @@ const clampV=new THREE.Vector3();
 function clampTarget(){const T=controls.target;clampV.set(Math.min(10,Math.max(-8.5,T.x))-T.x,Math.min(17.5,Math.max(.6,T.y))-T.y,Math.min(3,Math.max(-3,T.z))-T.z);if(clampV.lengthSq()>0){T.add(clampV);camera.position.add(clampV);}}
 const clock=new THREE.Clock(),v3=new THREE.Vector3();
 function loop(){
-  const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
+  const dt=Math.min(clock.getDelta(),.1),t=clock.elapsedTime;
   for(let i=tweens.length-1;i>=0;i--){const tw=tweens[i];tw.t+=dt;const k=Math.min(1,tw.t/tw.sec);tw.fn(k);if(k>=1){tweens.splice(i,1);tw.r();}}
   for(const a of Object.values(AGENTS))animateAgent(a,dt,t);
   printerTick(t);roomActivity(t);holo.rotation.y+=dt*.8;holo.rotation.x+=dt*.3;globe.rotation.y+=dt*.3;

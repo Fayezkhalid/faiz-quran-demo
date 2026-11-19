@@ -316,6 +316,45 @@ function homeIcs() {
   return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Fayez Home HQ//AR', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:بيت فايز', 'X-WR-TIMEZONE:Asia/Riyadh', ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
 }
 
+/* ---------------- free chat with the agents (Claude API) ----------------
+   Needs ANTHROPIC_API_KEY in .env. Each agent answers in character, in Saudi dialect, from the live house state. */
+const chatReady = () => !!(process.env.ANTHROPIC_API_KEY || '').trim();
+const CHAT_MODEL = (process.env.CHAT_MODEL || 'claude-opus-5-5').trim();
+let anthropic = null;
+function claude() { if (!anthropic) { const Anthropic = require('@anthropic-ai/sdk'); anthropic = new Anthropic(); } return anthropic; }
+const PERSONA = {
+  ceo: 'المدير العام لبيت فايز. لابس ثوب وبشت وشماغ. هادي وحكيم ويحب يشجع الفريق، ويوزع المهام ويعتمد القرارات.',
+  fin: 'المدير المالي. لابس بدلة كحلي رسمية ونظارة ومعه شنطة. دقيق ويحب الأرقام، ويتابع ميزانية البيت والفواتير.',
+  mail: 'مدير الإيميلات. قميص وصديري وكرفتة وسماعة رأس. سريع ومنظم، يقرأ Gmail (قراءة فقط) ويفرز الفواتير وإيميلات الماجستير.',
+  prt: 'مدير الطابعات. بدلة رمادي عصرية ومنديل جيب برتقالي ومعه تابلت. متحمس للطباعة ثلاثية الأبعاد، ويتابع طابعة Bambu Lab A2L Combo.',
+  des: 'المصمم. هودي وردي وبيريه ووشاح أصفر ونظارة. فنان ومرح، يدور تصاميم في MakerWorld.',
+  home: 'مدير البيت. أفرول عمل وكاب برتقالي وحزام عدة. عملي وحنون، يتابع مواعيد البيت والأهل والصيانة ويذكّر ويتصل.',
+  fam: 'منسق العائلة والسفر. قميص هاواي وقبعة شمس وكاميرا. اجتماعي ويحب الرحلات والعائلة.',
+  adv: 'المرشد الأكاديمي. بليزر تويد ونظارة وكتاب. صبور ومشجع، يتابع ماجستير MBA من IBA London (8 محاور).',
+  wa: 'وكيل التنبيهات. بولو أخضر وجوال بيده. خفيف دم، يوصل كل التنبيهات لأبو خالد في تيليجرام.',
+};
+const NAMES = { ceo: 'المدير العام', fin: 'المدير المالي', mail: 'مدير الإيميلات', prt: 'مدير الطابعات', des: 'المصمم', home: 'مدير البيت', fam: 'منسق العائلة', adv: 'المرشد الأكاديمي', wa: 'وكيل التنبيهات' };
+function houseState() {
+  const next = publicHome().items.slice(0, 3).map(r => `${r.title} (${r.at.replace('T', ' ')})`).join('، ') || 'لا شيء';
+  return `حالة البيت الآن (${new Date().toLocaleString('ar-SA')}):\n- الطابعة: ${printer.state || 'غير متصلة'}${printer.pct ? ' ' + printer.pct + '%' : ''}${printer.name ? ' · ' + printer.name : ''}\n- المصروف هذا الشهر: ${finance.spent} من ${finance.budget} ريال\n- الإيميلات غير المقروءة: ${mail.unread}\n- الماجستير: ${msSummary()}\n- المواعيد القادمة: ${next}`;
+}
+async function agentChat(agent, text, history) {
+  const sys = `أنت "${NAMES[agent]}" في "بيت فايز HQ"، عمارة افتراضية فيها 9 موظفين يخدمون فايز (أبو خالد) وعائلته في بيته. ${PERSONA[agent]}\n` +
+    `زملاؤك: ${Object.values(NAMES).filter(n => n !== NAMES[agent]).join('، ')}.\n` +
+    `تكلم باللهجة السعودية، بشكل طبيعي وودود، وناد فايز "أبو خالد". ردك جملة أو جملتين بس، لأنه يطلع في فقاعة كلام فوق راسك. لا تستخدم Markdown ولا قوائم.\n` +
+    `لا تخترع أرقام أو أحداث غير موجودة في حالة البيت. إذا طلب شي يحتاج أمر (طباعة، موعد، فاتورة)، قل له يكتبه كأمر، مثلاً: "ذكرني بكرة الساعة 5 صيانة المكيف".\n\n${houseState()}`;
+  const msgs = (Array.isArray(history) ? history : []).slice(-8).filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .map(m => ({ role: m.role, content: m.content.slice(0, 600) }));
+  msgs.push({ role: 'user', content: String(text).slice(0, 600) });
+  const response = await claude().beta.messages.create({
+    model: CHAT_MODEL, max_tokens: 2000, system: sys, messages: msgs,
+    output_config: { effort: 'low' },
+    betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default',
+  });
+  if (response.stop_reason === 'refusal') return 'ما أقدر أرد على هذا، اسألني عن شي ثاني يا أبو خالد.';
+  return response.content.filter(b => b.type === 'text').map(b => b.text).join(' ').trim() || '…';
+}
+
 /* ---------------- printer ---------------- */
 const printer = { connected: false, state: null, pct: 0, layer: 0, total: 0, nozzle: null, bed: null, remaining: null, name: '', error: 0, tray: null, trays: [null, null, null, null] };
 let lastState = null;
@@ -461,7 +500,7 @@ const server = http.createServer(async (req, res) => {
       return fs.createReadStream(PAGE).pipe(res);
     }
     if (req.method === 'GET' && url.pathname === '/api/state') {
-      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), gmail: gmailReady(), call: callReady(), printCall: PRINT_CALL, model: CFG.model, demo: CFG.demo }, printer, finance, masters, home: publicHome(), mail: { unread: mail.unread, recent: mail.recent.slice(0, 6) } });
+      return json(res, 200, { bridge: true, config: { printer: printerReady(), whatsapp: waReady(), telegram: tgReady() && !!tgChatId, callmebot: cmbReady(), gmail: gmailReady(), call: callReady(), printCall: PRINT_CALL, chat: chatReady(), model: CFG.model, demo: CFG.demo }, printer, finance, masters, home: publicHome(), mail: { unread: mail.unread, recent: mail.recent.slice(0, 6) } });
     }
     if (req.method === 'GET' && url.pathname === '/events') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' });
@@ -499,6 +538,17 @@ const server = http.createServer(async (req, res) => {
         saveMasters(); return json(res, 200, { masters });
       }
       return json(res, 400, { error: 'action must be lecture, exam, assignment or set' });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/chat') {
+      const b = await readBody(req);
+      if (!chatReady()) return json(res, 409, { error: 'ANTHROPIC_API_KEY not set' });
+      if (!NAMES[b.agent] || !String(b.text || '').trim()) return json(res, 400, { error: 'agent and text required' });
+      try { return json(res, 200, { reply: await agentChat(b.agent, b.text, b.history) }); }
+      catch (e) {
+        const A = require('@anthropic-ai/sdk');
+        const msg = e instanceof A.AuthenticationError ? 'مفتاح Claude غير صحيح' : e instanceof A.RateLimitError ? 'ضغط على الخدمة، جرب بعد شوي' : e instanceof A.APIError ? `خطأ من Claude (${e.status})` : e.message;
+        log('chat error:', e.message); return json(res, 502, { error: msg });
+      }
     }
     if (req.method === 'POST' && url.pathname === '/api/settings') {
       const b = await readBody(req);
